@@ -34,6 +34,12 @@ namespace Game
             get { return inputChoice == InputChoice.KeyboardAndMouse ? keyboardAndMouseCamera : controllerCamera; }
         }
 
+        public void SetTarget(Transform followTo, Transform look)
+        {
+            follow = followTo;
+            lookAt = look;
+        }
+
         private void Awake()
         {
             UpdateCameraSettings();

@@ -40,17 +40,28 @@ namespace Game
                     m_HealthIconAnimators[i].SetBool(m_HashActivePara, false);
                 }
             }
+
+            representedDamageable.OnReceiveDamage.AddListener(ChangeHitPointUI);
+            representedDamageable.OnResetDamage.AddListener(ChangeHitPointUI);
+            representedDamageable.OnDeath.AddListener(ChangeHitPointUI);
         }
 
-        public void ChangeHitPointUI(Damageable damageable)
+        public void ChangeHitPointUI()
         {
             if (m_HealthIconAnimators == null)
                 return;
 
             for (int i = 0; i < m_HealthIconAnimators.Length; i++)
             {
-                m_HealthIconAnimators[i].SetBool(m_HashActivePara, damageable.currentHitPoints >= i + 1);
+                m_HealthIconAnimators[i].SetBool(m_HashActivePara, representedDamageable.currentHitPoints >= i + 1);
             }
+        }
+
+        private void OnDestroy()
+        {
+            representedDamageable.OnReceiveDamage.RemoveListener(ChangeHitPointUI);
+            representedDamageable.OnResetDamage.RemoveListener(ChangeHitPointUI);
+            representedDamageable.OnDeath.RemoveListener(ChangeHitPointUI);
         }
     } 
 }

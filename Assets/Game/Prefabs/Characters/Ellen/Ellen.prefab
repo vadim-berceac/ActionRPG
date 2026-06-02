@@ -9941,34 +9941,10 @@ MonoBehaviour:
   hitForwardRotation: 360
   OnDeath:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: Game.HealthUI, Assembly-CSharp
-        m_MethodName: ChangeHitPointUI
-        m_Mode: 2
-        m_Arguments:
-          m_ObjectArgument: {fileID: 114011089888769184}
-          m_ObjectArgumentAssemblyTypeName: Game.Damageable, Assembly-CSharp
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   OnReceiveDamage:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: Game.HealthUI, Assembly-CSharp
-        m_MethodName: ChangeHitPointUI
-        m_Mode: 2
-        m_Arguments:
-          m_ObjectArgument: {fileID: 114011089888769184}
-          m_ObjectArgumentAssemblyTypeName: Game.Damageable, Assembly-CSharp
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
       - m_Target: {fileID: 1076943315163266}
         m_TargetAssemblyTypeName: 
         m_MethodName: SetActive
@@ -10002,18 +9978,6 @@ MonoBehaviour:
   OnResetDamage:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: Game.HealthUI, Assembly-CSharp
-        m_MethodName: ChangeHitPointUI
-        m_Mode: 2
-        m_Arguments:
-          m_ObjectArgument: {fileID: 114011089888769184}
-          m_ObjectArgumentAssemblyTypeName: Game.Damageable, Assembly-CSharp
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
       - m_Target: {fileID: 1076943315163266}
         m_TargetAssemblyTypeName: 
         m_MethodName: SetActive
@@ -10058,7 +10022,6 @@ MonoBehaviour:
   maxTurnSpeed: 1200
   idleTimeout: 5
   canAttack: 1
-  cameraSettings: {fileID: 0}
   meleeWeapon: {fileID: 4205765776790819181}
   footstepPlayer: {fileID: 114094828976615078}
   hurtAudioPlayer: {fileID: 114139149641428850}

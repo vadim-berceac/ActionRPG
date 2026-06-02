@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using Game.Message;
 using UnityEngine.XR.WSA;
+using Zenject;
 
 namespace Game
 {
@@ -21,8 +22,7 @@ namespace Game
         public float maxTurnSpeed = 1200f;        // How fast Ellen turns when stationary.
         public float idleTimeout = 5f;            // How long before Ellen starts considering random idles.
         public bool canAttack;                    // Whether or not Ellen can swing her staff.
-
-        public CameraSettings cameraSettings;            // Reference used to determine the camera's direction.
+        
         public MeleeWeapon meleeWeapon;
         public RandomAudioPlayer footstepPlayer;         // Random Audio Players used for various situations.
         public RandomAudioPlayer hurtAudioPlayer;
@@ -32,6 +32,9 @@ namespace Game
         public RandomAudioPlayer emoteAttackPlayer;
         public RandomAudioPlayer emoteJumpPlayer;
 
+        private CameraSettings _cameraSettings;            // Reference used to determine the camera's direction.
+        private HealthUI _healthUI;
+        
         protected AnimatorStateInfo m_CurrentStateInfo;    // Information about the base layer of the animator cached.
         protected AnimatorStateInfo m_NextStateInfo;
         protected bool m_IsAnimatorTransitioning;
@@ -110,35 +113,17 @@ namespace Game
             this.canAttack = canAttack;
         }
 
-        // Called automatically by Unity when the script is first added to a gameobject or is reset from the context menu.
-        void Reset()
+        [Inject]
+        private void Construct(CameraSettings cameraSettings, HealthUI healthUI)
         {
-            Transform footStepSource = transform.Find("FootstepSource");
-            if (footStepSource != null)
-                footstepPlayer = footStepSource.GetComponent<RandomAudioPlayer>();
-
-            Transform hurtSource = transform.Find("HurtSource");
-            if (hurtSource != null)
-                hurtAudioPlayer = hurtSource.GetComponent<RandomAudioPlayer>();
-
-            Transform landingSource = transform.Find("LandingSource");
-            if (landingSource != null)
-                landingPlayer = landingSource.GetComponent<RandomAudioPlayer>();
-
-            cameraSettings = FindFirstObjectByType<CameraSettings>();
-
-            if (cameraSettings != null)
-            {
-                if (cameraSettings.follow == null)
-                    cameraSettings.follow = transform;
-
-                if (cameraSettings.lookAt == null)
-                    cameraSettings.follow = transform.Find("HeadTarget");
-            }
+            _cameraSettings = cameraSettings;
+            _cameraSettings.SetTarget(transform, transform.Find("HeadTarget"));
+            
+            _healthUI = healthUI;
         }
 
         // Called automatically by Unity when the script first exists in the scene.
-        void Awake()
+        private void Awake()
         {
             m_Input = GetComponent<CharacterInput>();
             m_Animator = GetComponent<Animator>();
@@ -158,6 +143,8 @@ namespace Game
             m_Damageable.onDamageMessageReceivers.Add(this);
 
             m_Damageable.isInvulnerable = true;
+            
+            _healthUI.representedDamageable = m_Damageable;
 
             EquipMeleeWeapon(false);
 
@@ -317,7 +304,7 @@ namespace Game
             Vector2 moveInput = m_Input.MoveInput;
             Vector3 localMovementDirection = new Vector3(moveInput.x, 0f, moveInput.y).normalized;
             
-            Vector3 forward = Quaternion.Euler(0f, cameraSettings.Current.m_XAxis.Value, 0f) * Vector3.forward;
+            Vector3 forward = Quaternion.Euler(0f, _cameraSettings.Current.m_XAxis.Value, 0f) * Vector3.forward;
             forward.y = 0f;
             forward.Normalize();
 
