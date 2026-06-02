@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEditorInternal;
 
-namespace Gamekit3D.GameCommands
+namespace Game.GameCommands
 {
 
     [SelectionBase]

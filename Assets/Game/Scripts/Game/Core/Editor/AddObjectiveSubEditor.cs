@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEditor;
 
 
-namespace Gamekit3D
+namespace Game
 {
     public class AddObjectiveSubEditor : SubEditor<ScenarioController>
     {

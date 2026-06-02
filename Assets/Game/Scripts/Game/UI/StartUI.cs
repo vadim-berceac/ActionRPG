@@ -5,7 +5,7 @@ using Zenject;
 using UnityEditor;
 #endif
 
-namespace Gamekit3D
+namespace Game
 {
     public class StartUI : MonoBehaviour
     {

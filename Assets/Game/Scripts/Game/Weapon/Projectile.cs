@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Gamekit3D
+namespace Game
 {
     public abstract class Projectile : MonoBehaviour, IPooled<Projectile>
     {

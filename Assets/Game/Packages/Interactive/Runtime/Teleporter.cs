@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace Gamekit3D.GameCommands
+namespace Game.GameCommands
 {
 
     [RequireComponent(typeof(Collider))]

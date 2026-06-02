@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Gamekit3D.SkyboxVolume
+namespace Game.SkyboxVolume
 {
     [RequireComponent(typeof(Camera))]
     public class Skybox3D : MonoBehaviour

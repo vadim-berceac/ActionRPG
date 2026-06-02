@@ -1,7 +1,7 @@
 ﻿using TMPro;
 using UnityEngine;
 
-namespace Gamekit3D
+namespace Game
 {
     public class TranslatedText : MonoBehaviour
     {

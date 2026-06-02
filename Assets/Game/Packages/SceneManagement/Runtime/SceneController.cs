@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Gamekit3D
+namespace Game
 {
     /// <summary>
     /// This class is used to transition between scenes. This includes triggering all the things that need to happen on transition such as data persistence.

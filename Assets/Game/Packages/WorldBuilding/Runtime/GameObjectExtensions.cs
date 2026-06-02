@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Gamekit3D.WorldBuilding
+namespace Game.WorldBuilding
 {
     public static class GameObjectExtensions
     {

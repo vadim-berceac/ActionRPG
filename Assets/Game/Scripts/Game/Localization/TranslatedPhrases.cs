@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Gamekit3D
+namespace Game
 {
     [CreateAssetMenu]
     public class TranslatedPhrases : OriginalPhrases

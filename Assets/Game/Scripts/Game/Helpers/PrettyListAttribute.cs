@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEditorInternal;
 #endif
 
-namespace Gamekit3D
+namespace Game
 {
     public class EnforceTypeAttribute : PropertyAttribute
     {

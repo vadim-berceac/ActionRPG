@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-namespace Gamekit3D.Cameras
+namespace Game.Cameras
 {
     [ExecuteInEditMode]
     [RequireComponent(typeof(Camera))]

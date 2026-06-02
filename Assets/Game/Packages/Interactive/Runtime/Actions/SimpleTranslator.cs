@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Gamekit3D.GameCommands
+namespace Game.GameCommands
 {
     public class SimpleTranslator : SimpleTransformer
     {

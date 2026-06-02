@@ -1,8 +1,8 @@
-namespace Gamekit3D.GameCommands
+namespace Game.GameCommands
 {
     public class RespawnPlayer : GameCommandHandler
     {
-        public Gamekit3D.PlayerController player;
+        public PlayerController player;
 
         public override void PerformInteraction()
         {

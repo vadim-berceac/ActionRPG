@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Gamekit3D.WorldBuilding
+namespace Game.WorldBuilding
 {
     [System.Serializable]
     public class SmartParts

@@ -2,7 +2,7 @@ using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-namespace Gamekit3D.WorldBuilding
+namespace Game.WorldBuilding
 {
     [SelectionBase]
     [CustomEditor(typeof(MegaSmartObject))]

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-namespace Gamekit3D
+namespace Game
 {
     [RequireComponent(typeof(EnemyController))]
     [RequireComponent(typeof(NavMeshAgent))]

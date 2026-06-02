@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using Gamekit3D;
+using Game;
 
-namespace Gamekit3D
+namespace Game
 {
     [CustomEditor(typeof(TransitionPoint))]
     public class TransitionStartEditor : Editor

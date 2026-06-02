@@ -3,7 +3,7 @@
 using UnityEditor;
 #endif
 
-namespace Gamekit3D
+namespace Game
 {
     public class ContactDamager : MonoBehaviour
     {

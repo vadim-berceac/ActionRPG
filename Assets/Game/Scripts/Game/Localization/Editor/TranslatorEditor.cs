@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Gamekit3D
+namespace Game
 {
     [CustomEditor(typeof(Translator))]
     public class TranslatorEditor : Editor

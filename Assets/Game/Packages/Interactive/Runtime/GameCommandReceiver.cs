@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Gamekit3D.GameCommands
+namespace Game.GameCommands
 {
     //Class used to call the proper GameCommandHandler subclass to a given GameCommandType received from a subclass of SendGameCommand
     public class GameCommandReceiver : MonoBehaviour

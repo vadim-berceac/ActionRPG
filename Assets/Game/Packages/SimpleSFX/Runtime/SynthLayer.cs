@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Gamekit3D.SimpleSFX
+namespace Game.SimpleSFX
 {
     [System.Serializable]
     public class SynthLayer

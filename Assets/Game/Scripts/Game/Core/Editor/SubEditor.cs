@@ -1,6 +1,6 @@
 using UnityEditor;
 
-namespace Gamekit3D
+namespace Game
 {
     public abstract class SubEditor<T>
     {

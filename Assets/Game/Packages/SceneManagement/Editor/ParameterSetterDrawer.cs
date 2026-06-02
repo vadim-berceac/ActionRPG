@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 
-namespace Gamekit3D
+namespace Game
 {
     [CustomPropertyDrawer(typeof(CharacterStateSetter.ParameterSetter))]
     public class ParameterSetterDrawer : PropertyDrawer

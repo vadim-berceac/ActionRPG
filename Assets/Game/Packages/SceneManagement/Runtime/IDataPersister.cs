@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Gamekit3D
+namespace Game
 {
     /// <summary>
     /// Classes that implement this interface should have an serialized instance of DataSettings to register through.

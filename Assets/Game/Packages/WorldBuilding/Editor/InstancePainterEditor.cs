@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEngine.Rendering;
 
 
-namespace Gamekit3D.WorldBuilding
+namespace Game.WorldBuilding
 {
 
     [CustomEditor(typeof(InstancePainter))]

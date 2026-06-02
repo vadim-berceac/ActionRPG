@@ -1,6 +1,6 @@
 using UnityEngine.Events;
 
-namespace Gamekit3D.GameCommands
+namespace Game.GameCommands
 {
 
     public class TriggerUnityEvent : GameCommandHandler

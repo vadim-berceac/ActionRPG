@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Gamekit3D
+namespace Game
 {
     public class SceneControllerWrapper : MonoBehaviour
     {

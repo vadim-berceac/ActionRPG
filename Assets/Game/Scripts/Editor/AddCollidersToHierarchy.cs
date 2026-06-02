@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace Gamekit3D
+namespace Game
 {
     public class AddCollidersToHierarchy : MonoBehaviour
     {

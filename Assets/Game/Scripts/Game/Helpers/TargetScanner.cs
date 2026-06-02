@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Gamekit3D
+namespace Game
 {
     //use this class to simply scan & spot the player based on the parameters.
     //Used by enemies behaviours.

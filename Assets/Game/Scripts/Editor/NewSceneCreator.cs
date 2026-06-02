@@ -6,7 +6,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Gamekit3D
+namespace Game
 {
     public class NewSceneCreator : EditorWindow
     {

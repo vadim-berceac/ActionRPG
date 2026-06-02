@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-namespace Gamekit3D
+namespace Game
 {
     public class HealthUI : MonoBehaviour
     {

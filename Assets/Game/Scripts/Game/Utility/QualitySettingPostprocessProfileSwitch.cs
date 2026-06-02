@@ -7,7 +7,7 @@ using UnityEditor;
 using System.Linq;
 #endif
 
-namespace Gamekit3D
+namespace Game
 {
     [ExecuteInEditMode]
     public class QualitySettingPostprocessProfileSwitch : MonoBehaviour

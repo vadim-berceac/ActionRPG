@@ -1,9 +1,9 @@
 using UnityEngine;
-using Gamekit3D.Message;
 using System.Collections;
+using Game.Message;
 using UnityEngine.XR.WSA;
 
-namespace Gamekit3D
+namespace Game
 {
     [RequireComponent(typeof(CharacterController))]
     [RequireComponent(typeof(Animator))]

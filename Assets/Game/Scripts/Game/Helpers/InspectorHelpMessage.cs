@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-namespace Gamekit3D
+namespace Game
 {
     /// <summary>
     /// Little helper class that allow to display a message in the inspector for documentation on some gameobject.

@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 
-namespace Gamekit3D.GameCommands
+namespace Game.GameCommands
 {
     [SelectionBase]
     [CustomEditor(typeof(GameCommandReceiver), true)]

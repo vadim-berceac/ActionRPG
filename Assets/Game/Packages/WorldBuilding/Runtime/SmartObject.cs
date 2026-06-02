@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Gamekit3D.WorldBuilding
+namespace Game.WorldBuilding
 {
     [ExecuteInEditMode]
     public class SmartObject : MonoBehaviour

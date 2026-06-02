@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Gamekit3D
+namespace Game
 {
     public abstract class DataPersisterEditor : Editor
     {

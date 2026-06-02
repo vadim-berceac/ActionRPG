@@ -24,7 +24,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 112}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 274
+  controlID: 52
   draggingID: 0
 --- !u!114 &2
 MonoBehaviour:
@@ -154,7 +154,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 112}
   m_MaxSize: {x: 16192, y: 16192}
   vertical: 1
-  controlID: 275
+  controlID: 53
   draggingID: 0
 --- !u!114 &4
 MonoBehaviour:
@@ -180,7 +180,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 56}
   m_MaxSize: {x: 16192, y: 8096}
   vertical: 0
-  controlID: 276
+  controlID: 54
   draggingID: 0
 --- !u!114 &5
 MonoBehaviour:
@@ -201,8 +201,8 @@ MonoBehaviour:
     y: 0
     width: 432
     height: 603.2
-  m_MinSize: {x: 200, y: 200}
-  m_MaxSize: {x: 4000, y: 4000}
+  m_MinSize: {x: 201, y: 226}
+  m_MaxSize: {x: 4001, y: 4026}
   m_ActualView: {fileID: 6}
   m_Panes:
   - {fileID: 6}
@@ -254,16 +254,11 @@ MonoBehaviour:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
       m_SelectedIDs:
-      - m_Data: 52310
+      - m_Data: -4050
       m_LastClickedID:
-        m_Data: 52310
+        m_Data: -4050
       m_ExpandedIDs:
-      - m_Data: -13530
-      - m_Data: -6760
-      - m_Data: -6698
-      - m_Data: -4560
       - m_Data: -1380
-      - m_Data: 52310
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -363,10 +358,7 @@ MonoBehaviour:
       m_Data: 58162
     m_ExpandedIDs:
     - m_Data: 0
-    - m_Data: 58020
-    - m_Data: 58152
-    - m_Data: 58164
-    - m_Data: 1000000000
+    - m_Data: 57680
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -399,7 +391,7 @@ MonoBehaviour:
       m_Data: 0
     m_ExpandedIDs:
     - m_Data: 0
-    - m_Data: 58020
+    - m_Data: 57680
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -504,7 +496,7 @@ MonoBehaviour:
     m_CachedPref: 275
     m_ControlHash: 1412526313
     m_PrefName: Preview_InspectorPreview
-  m_LastInspectedObjectInstanceID: 52310
+  m_LastInspectedObjectInstanceID: -4050
   m_LastVerticalScrollValue: 0
   m_GlobalObjectId: 
   m_InspectorMode: 0
@@ -652,7 +644,7 @@ MonoBehaviour:
       m_Data: 70516
     m_ExpandedIDs:
     - m_Data: 0
-    - m_Data: 58020
+    - m_Data: 57680
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -685,7 +677,7 @@ MonoBehaviour:
       m_Data: 0
     m_ExpandedIDs:
     - m_Data: 0
-    - m_Data: 58020
+    - m_Data: 57680
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1576,7 +1568,7 @@ MonoBehaviour:
       m_Data: 117762
     m_ExpandedIDs:
     - m_Data: 0
-    - m_Data: 58020
+    - m_Data: 57680
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1609,7 +1601,7 @@ MonoBehaviour:
       m_Data: 0
     m_ExpandedIDs:
     - m_Data: 0
-    - m_Data: 58020
+    - m_Data: 57680
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 

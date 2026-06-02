@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Gamekit3D
+namespace Game
 {
     [ExecuteInEditMode]
     public class CaptureDepthTexture : MonoBehaviour

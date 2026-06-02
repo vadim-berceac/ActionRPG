@@ -6,7 +6,7 @@ using UnityEngine;
 /// Assures the particle systems are simulating once.
 /// </summary>
 
-namespace Gamekit3D
+namespace Game
 {
     public class SimulateParticleSystem : MonoBehaviour
     {

@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-namespace Gamekit3D.SimpleSFX
+namespace Game.SimpleSFX
 {
     // Based on naudio's BiQuadFilter by Mark Heath
     // https://github.com/naudio/NAudio/blob/master/NAudio/Dsp/BiQuadFilter.cs

@@ -2,7 +2,7 @@
 using Cinemachine;
 using UnityEngine;
 
-namespace Gamekit3D
+namespace Game
 {
     public class CameraSettings : MonoBehaviour
     {
@@ -18,7 +18,6 @@ namespace Gamekit3D
             public bool invertY;
         }
 
-
         public Transform follow;
         public Transform lookAt;
         public CinemachineFreeLook keyboardAndMouseCamera;
@@ -27,40 +26,20 @@ namespace Gamekit3D
         public InvertSettings keyboardAndMouseInvertSettings;
         public InvertSettings controllerInvertSettings;
         public bool allowRuntimeCameraSettingsChanges;
+        public float xFactor;
+        public float yFactor;
 
         public CinemachineFreeLook Current
         {
             get { return inputChoice == InputChoice.KeyboardAndMouse ? keyboardAndMouseCamera : controllerCamera; }
         }
 
-        void Reset()
-        {
-            Transform keyboardAndMouseCameraTransform = transform.Find("KeyboardAndMouseFreeLookRig");
-            if (keyboardAndMouseCameraTransform != null)
-                keyboardAndMouseCamera = keyboardAndMouseCameraTransform.GetComponent<CinemachineFreeLook>();
-
-            Transform controllerCameraTransform = transform.Find("ControllerFreeLookRig");
-            if (controllerCameraTransform != null)
-                controllerCamera = controllerCameraTransform.GetComponent<CinemachineFreeLook>();
-
-            PlayerController playerController = FindFirstObjectByType<PlayerController>();
-            if (playerController != null && playerController.name == "Ellen")
-            {
-                follow = playerController.transform;
-
-                lookAt = follow.Find("HeadTarget");
-
-                if (playerController.cameraSettings == null)
-                    playerController.cameraSettings = this;
-            }
-        }
-
-        void Awake()
+        private void Awake()
         {
             UpdateCameraSettings();
         }
 
-        void Update()
+        private void LateUpdate()
         {
             if (allowRuntimeCameraSettingsChanges)
                 UpdateCameraSettings();
@@ -68,13 +47,13 @@ namespace Gamekit3D
             var input = CharacterInput.Instance;
             if (input == null) return;
 
-            Vector2 look = input.CameraInput;
+            var look = input.CameraInput;
 
-            Current.m_XAxis.m_InputAxisValue = look.x;
-            Current.m_YAxis.m_InputAxisValue = look.y;
+            Current.m_XAxis.m_InputAxisValue = look.x * xFactor;
+            Current.m_YAxis.m_InputAxisValue = look.y * yFactor;
         }
 
-        void UpdateCameraSettings()
+        private void UpdateCameraSettings()
         {
             keyboardAndMouseCamera.Follow = follow;
             keyboardAndMouseCamera.LookAt = lookAt;

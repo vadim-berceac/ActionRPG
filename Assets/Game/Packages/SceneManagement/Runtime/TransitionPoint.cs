@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 
-namespace Gamekit3D
+namespace Game
 {
     [RequireComponent(typeof(Collider))]
     public class TransitionPoint : MonoBehaviour
@@ -34,9 +34,9 @@ namespace Gamekit3D
         [Tooltip("Is this transition only possible with specific items in the inventory?")]
         public bool requiresInventoryCheck;
         [Tooltip("The inventory to be checked.")]
-        public Gamekit3D.InventoryController inventoryController;
+        public InventoryController inventoryController;
         [Tooltip("The required items.")]
-        public Gamekit3D.InventoryController.InventoryChecker inventoryCheck;
+        public InventoryController.InventoryChecker inventoryCheck;
 
         bool m_TransitioningGameObjectPresent;
 

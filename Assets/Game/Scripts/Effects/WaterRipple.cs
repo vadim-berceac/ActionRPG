@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Gamekit3D
+namespace Game
 {
     [ExecuteInEditMode]
     public class WaterRipple : MonoBehaviour

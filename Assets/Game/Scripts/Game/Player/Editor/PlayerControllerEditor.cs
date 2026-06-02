@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 
-namespace Gamekit3D
+namespace Game
 {
     [CustomEditor(typeof(PlayerController))]
     public class PlayerControllerEditor : Editor

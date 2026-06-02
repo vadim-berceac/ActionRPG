@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using Gamekit3D.Message;
+using Game.Message;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.AI;
@@ -8,7 +8,7 @@ using UnityEngine.AI;
 using MessageType = UnityEditor.MessageType;
 #endif
 
-namespace Gamekit3D
+namespace Game
 {
     [DefaultExecutionOrder(100)]
     public class SpitterBehaviour : MonoBehaviour, IMessageReceiver

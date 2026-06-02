@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 
-namespace Gamekit3D
+namespace Game
 {
     public class ChomperSMBIdle : SceneLinkedSMB<ChomperBehavior>
     {

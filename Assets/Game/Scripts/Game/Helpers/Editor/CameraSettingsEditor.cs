@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Gamekit3D
+namespace Game
 {
     [CustomEditor(typeof(CameraSettings))]
     public class CameraSettingsEditor : Editor
@@ -21,6 +21,8 @@ namespace Gamekit3D
         SerializedProperty m_ControllerInvertSettingsInvertXProp;
         SerializedProperty m_ControllerInvertSettingsInvertYProp;
         SerializedProperty m_AllowRuntimeCameraSettingsChangesProp;
+        SerializedProperty m_XFactor;
+        SerializedProperty m_YFactor;
 
         GUIContent m_ScriptContent = new GUIContent("Script");
         GUIContent m_FollowContent = new GUIContent("Follow", "Used to determine how the cameras move.  It should be set to Ellen.");
@@ -35,12 +37,16 @@ namespace Gamekit3D
         GUIContent m_ControllerInvertSettingsInvertXContent = new GUIContent("Invert X");
         GUIContent m_ControllerInvertSettingsInvertYContent = new GUIContent("Invert Y");
         GUIContent m_AllowRuntimeCameraSettingsChangesContent = new GUIContent("Allow Runtime Camera Settings Changes", "When checked this makes it possible to change the Camera Settings' fields while the game is playing in order to test out what feels nice.");
+        GUIContent m_XFactorContent = new GUIContent("X Factor");
+        GUIContent m_YFactorContent = new GUIContent("Y Factor");
 
         void OnEnable()
         {
             m_ScriptProp = serializedObject.FindProperty("m_Script");
             m_FollowProp = serializedObject.FindProperty("follow");
             m_LookAtProp = serializedObject.FindProperty("lookAt");
+            m_XFactor = serializedObject.FindProperty("xFactor");
+            m_YFactor = serializedObject.FindProperty("yFactor");
             m_KeyboardAndMouseCameraProp = serializedObject.FindProperty("keyboardAndMouseCamera");
             m_ControllerCameraProp = serializedObject.FindProperty("controllerCamera");
             m_InputChoiceProp = serializedObject.FindProperty("inputChoice");
@@ -65,6 +71,8 @@ namespace Gamekit3D
             EditorGUILayout.PropertyField(m_LookAtProp, m_LookAtContent);
             EditorGUILayout.PropertyField(m_KeyboardAndMouseCameraProp, m_KeyboardAndMouseCameraContent);
             EditorGUILayout.PropertyField(m_ControllerCameraProp, m_ControllerCameraContent);
+            EditorGUILayout.PropertyField(m_XFactor, m_XFactorContent);
+            EditorGUILayout.PropertyField(m_YFactor, m_YFactorContent);
             EditorGUILayout.PropertyField(m_InputChoiceProp, m_InputChoiceContent);
 
             GUI.enabled = m_InputChoiceProp.intValue == 0;

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Gamekit3D
+namespace Game
 {
     public class CheckpointGroup : MonoBehaviour
     {

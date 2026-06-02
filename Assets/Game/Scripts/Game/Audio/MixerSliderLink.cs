@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Audio;
 
-namespace Gamekit3D
+namespace Game
 {
     [RequireComponent(typeof(Slider))]
     public class MixerSliderLink : MonoBehaviour

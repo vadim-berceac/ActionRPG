@@ -1,7 +1,7 @@
 using UnityEngine.Events;
 using UnityEngine.Playables;
 
-namespace Gamekit3D.GameCommands
+namespace Game.GameCommands
 {
     public class StartPlayableDirector : GameCommandHandler
     {

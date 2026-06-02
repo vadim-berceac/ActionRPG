@@ -1,16 +1,17 @@
 ﻿using UnityEngine;
 
-namespace Gamekit3D
+namespace Game
 {
     [DefaultExecutionOrder(9999)]
     public class FixedUpdateFollow : MonoBehaviour
     {
-        public Transform toFollow;
+        [SerializeField] private Transform source;
+        [SerializeField] private Transform toFollow;
 
         private void FixedUpdate()
         {
-            transform.position = toFollow.position;
-            transform.rotation = toFollow.rotation;
+            source.position = toFollow.position;
+            source.rotation = toFollow.rotation;
         }
     } 
 }

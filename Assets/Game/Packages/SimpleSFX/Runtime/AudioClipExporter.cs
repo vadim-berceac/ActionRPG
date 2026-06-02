@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-namespace Gamekit3D.SimpleSFX
+namespace Game.SimpleSFX
 {
     public static class AudioClipExporter
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-namespace Gamekit3D
+namespace Game
 {
     public class DialogueCanvasController : MonoBehaviour
     {

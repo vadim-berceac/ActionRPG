@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Gamekit3D
+namespace Game
 {
     public class ScreenFader : MonoBehaviour
     {

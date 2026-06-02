@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace Gamekit3D.Cameras
+namespace Game.Cameras
 {
     [CustomEditor(typeof(LayerCullDistances))]
     public class LayerCullDistancesEditor : Editor

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-namespace Gamekit3D
+namespace Game
 {
     public class GrenadierSMBPursuit : SceneLinkedSMB<GrenadierBehaviour>
     {

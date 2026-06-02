@@ -1,7 +1,7 @@
 using UnityEngine;
 
 
-namespace Gamekit3D.GameCommands
+namespace Game.GameCommands
 {
     public class ParticleSystemEmit : GameCommandHandler
     {

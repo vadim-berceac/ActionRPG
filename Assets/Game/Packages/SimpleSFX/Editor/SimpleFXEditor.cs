@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Gamekit3D.SimpleSFX
+namespace Game.SimpleSFX
 {
 
     [CustomEditor(typeof(SimpleFXSynth))]

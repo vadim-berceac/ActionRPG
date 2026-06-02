@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Gamekit3D.GameCommands
+namespace Game.GameCommands
 {
     public abstract class SimpleTransformer : GameCommandHandler
     {

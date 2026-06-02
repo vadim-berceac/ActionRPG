@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-namespace Gamekit3D.WorldBuilding
+namespace Game.WorldBuilding
 {
 
     [ExecuteInEditMode]

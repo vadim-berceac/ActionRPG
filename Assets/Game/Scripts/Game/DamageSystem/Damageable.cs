@@ -1,11 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Game.Message;
 using UnityEngine;
 using UnityEngine.Events;
-using Gamekit3D.Message;
 using UnityEngine.Serialization;
 
-namespace Gamekit3D
+namespace Game
 {
     public partial class Damageable : MonoBehaviour
     {

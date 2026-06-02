@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Gamekit3D
+namespace Game
 {
     /// <summary>
     /// This class is used to move gameobjects from one position to another in the scene.

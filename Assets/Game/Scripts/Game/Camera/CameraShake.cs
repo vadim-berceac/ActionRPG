@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Cinemachine;
 
-namespace Gamekit3D
+namespace Game
 {
     public class CameraShake : MonoBehaviour
     {

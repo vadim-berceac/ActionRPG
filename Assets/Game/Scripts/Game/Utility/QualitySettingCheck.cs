@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-namespace Gamekit3D
+namespace Game
 {
     //This will disabled the targets Monobehaviour if a given quality setting isn't met
     [ExecuteInEditMode]

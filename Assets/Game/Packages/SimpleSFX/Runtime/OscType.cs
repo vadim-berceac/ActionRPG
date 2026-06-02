@@ -1,4 +1,4 @@
-namespace Gamekit3D.SimpleSFX
+namespace Game.SimpleSFX
 {
     public enum OscType
     {

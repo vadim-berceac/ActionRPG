@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Gamekit3D.SimpleSFX
+namespace Game.SimpleSFX
 {
     /// <summary>
     /// Generated simple loops using layers of oscillators which can have volume, frequency, and filter value envelopes.

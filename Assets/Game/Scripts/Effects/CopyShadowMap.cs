@@ -2,7 +2,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Gamekit3D
+namespace Game
 {
     [ExecuteInEditMode]
     public class CopyShadowMap : MonoBehaviour

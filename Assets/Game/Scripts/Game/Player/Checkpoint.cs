@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Gamekit3D
+namespace Game
 {
     [RequireComponent(typeof(Collider))]
     public class Checkpoint : MonoBehaviour

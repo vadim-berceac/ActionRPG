@@ -1,6 +1,6 @@
 using UnityEditor;
 
-namespace Gamekit3D.GameCommands
+namespace Game.GameCommands
 {
     [CustomEditor(typeof(SimpleTransformer), true)]
     public class SimpleTransformerEditor : Editor

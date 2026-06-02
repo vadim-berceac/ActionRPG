@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Gamekit3D.Cameras
+namespace Game.Cameras
 {
     /// <summary>
     /// A class that mimic's the Unity Editor camera.

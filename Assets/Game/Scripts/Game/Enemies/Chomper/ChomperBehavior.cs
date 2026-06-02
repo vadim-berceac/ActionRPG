@@ -1,7 +1,7 @@
-﻿using Gamekit3D.Message;
+﻿using Game.Message;
 using UnityEngine;
 
-namespace Gamekit3D
+namespace Game
 {
     [DefaultExecutionOrder(100)]
     public class ChomperBehavior : MonoBehaviour, IMessageReceiver
