@@ -35,7 +35,7 @@ namespace Gamekit3D
 
         protected static GameObjectTeleporter instance;
 
-        protected PlayerInput m_PlayerInput;
+        protected CharacterInput MCharacterInput;
         protected bool m_Transitioning;
 
         void Awake()
@@ -48,7 +48,7 @@ namespace Gamekit3D
 
             DontDestroyOnLoad(gameObject);
 
-            m_PlayerInput = FindFirstObjectByType<PlayerInput>();
+            MCharacterInput = FindFirstObjectByType<CharacterInput>();
         }
 
         public static void Teleport(TransitionPoint transitionPoint)
@@ -73,9 +73,9 @@ namespace Gamekit3D
 
             if (releaseControl)
             {
-                if (m_PlayerInput == null)
-                    m_PlayerInput = FindFirstObjectByType<PlayerInput>();
-                m_PlayerInput.ReleaseControl();
+                if (MCharacterInput == null)
+                    MCharacterInput = FindFirstObjectByType<CharacterInput>();
+                MCharacterInput.ReleaseControl();
             }
 
             if (fade)
@@ -88,7 +88,7 @@ namespace Gamekit3D
 
             if (releaseControl)
             {
-                m_PlayerInput.GainControl();
+                MCharacterInput.GainControl();
             }
 
             m_Transitioning = false;

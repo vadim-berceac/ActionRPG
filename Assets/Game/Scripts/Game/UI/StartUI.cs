@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Gamekit3D;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Playables;
+using Zenject;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -19,8 +17,15 @@ namespace Gamekit3D
 
         protected bool m_InPause;
         protected PlayableDirector[] m_Directors;
+        private PlayerNewInput _playerNewInput;
 
-        void Start()
+        [Inject]
+        private void Construct(PlayerNewInput playerNewInput)
+        {
+            _playerNewInput = playerNewInput;
+        }
+        
+        private void Start()
         {
             if (!alwaysDisplayMouse)
             {
@@ -34,6 +39,13 @@ namespace Gamekit3D
             }
 
             m_Directors = FindObjectsByType<PlayableDirector> (FindObjectsSortMode.None);
+
+            _playerNewInput.Pause += SwitchPauseState;
+        }
+
+        private void OnDestroy()
+        {
+            _playerNewInput.Pause -= SwitchPauseState;
         }
 
         public void Quit()
@@ -56,14 +68,6 @@ namespace Gamekit3D
             m_InPause = true;
             SwitchPauseState();
             SceneController.RestartZone();
-        }
-
-        void Update()
-        {
-            if (PlayerInput.Instance != null && PlayerInput.Instance.Pause)
-            {
-                SwitchPauseState();
-            }
         }
 
         protected void SwitchPauseState()
@@ -93,9 +97,9 @@ namespace Gamekit3D
                 CameraShake.Stop ();
 
             if (m_InPause)
-                PlayerInput.Instance.GainControl();
+                CharacterInput.Instance.GainControl();
             else
-                PlayerInput.Instance.ReleaseControl();
+                CharacterInput.Instance.ReleaseControl();
 
             Time.timeScale = m_InPause ? 1 : 0;
 

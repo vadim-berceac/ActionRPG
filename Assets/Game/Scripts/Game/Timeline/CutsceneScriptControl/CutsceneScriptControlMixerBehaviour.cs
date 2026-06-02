@@ -19,7 +19,7 @@ public class CutsceneScriptControlMixerBehaviour : PlayableBehaviour
             ScriptPlayable<CutsceneScriptControlBehaviour> inputPlayable = (ScriptPlayable<CutsceneScriptControlBehaviour>)playable.GetInput(i);
             CutsceneScriptControlBehaviour input = inputPlayable.GetBehaviour ();
 
-            input.playerInput.enabled = input.playerInputEnabled;
+            input.characterInput.enabled = input.playerInputEnabled;
         }
     }
 }

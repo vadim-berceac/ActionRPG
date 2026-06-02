@@ -44,7 +44,7 @@ namespace Gamekit3D
         protected float m_DesiredForwardSpeed;         // How fast Ellen aims be going along the ground based on input.
         protected float m_ForwardSpeed;                // How fast Ellen is currently going along the ground.
         protected float m_VerticalSpeed;               // How fast Ellen is currently moving up or down.
-        protected PlayerInput m_Input;                 // Reference used to determine how Ellen should move.
+        protected CharacterInput m_Input;                 // Reference used to determine how Ellen should move.
         protected CharacterController m_CharCtrl;      // Reference used to actually move Ellen.
         protected Animator m_Animator;                 // Reference used to make decisions based on Ellen's current animation and to set parameters.
         protected Material m_CurrentWalkingSurface;    // Reference used to make decisions about audio.
@@ -142,7 +142,7 @@ namespace Gamekit3D
         // Called automatically by Unity when the script first exists in the scene.
         void Awake()
         {
-            m_Input = GetComponent<PlayerInput>();
+            m_Input = GetComponent<CharacterInput>();
             m_Animator = GetComponent<Animator>();
             m_CharCtrl = GetComponent<CharacterController>();
 
@@ -224,7 +224,7 @@ namespace Gamekit3D
         {
             bool inputBlocked = m_CurrentStateInfo.tagHash == m_HashBlockInput && !m_IsAnimatorTransitioning;
             inputBlocked |= m_NextStateInfo.tagHash == m_HashBlockInput;
-            m_Input.playerControllerInputBlocked = inputBlocked;
+            m_Input.InputBlocked = inputBlocked;
         }
 
         // Called after the animator state has been cached to determine whether or not the staff should be active or not.

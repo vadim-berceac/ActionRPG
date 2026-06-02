@@ -48,7 +48,7 @@ namespace Gamekit3D
 
         protected Scene m_CurrentZoneScene;
         protected SceneTransitionDestination.DestinationTag m_ZoneRestartDestinationTag;
-        protected PlayerInput m_PlayerInput;
+        protected CharacterInput MCharacterInput;
         protected bool m_Transitioning;
 
         void Awake()
@@ -61,7 +61,7 @@ namespace Gamekit3D
 
             DontDestroyOnLoad(gameObject);
 
-            m_PlayerInput = FindFirstObjectByType<PlayerInput>();
+            MCharacterInput = FindFirstObjectByType<CharacterInput>();
 
             if (initialSceneTransitionDestination != null)
             {
@@ -108,14 +108,14 @@ namespace Gamekit3D
             m_Transitioning = true;
             PersistentDataManager.SaveAllData();
 
-            if (m_PlayerInput == null)
-                m_PlayerInput = FindFirstObjectByType<PlayerInput>();
-            if (m_PlayerInput) m_PlayerInput.ReleaseControl();
+            if (MCharacterInput == null)
+                MCharacterInput = FindFirstObjectByType<CharacterInput>();
+            if (MCharacterInput) MCharacterInput.ReleaseControl();
             yield return StartCoroutine(ScreenFader.FadeSceneOut(ScreenFader.FadeType.Loading));
             PersistentDataManager.ClearPersisters();
             yield return SceneManager.LoadSceneAsync(newSceneName);
-            m_PlayerInput = FindFirstObjectByType<PlayerInput>();
-            if (m_PlayerInput) m_PlayerInput.ReleaseControl();
+            MCharacterInput = FindFirstObjectByType<CharacterInput>();
+            if (MCharacterInput) MCharacterInput.ReleaseControl();
             PersistentDataManager.LoadAllData();
             SceneTransitionDestination entrance = GetDestination(destinationTag);
             SetEnteringGameObjectLocation(entrance);
@@ -123,8 +123,8 @@ namespace Gamekit3D
             if (entrance != null)
                 entrance.OnReachDestination.Invoke();
             yield return StartCoroutine(ScreenFader.FadeSceneIn());
-            if (m_PlayerInput)
-                m_PlayerInput.GainControl();
+            if (MCharacterInput)
+                MCharacterInput.GainControl();
 
             m_Transitioning = false;
         }

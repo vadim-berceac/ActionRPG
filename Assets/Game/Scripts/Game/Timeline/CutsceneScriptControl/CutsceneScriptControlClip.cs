@@ -6,7 +6,7 @@ using UnityEngine.Timeline;
 [Serializable]
 public class CutsceneScriptControlClip : PlayableAsset, ITimelineClipAsset
 {
-    public ExposedReference<PlayerInput> playerInput;
+    public ExposedReference<CharacterInput> playerInput;
     public CutsceneScriptControlBehaviour template = new CutsceneScriptControlBehaviour();
     
     public ClipCaps clipCaps
@@ -18,7 +18,7 @@ public class CutsceneScriptControlClip : PlayableAsset, ITimelineClipAsset
     {
         var playable = ScriptPlayable<CutsceneScriptControlBehaviour>.Create (graph, template);
         CutsceneScriptControlBehaviour clone = playable.GetBehaviour ();
-        clone.playerInput = playerInput.Resolve (graph.GetResolver ());
+        clone.characterInput = playerInput.Resolve (graph.GetResolver ());
         return playable;
     }
 }

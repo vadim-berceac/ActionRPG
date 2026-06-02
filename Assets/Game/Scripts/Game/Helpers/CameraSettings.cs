@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using Cinemachine;
 using UnityEngine;
 
@@ -65,9 +63,15 @@ namespace Gamekit3D
         void Update()
         {
             if (allowRuntimeCameraSettingsChanges)
-            {
                 UpdateCameraSettings();
-            }
+
+            var input = CharacterInput.Instance;
+            if (input == null) return;
+
+            Vector2 look = input.CameraInput;
+
+            Current.m_XAxis.m_InputAxisValue = look.x;
+            Current.m_YAxis.m_InputAxisValue = look.y;
         }
 
         void UpdateCameraSettings()

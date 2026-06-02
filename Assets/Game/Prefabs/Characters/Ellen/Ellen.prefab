@@ -12972,8 +12972,7 @@ MonoBehaviour:
   playDelay: 0
   defaultBank:
     name: 
-    clips:
-    - {fileID: 8300000, guid: 32714d2d110734ee19318403e6e8219b, type: 3}
+    clips: []
   overrides: []
   playing: 0
   canPlay: 0
@@ -15733,7 +15732,7 @@ MeshRenderer:
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: cdd1dda890977a24b8597b566bc084de, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -16839,7 +16838,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1f5847bd25143b24d9d4b26b0ae56f3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerControllerInputBlocked: 0
 --- !u!114 &114579421511091938
 MonoBehaviour:
   m_ObjectHideFlags: 0
