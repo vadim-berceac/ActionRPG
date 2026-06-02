@@ -23,7 +23,7 @@ namespace Game
         public bool canAttack;                    // Whether or not Ellen can swing her staff.
 
         public CameraSettings cameraSettings;            // Reference used to determine the camera's direction.
-        public MeleeWeapon meleeWeapon;                  // Reference used to (de)activate the staff when attacking. 
+        public MeleeWeapon meleeWeapon;
         public RandomAudioPlayer footstepPlayer;         // Random Audio Players used for various situations.
         public RandomAudioPlayer hurtAudioPlayer;
         public RandomAudioPlayer landingPlayer;
@@ -113,8 +113,6 @@ namespace Game
         // Called automatically by Unity when the script is first added to a gameobject or is reset from the context menu.
         void Reset()
         {
-            meleeWeapon = GetComponentInChildren<MeleeWeapon>();
-
             Transform footStepSource = transform.Find("FootstepSource");
             if (footStepSource != null)
                 footstepPlayer = footStepSource.GetComponent<RandomAudioPlayer>();
@@ -241,7 +239,7 @@ namespace Game
         // Called each physics step with a parameter based on the return value of IsWeaponEquiped.
         void EquipMeleeWeapon(bool equip)
         {
-            meleeWeapon.gameObject.SetActive(equip);
+            meleeWeapon.view.SetActive(equip);
             m_InAttack = false;
             m_InCombo = equip;
 

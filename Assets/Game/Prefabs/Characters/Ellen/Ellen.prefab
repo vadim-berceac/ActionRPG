@@ -9943,12 +9943,12 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: Game.HealthUI, Assembly-CSharp
         m_MethodName: ChangeHitPointUI
         m_Mode: 2
         m_Arguments:
           m_ObjectArgument: {fileID: 114011089888769184}
-          m_ObjectArgumentAssemblyTypeName: Gamekit3D.Damageable, Assembly-CSharp
+          m_ObjectArgumentAssemblyTypeName: Game.Damageable, Assembly-CSharp
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -9958,12 +9958,12 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: Game.HealthUI, Assembly-CSharp
         m_MethodName: ChangeHitPointUI
         m_Mode: 2
         m_Arguments:
           m_ObjectArgument: {fileID: 114011089888769184}
-          m_ObjectArgumentAssemblyTypeName: Gamekit3D.Damageable, Assembly-CSharp
+          m_ObjectArgumentAssemblyTypeName: Game.Damageable, Assembly-CSharp
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -10003,12 +10003,12 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: Game.HealthUI, Assembly-CSharp
         m_MethodName: ChangeHitPointUI
         m_Mode: 2
         m_Arguments:
           m_ObjectArgument: {fileID: 114011089888769184}
-          m_ObjectArgumentAssemblyTypeName: Gamekit3D.Damageable, Assembly-CSharp
+          m_ObjectArgumentAssemblyTypeName: Game.Damageable, Assembly-CSharp
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -10059,7 +10059,7 @@ MonoBehaviour:
   idleTimeout: 5
   canAttack: 1
   cameraSettings: {fileID: 0}
-  meleeWeapon: {fileID: 114298887321203036}
+  meleeWeapon: {fileID: 4205765776790819181}
   footstepPlayer: {fileID: 114094828976615078}
   hurtAudioPlayer: {fileID: 114139149641428850}
   landingPlayer: {fileID: 114034225711041262}
@@ -10184,9 +10184,9 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1af02485084f26d41b8d844c2eec7cb3, type: 3}
---- !u!114 &114298887321203036 stripped
+--- !u!114 &4205765776790819181 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4733235290877503478, guid: 1af02485084f26d41b8d844c2eec7cb3,
+  m_CorrespondingSourceObject: {fileID: 8819217813458945991, guid: 1af02485084f26d41b8d844c2eec7cb3,
     type: 3}
   m_PrefabInstance: {fileID: 4627948142591481514}
   m_PrefabAsset: {fileID: 0}

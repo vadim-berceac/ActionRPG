@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2632565628979671363}
   - component: {fileID: 9086421509121111395}
+  - component: {fileID: 8819217813458945991}
   m_Layer: 9
   m_Name: Staf
   m_TagString: Untagged
@@ -48,6 +49,42 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   source: {fileID: 4623292924936360682}
   toFollow: {fileID: 0}
+--- !u!114 &8819217813458945991
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1205787345809761593}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fdf93605f2b0c0246bbbf722e6208efb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damage: 1
+  view: {fileID: 4628936375136608706}
+  hitParticlePrefab: {fileID: 198200190501009950, guid: 400e06051701a8c4998087ae421728e3,
+    type: 3}
+  targetLayers:
+    serializedVersion: 2
+    m_Bits: 8388608
+  attackPoints:
+  - radius: 0.3
+    offset: {x: 0.15, y: 0, z: 0}
+    attackRoot: {fileID: 4627241781867504290}
+  - radius: 0.3
+    offset: {x: 0.49, y: 0, z: 0}
+    attackRoot: {fileID: 4627241781867504290}
+  - radius: 0.3
+    offset: {x: 0.7, y: 0, z: 0}
+    attackRoot: {fileID: 4627241781867504290}
+  effects:
+  - {fileID: 4729254646007022844}
+  - {fileID: 4733265100625658074}
+  - {fileID: 4732860957860550606}
+  - {fileID: 4729244075202266762}
+  hitAudio: {fileID: 4732374630674220482}
+  attackAudio: {fileID: 4732356596923636976}
 --- !u!1 &4628019480983871154
 GameObject:
   m_ObjectHideFlags: 0
@@ -5680,7 +5717,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4623292924936360682}
-  - component: {fileID: 4733235290877503478}
   m_Layer: 9
   m_Name: Staf_view
   m_TagString: Untagged
@@ -5707,41 +5743,6 @@ Transform:
   - {fileID: 4626947070026339016}
   m_Father: {fileID: 2632565628979671363}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4733235290877503478
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4628936375136608706}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fdf93605f2b0c0246bbbf722e6208efb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  damage: 1
-  hitParticlePrefab: {fileID: 198200190501009950, guid: 400e06051701a8c4998087ae421728e3,
-    type: 3}
-  targetLayers:
-    serializedVersion: 2
-    m_Bits: 8388608
-  attackPoints:
-  - radius: 0.3
-    offset: {x: 0.15, y: 0, z: 0}
-    attackRoot: {fileID: 4627241781867504290}
-  - radius: 0.3
-    offset: {x: 0.49, y: 0, z: 0}
-    attackRoot: {fileID: 4627241781867504290}
-  - radius: 0.3
-    offset: {x: 0.7, y: 0, z: 0}
-    attackRoot: {fileID: 4627241781867504290}
-  effects:
-  - {fileID: 4729254646007022844}
-  - {fileID: 4733265100625658074}
-  - {fileID: 4732860957860550606}
-  - {fileID: 4729244075202266762}
-  hitAudio: {fileID: 4732374630674220482}
-  attackAudio: {fileID: 4732356596923636976}
 --- !u!1 &4628981844555108156
 GameObject:
   m_ObjectHideFlags: 0

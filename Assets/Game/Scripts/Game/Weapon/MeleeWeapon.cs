@@ -22,6 +22,7 @@ namespace Game
 
         }
 
+        public GameObject view;
         public ParticleSystem hitParticlePrefab;
         public LayerMask targetLayers;
 
