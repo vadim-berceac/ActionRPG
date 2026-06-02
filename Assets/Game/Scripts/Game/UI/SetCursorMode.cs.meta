@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 4b33b2f0f24704cf3879bce3a5431235
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135162
+  packageName: 3D Game Kit Lite
+  packageVersion: 1.8.2
+  assetPath: Assets/3DGamekitLite/Scripts/Game/UI/SetCursorMode.cs
+  uploadId: 462213

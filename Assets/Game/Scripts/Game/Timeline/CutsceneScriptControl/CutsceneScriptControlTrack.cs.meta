@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: b285e69db8f79e248bbb4d291fd4eb8e
+timeCreated: 1499761593
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135162
+  packageName: 3D Game Kit Lite
+  packageVersion: 1.8.2
+  assetPath: Assets/3DGamekitLite/Scripts/Game/Timeline/CutsceneScriptControl/CutsceneScriptControlTrack.cs
+  uploadId: 462213

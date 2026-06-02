@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: 1fb98d8da5f4a244490d8e8d0cfef54a
+timeCreated: 1509359291
+licenseType: Store
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135162
+  packageName: 3D Game Kit Lite
+  packageVersion: 1.8.2
+  assetPath: Assets/3DGamekitLite/Scripts/Game/Localization/TranslatedPhrases.cs
+  uploadId: 462213

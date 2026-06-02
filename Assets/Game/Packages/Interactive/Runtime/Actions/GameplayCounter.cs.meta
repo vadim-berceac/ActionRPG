@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 3c2e68511d8284fd5ae3fd272732b305
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135162
+  packageName: 3D Game Kit Lite
+  packageVersion: 1.8.2
+  assetPath: Assets/3DGamekitLite/Packages/Interactive/Runtime/Actions/GameplayCounter.cs
+  uploadId: 462213

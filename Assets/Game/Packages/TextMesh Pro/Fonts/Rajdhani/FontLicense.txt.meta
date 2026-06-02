@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: b65051cc3d553f84b88a210ab49e4c66
+timeCreated: 1503395015
+licenseType: Store
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135162
+  packageName: 3D Game Kit Lite
+  packageVersion: 1.8.2
+  assetPath: Assets/3DGamekitLite/Packages/TextMesh Pro/Fonts/Rajdhani/FontLicense.txt
+  uploadId: 462213

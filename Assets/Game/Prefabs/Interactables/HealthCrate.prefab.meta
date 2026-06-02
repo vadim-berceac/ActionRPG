@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 593b83972e44afe4783b321fc9c3a9a9
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135162
+  packageName: 3D Game Kit Lite
+  packageVersion: 1.8.2
+  assetPath: Assets/3DGamekitLite/Prefabs/Interactables/HealthCrate.prefab
+  uploadId: 462213

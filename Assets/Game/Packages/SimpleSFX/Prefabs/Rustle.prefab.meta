@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 51aaa685a5768496387bd9258f19db48
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135162
+  packageName: 3D Game Kit Lite
+  packageVersion: 1.8.2
+  assetPath: Assets/3DGamekitLite/Packages/SimpleSFX/Prefabs/Rustle.prefab
+  uploadId: 462213

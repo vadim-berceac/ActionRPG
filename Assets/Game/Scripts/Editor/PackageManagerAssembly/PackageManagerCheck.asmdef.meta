@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 526a996ce35fd984e8b4ad642021e364
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135162
+  packageName: 3D Game Kit Lite
+  packageVersion: 1.8.2
+  assetPath: Assets/3DGamekitLite/Scripts/Editor/PackageManagerAssembly/PackageManagerCheck.asmdef
+  uploadId: 462213

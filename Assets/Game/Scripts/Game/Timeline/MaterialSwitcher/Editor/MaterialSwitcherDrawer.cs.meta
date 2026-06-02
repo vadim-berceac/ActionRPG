@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: c1aeb1cacab61d34bb18654314c956f5
+timeCreated: 1504805970
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135162
+  packageName: 3D Game Kit Lite
+  packageVersion: 1.8.2
+  assetPath: Assets/3DGamekitLite/Scripts/Game/Timeline/MaterialSwitcher/Editor/MaterialSwitcherDrawer.cs
+  uploadId: 462213

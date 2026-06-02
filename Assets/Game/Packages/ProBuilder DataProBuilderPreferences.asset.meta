@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 178cbc13c1ef74aa5b388db5127a80f2
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135162
+  packageName: 3D Game Kit Lite
+  packageVersion: 1.8.2
+  assetPath: Assets/3DGamekitLite/Packages/ProBuilder DataProBuilderPreferences.asset
+  uploadId: 462213

@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 9183d924e2be7e24b90c6da0d5908d9a
+timeCreated: 1499866678
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135162
+  packageName: 3D Game Kit Lite
+  packageVersion: 1.8.2
+  assetPath: Assets/3DGamekitLite/Scripts/Game/Timeline/SetLocation/SetLocationBehaviour.cs
+  uploadId: 462213

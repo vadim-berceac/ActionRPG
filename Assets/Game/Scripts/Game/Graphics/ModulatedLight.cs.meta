@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: 7970e6b550ee24e60815dff8c8eb26f9
+timeCreated: 1502292169
+licenseType: Store
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135162
+  packageName: 3D Game Kit Lite
+  packageVersion: 1.8.2
+  assetPath: Assets/3DGamekitLite/Scripts/Game/Graphics/ModulatedLight.cs
+  uploadId: 462213

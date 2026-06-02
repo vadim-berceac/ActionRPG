@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 996ae9af95140a749aa3b62453e037ae
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135162
+  packageName: 3D Game Kit Lite
+  packageVersion: 1.8.2
+  assetPath: Assets/3DGamekitLite/Packages/TextMesh Pro/Sprites/EmojiOne_License.txt
+  uploadId: 462213

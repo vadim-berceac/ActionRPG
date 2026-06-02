@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: b3c9e14c48a4a4ee08677c35bcfe710b
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135162
+  packageName: 3D Game Kit Lite
+  packageVersion: 1.8.2
+  assetPath: Assets/3DGamekitLite/Packages/Skybox3D/Runtime/Skybox3DRuntime.asmdef
+  uploadId: 462213

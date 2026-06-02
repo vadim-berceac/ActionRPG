@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 398a06348387a4702b2f22a43630ec8e
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - depthOnlyShader: {fileID: 4800000, guid: 4c992bb79ce085d48a6fe75298960254, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135162
+  packageName: 3D Game Kit Lite
+  packageVersion: 1.8.2
+  assetPath: Assets/3DGamekitLite/Scripts/Effects/CaptureDepthTexture.cs
+  uploadId: 462213

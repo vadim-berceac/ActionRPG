@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: d359ccc72a760d84d9095f8f7bcd8155
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135162
+  packageName: 3D Game Kit Lite
+  packageVersion: 1.8.2
+  assetPath: Assets/3DGamekitLite/Scripts/Game/Helpers/LayerMaskExtensions.cs
+  uploadId: 462213

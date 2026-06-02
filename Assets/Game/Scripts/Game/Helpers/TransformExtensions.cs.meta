@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: 60d75889495762045b9e06f4e463e510
+timeCreated: 1510670746
+licenseType: Store
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135162
+  packageName: 3D Game Kit Lite
+  packageVersion: 1.8.2
+  assetPath: Assets/3DGamekitLite/Scripts/Game/Helpers/TransformExtensions.cs
+  uploadId: 462213

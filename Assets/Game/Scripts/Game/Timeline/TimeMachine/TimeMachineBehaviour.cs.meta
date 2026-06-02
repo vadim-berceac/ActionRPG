@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: 96340b03fe58b4925bc2a9e686bbba98
+timeCreated: 1503174127
+licenseType: Store
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135162
+  packageName: 3D Game Kit Lite
+  packageVersion: 1.8.2
+  assetPath: Assets/3DGamekitLite/Scripts/Game/Timeline/TimeMachine/TimeMachineBehaviour.cs
+  uploadId: 462213

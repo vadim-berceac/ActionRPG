@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 64b1837b1cd40d541944cde538b260fe
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135162
+  packageName: 3D Game Kit Lite
+  packageVersion: 1.8.2
+  assetPath: Assets/3DGamekitLite/Prefabs/Interactables/Acid.prefab
+  uploadId: 462213

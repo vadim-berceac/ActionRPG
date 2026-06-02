@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 08b9ba3c43cad5048b1adf1c14edffe0
+timeCreated: 1493722306
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135162
+  packageName: 3D Game Kit Lite
+  packageVersion: 1.8.2
+  assetPath: Assets/3DGamekitLite/Scripts/Game/Helpers/ObjectPooler.cs
+  uploadId: 462213

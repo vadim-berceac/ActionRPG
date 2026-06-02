@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: f28fb04ff66f85e40af453230799042c
+timeCreated: 1489416659
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135162
+  packageName: 3D Game Kit Lite
+  packageVersion: 1.8.2
+  assetPath: Assets/3DGamekitLite/Packages/DefaultPlayables/TransformTween/TransformTweenClip.cs
+  uploadId: 462213

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 568b3976026f2a04cb7b57c79f5ecd63
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135162
+  packageName: 3D Game Kit Lite
+  packageVersion: 1.8.2
+  assetPath: Assets/3DGamekitLite/Prefabs/Building Blocks/Block 2x1y2z.prefab
+  uploadId: 462213
