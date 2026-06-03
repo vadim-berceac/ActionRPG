@@ -2400,14 +2400,15 @@ AnimatorState:
   - {fileID: 1101332595922662178}
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
-  m_IKOnFeet: 0
+  m_IKOnFeet: 1
   m_WriteDefaultValues: 1
   m_Mirror: 0
   m_SpeedParameterActive: 0
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 74640275d27b66a4fa863f592bb4a792, type: 3}
+  m_Motion: {fileID: 3094330708855449807, guid: 1603742da2a89de4eadf2f17350744e4,
+    type: 3}
   m_Tag: Landing
   m_SpeedParameter: 
   m_MirrorParameter: 

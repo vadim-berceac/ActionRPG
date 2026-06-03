@@ -98,7 +98,7 @@ namespace Game
         readonly int m_HashEllenCombo2 = Animator.StringToHash("EllenCombo2");
         readonly int m_HashEllenCombo3 = Animator.StringToHash("EllenCombo3");
         readonly int m_HashEllenCombo4 = Animator.StringToHash("EllenCombo4");
-        readonly int m_HashEllenDeath = Animator.StringToHash("EllenDeath");
+        readonly int m_HashEllenDeath = Animator.StringToHash("Death");
 
         // Tags
         readonly int m_HashBlockInput = Animator.StringToHash("BlockInput");
@@ -558,6 +558,7 @@ namespace Game
         
         protected IEnumerator RespawnRoutine()
         {
+            Debug.Log(0);
             // Wait for the animator to be transitioning from the EllenDeath state.
             while (m_CurrentStateInfo.shortNameHash != m_HashEllenDeath || !m_IsAnimatorTransitioning)
             {
@@ -570,7 +571,7 @@ namespace Game
             {
                 yield return null;
             }
-
+            Debug.Log(1);
             // Enable spawning.
             EllenSpawn spawn = GetComponentInChildren<EllenSpawn>();
             spawn.enabled = true;
@@ -585,7 +586,7 @@ namespace Game
             {
                 Debug.LogError("There is no Checkpoint set, there should always be a checkpoint set. Did you add a checkpoint at the spawn?");
             }
-            
+            Debug.Log(2);
             // Set the Respawn parameter of the animator.
             m_Animator.SetTrigger(m_HashRespawn);
             
@@ -597,6 +598,7 @@ namespace Game
             yield return StartCoroutine(ScreenFader.FadeSceneIn());
             
             m_Damageable.ResetDamage();
+            Debug.Log(3);
         }
 
         // Called by a state machine behaviour on Ellen's animator controller.
@@ -606,6 +608,7 @@ namespace Game
             
             //we set the damageable invincible so we can't get hurt just after being respawned (feel like a double punitive)
             m_Damageable.isInvulnerable = false;
+            Debug.Log(4);
         }
 
         // Called by Ellen's Damageable when she is hurt.
