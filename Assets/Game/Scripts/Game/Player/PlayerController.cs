@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Collections;
 using Game.Message;
-using UnityEngine.XR.WSA;
 using Zenject;
 
 namespace Game
@@ -24,6 +23,7 @@ namespace Game
         public bool canAttack;                    // Whether or not Ellen can swing her staff.
         
         public MeleeWeapon meleeWeapon;
+        public WeaponData weaponData;
         public RandomAudioPlayer footstepPlayer;         // Random Audio Players used for various situations.
         public RandomAudioPlayer hurtAudioPlayer;
         public RandomAudioPlayer landingPlayer;
@@ -94,11 +94,11 @@ namespace Game
         readonly int m_HashLocomotion = Animator.StringToHash("Locomotion");
         readonly int m_HashAirborne = Animator.StringToHash("Airborne");
         readonly int m_HashLanding = Animator.StringToHash("Landing");    // Also a parameter.
-        readonly int m_HashEllenCombo1 = Animator.StringToHash("EllenCombo1");
-        readonly int m_HashEllenCombo2 = Animator.StringToHash("EllenCombo2");
-        readonly int m_HashEllenCombo3 = Animator.StringToHash("EllenCombo3");
-        readonly int m_HashEllenCombo4 = Animator.StringToHash("EllenCombo4");
         readonly int m_HashEllenDeath = Animator.StringToHash("Death");
+        int m_HashCombo1;
+        int m_HashCombo2;
+        int m_HashCombo3;
+        int m_HashCombo4;
 
         // Tags
         readonly int m_HashBlockInput = Animator.StringToHash("BlockInput");
@@ -120,6 +120,11 @@ namespace Game
             _cameraSettings.SetTarget(transform, transform.Find("HeadTarget"));
             
             _healthUI = healthUI;
+            
+            m_HashCombo1 = Animator.StringToHash(weaponData.ComboNames[0]);
+            m_HashCombo2 = Animator.StringToHash(weaponData.ComboNames[1]);
+            m_HashCombo3 = Animator.StringToHash(weaponData.ComboNames[2]);
+            m_HashCombo4 = Animator.StringToHash(weaponData.ComboNames[3]);
         }
 
         // Called automatically by Unity when the script first exists in the scene.
@@ -215,10 +220,10 @@ namespace Game
         // Called after the animator state has been cached to determine whether or not the staff should be active or not.
         bool IsWeaponEquiped()
         {
-            bool equipped = m_NextStateInfo.shortNameHash == m_HashEllenCombo1 || m_CurrentStateInfo.shortNameHash == m_HashEllenCombo1;
-            equipped |= m_NextStateInfo.shortNameHash == m_HashEllenCombo2 || m_CurrentStateInfo.shortNameHash == m_HashEllenCombo2;
-            equipped |= m_NextStateInfo.shortNameHash == m_HashEllenCombo3 || m_CurrentStateInfo.shortNameHash == m_HashEllenCombo3;
-            equipped |= m_NextStateInfo.shortNameHash == m_HashEllenCombo4 || m_CurrentStateInfo.shortNameHash == m_HashEllenCombo4;
+            bool equipped = m_NextStateInfo.shortNameHash == m_HashCombo1 || m_CurrentStateInfo.shortNameHash == m_HashCombo1;
+            equipped |= m_NextStateInfo.shortNameHash == m_HashCombo2 || m_CurrentStateInfo.shortNameHash == m_HashCombo2;
+            equipped |= m_NextStateInfo.shortNameHash == m_HashCombo3 || m_CurrentStateInfo.shortNameHash == m_HashCombo3;
+            equipped |= m_NextStateInfo.shortNameHash == m_HashCombo4 || m_CurrentStateInfo.shortNameHash == m_HashCombo4;
 
             return equipped;
         }
@@ -442,10 +447,10 @@ namespace Game
                 emoteDeathPlayer.PlayRandomClip();
             }
 
-            if (m_CurrentStateInfo.shortNameHash == m_HashEllenCombo1 && m_PreviousCurrentStateInfo.shortNameHash != m_HashEllenCombo1 ||
-                m_CurrentStateInfo.shortNameHash == m_HashEllenCombo2 && m_PreviousCurrentStateInfo.shortNameHash != m_HashEllenCombo2 ||
-                m_CurrentStateInfo.shortNameHash == m_HashEllenCombo3 && m_PreviousCurrentStateInfo.shortNameHash != m_HashEllenCombo3 ||
-                m_CurrentStateInfo.shortNameHash == m_HashEllenCombo4 && m_PreviousCurrentStateInfo.shortNameHash != m_HashEllenCombo4)
+            if (m_CurrentStateInfo.shortNameHash == m_HashCombo1 && m_PreviousCurrentStateInfo.shortNameHash != m_HashCombo1 ||
+                m_CurrentStateInfo.shortNameHash == m_HashCombo2 && m_PreviousCurrentStateInfo.shortNameHash != m_HashCombo2 ||
+                m_CurrentStateInfo.shortNameHash == m_HashCombo3 && m_PreviousCurrentStateInfo.shortNameHash != m_HashCombo3 ||
+                m_CurrentStateInfo.shortNameHash == m_HashCombo4 && m_PreviousCurrentStateInfo.shortNameHash != m_HashCombo4)
             {
                 emoteAttackPlayer.PlayRandomClip();
             }
@@ -558,7 +563,6 @@ namespace Game
         
         protected IEnumerator RespawnRoutine()
         {
-            Debug.Log(0);
             // Wait for the animator to be transitioning from the EllenDeath state.
             while (m_CurrentStateInfo.shortNameHash != m_HashEllenDeath || !m_IsAnimatorTransitioning)
             {
@@ -571,7 +575,6 @@ namespace Game
             {
                 yield return null;
             }
-            Debug.Log(1);
             // Enable spawning.
             EllenSpawn spawn = GetComponentInChildren<EllenSpawn>();
             spawn.enabled = true;
@@ -586,7 +589,6 @@ namespace Game
             {
                 Debug.LogError("There is no Checkpoint set, there should always be a checkpoint set. Did you add a checkpoint at the spawn?");
             }
-            Debug.Log(2);
             // Set the Respawn parameter of the animator.
             m_Animator.SetTrigger(m_HashRespawn);
             
@@ -598,7 +600,6 @@ namespace Game
             yield return StartCoroutine(ScreenFader.FadeSceneIn());
             
             m_Damageable.ResetDamage();
-            Debug.Log(3);
         }
 
         // Called by a state machine behaviour on Ellen's animator controller.
@@ -608,7 +609,6 @@ namespace Game
             
             //we set the damageable invincible so we can't get hurt just after being respawned (feel like a double punitive)
             m_Damageable.isInvulnerable = false;
-            Debug.Log(4);
         }
 
         // Called by Ellen's Damageable when she is hurt.

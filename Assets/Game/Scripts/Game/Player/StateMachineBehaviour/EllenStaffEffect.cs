@@ -1,10 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Game
 {
-    public class EllenStaffEffect : StateMachineBehaviour
+    public class WeaponEffect : StateMachineBehaviour
     {
         public int effectIndex;
 

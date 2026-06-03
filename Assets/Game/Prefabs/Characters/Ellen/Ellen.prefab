@@ -10023,6 +10023,7 @@ MonoBehaviour:
   idleTimeout: 5
   canAttack: 1
   meleeWeapon: {fileID: 4205765776790819181}
+  weaponData: {fileID: 11400000, guid: 6cb231446090a45468c5c626a4854241, type: 2}
   footstepPlayer: {fileID: 114094828976615078}
   hurtAudioPlayer: {fileID: 114139149641428850}
   landingPlayer: {fileID: 114034225711041262}

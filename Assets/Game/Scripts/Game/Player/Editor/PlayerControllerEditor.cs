@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Cinemachine.Editor;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -20,6 +21,7 @@ namespace Game
         SerializedProperty m_CanAttackProp;
 
         SerializedProperty m_MeleeWeaponProp;
+        SerializedProperty m_WeaponDataProp;
         SerializedProperty m_FootstepPlayerProp;
         SerializedProperty m_HurtAudioPlayerProp;
         SerializedProperty m_LandingPlayerProp;
@@ -38,6 +40,7 @@ namespace Game
         GUIContent m_CanAttackContent = new GUIContent("Can Attack", "Whether or not Ellen can attack with her staff.  This can be set externally.");
 
         GUIContent m_MeleeWeaponContent = new GUIContent("Melee Weapon", "Used for damaging enemies when Ellen swings her staff.");
+        GUIContent m_WeaponDataContent = new GUIContent("Weapon Data");
         GUIContent m_FootstepPlayerContent = new GUIContent("Footstep Random Audio Player", "Used to play a random sound when Ellen takes a step.");
         GUIContent m_HurtAudioPlayerContent = new GUIContent("Hurt Random Audio Player", "Used to play a random sound when Ellen gets hurt.");
         GUIContent m_LandingPlayerContent = new GUIContent("Landing Random Audio Player", "Used to play a random sound when Ellen lands.");
@@ -59,6 +62,7 @@ namespace Game
             m_CanAttackProp = serializedObject.FindProperty("canAttack");
 
             m_MeleeWeaponProp = serializedObject.FindProperty("meleeWeapon");
+            m_WeaponDataProp = serializedObject.FindProperty("weaponData");
             m_FootstepPlayerProp = serializedObject.FindProperty("footstepPlayer");
             m_HurtAudioPlayerProp = serializedObject.FindProperty("hurtAudioPlayer");
             m_LandingPlayerProp = serializedObject.FindProperty("landingPlayer");
@@ -93,6 +97,7 @@ namespace Game
             {
                 EditorGUI.indentLevel++;
                 EditorGUILayout.PropertyField(m_MeleeWeaponProp, m_MeleeWeaponContent);
+                EditorGUILayout.PropertyField(m_WeaponDataProp, m_WeaponDataContent);
                 EditorGUILayout.PropertyField(m_FootstepPlayerProp, m_FootstepPlayerContent);
                 EditorGUILayout.PropertyField(m_HurtAudioPlayerProp, m_HurtAudioPlayerContent);
                 EditorGUILayout.PropertyField(m_LandingPlayerProp, m_LandingPlayerContent);

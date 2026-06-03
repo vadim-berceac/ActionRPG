@@ -1111,7 +1111,7 @@ AnimatorStateTransition:
     m_EventTreshold: 0
   - m_ConditionMode: 3
     m_ConditionEvent: StateTime
-    m_EventTreshold: 0.45
+    m_EventTreshold: 0.65
   - m_ConditionMode: 4
     m_ConditionEvent: StateTime
     m_EventTreshold: 1
@@ -1192,7 +1192,7 @@ AnimatorStateTransition:
     m_EventTreshold: 0
   - m_ConditionMode: 3
     m_ConditionEvent: StateTime
-    m_EventTreshold: 0.24
+    m_EventTreshold: 0.5
   - m_ConditionMode: 4
     m_ConditionEvent: StateTime
     m_EventTreshold: 1
@@ -1412,9 +1412,9 @@ AnimatorStateTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0
+  m_TransitionDuration: 0.088718235
   m_TransitionOffset: 0
-  m_ExitTime: 0.75
+  m_ExitTime: 0.75000006
   m_HasExitTime: 0
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
@@ -1508,7 +1508,7 @@ AnimatorStateTransition:
     m_EventTreshold: 0
   - m_ConditionMode: 3
     m_ConditionEvent: StateTime
-    m_EventTreshold: 0.16
+    m_EventTreshold: 0.25
   - m_ConditionMode: 4
     m_ConditionEvent: StateTime
     m_EventTreshold: 1
@@ -1877,8 +1877,8 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: EllenCombo2
-  m_Speed: 1
+  m_Name: PolearmCombo2
+  m_Speed: 1.3
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 1101291070191167896}
@@ -1887,14 +1887,15 @@ AnimatorState:
   m_StateMachineBehaviours:
   - {fileID: 114910776015171016}
   m_Position: {x: 50, y: 50, z: 0}
-  m_IKOnFeet: 0
+  m_IKOnFeet: 1
   m_WriteDefaultValues: 1
   m_Mirror: 0
   m_SpeedParameterActive: 0
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 506fbaf36141f7842ad5ad583349cc87, type: 3}
+  m_Motion: {fileID: 3094330708855449807, guid: 64174a8dbcbda9f419abe94aea68d76e,
+    type: 3}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -1907,8 +1908,8 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: EllenCombo3
-  m_Speed: 1
+  m_Name: PolearmCombo3
+  m_Speed: 1.3
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 1101269600717267514}
@@ -1917,14 +1918,15 @@ AnimatorState:
   m_StateMachineBehaviours:
   - {fileID: 114931531179955440}
   m_Position: {x: 50, y: 50, z: 0}
-  m_IKOnFeet: 0
+  m_IKOnFeet: 1
   m_WriteDefaultValues: 1
-  m_Mirror: 0
+  m_Mirror: 1
   m_SpeedParameterActive: 0
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: d0d401bb3fc68574296f7ff69e81546c, type: 3}
+  m_Motion: {fileID: 3094330708855449807, guid: f7fa8a88e840b4748bfbd772b0b45a8f,
+    type: 3}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -2024,8 +2026,8 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: EllenCombo1
-  m_Speed: 1
+  m_Name: PolearmCombo1
+  m_Speed: 1.3
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 1101745194724072494}
@@ -2034,14 +2036,15 @@ AnimatorState:
   m_StateMachineBehaviours:
   - {fileID: 114956428324502836}
   m_Position: {x: 50, y: 50, z: 0}
-  m_IKOnFeet: 0
+  m_IKOnFeet: 1
   m_WriteDefaultValues: 1
   m_Mirror: 0
   m_SpeedParameterActive: 0
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 3aeb280aa07caa148891a47a136fcee4, type: 3}
+  m_Motion: {fileID: 3094330708855449807, guid: 30c4b9a705126eb43a21c59be5797fe9,
+    type: 3}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -2348,8 +2351,8 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: EllenCombo4
-  m_Speed: 1
+  m_Name: PolearmCombo4
+  m_Speed: 1.3
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 1101759543271421036}
@@ -2357,14 +2360,15 @@ AnimatorState:
   m_StateMachineBehaviours:
   - {fileID: 114142879272323982}
   m_Position: {x: 50, y: 50, z: 0}
-  m_IKOnFeet: 0
+  m_IKOnFeet: 1
   m_WriteDefaultValues: 1
   m_Mirror: 0
   m_SpeedParameterActive: 0
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 6fd1fb8479e6a994f9e4cc7fb79d2ac2, type: 3}
+  m_Motion: {fileID: 3094330708855449807, guid: e6ec6386abe584045b6b8bc1c39b09b0,
+    type: 3}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -2414,10 +2418,10 @@ AnimatorStateMachine:
     m_Position: {x: 384, y: 0, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 1102044534932614728}
-    m_Position: {x: 384, y: 72, z: 0}
+    m_Position: {x: 380, y: 70, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 1102975440179808822}
-    m_Position: {x: 384, y: 144, z: 0}
+    m_Position: {x: 380, y: 140, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
   m_EntryTransitions: []
