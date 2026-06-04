@@ -24,7 +24,6 @@ namespace Game
 
         public GameObject view;
         public GameObject trail;
-        public ParticleSystem hitParticlePrefab;
         public LayerMask targetLayers;
 
         public AttackPoint[] attackPoints = new AttackPoint[0];
@@ -54,18 +53,6 @@ namespace Game
 
         protected static RaycastHit[] s_RaycastHitCache = new RaycastHit[32];
         protected static Collider[] s_ColliderCache = new Collider[32];
-
-        private void Awake()
-        {
-            if (hitParticlePrefab != null)
-            {
-                for (int i = 0; i < PARTICLE_COUNT; ++i)
-                {
-                    m_ParticlesPool[i] = Instantiate(hitParticlePrefab);
-                    m_ParticlesPool[i].Stop();
-                }
-            }
-        }
 
         //whoever own the weapon is responsible for calling that. Allow to avoid "self harm"
         public void SetOwner(GameObject owner)
@@ -207,14 +194,6 @@ namespace Game
             data.stopCamera = false;
 
             d.ApplyDamage(data);
-
-            if (hitParticlePrefab != null)
-            {
-                m_ParticlesPool[m_CurrentParticle].transform.position = pts.attackRoot.transform.position;
-                m_ParticlesPool[m_CurrentParticle].time = 0;
-                m_ParticlesPool[m_CurrentParticle].Play();
-                m_CurrentParticle = (m_CurrentParticle + 1) % PARTICLE_COUNT;
-            }
 
             return true;
         }

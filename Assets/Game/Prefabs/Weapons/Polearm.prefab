@@ -48,8 +48,7 @@ MonoBehaviour:
   damage: 1
   view: {fileID: 4628936375136608706}
   trail: {fileID: 6111596532843432574}
-  hitParticlePrefab: {fileID: 198200190501009950, guid: 400e06051701a8c4998087ae421728e3,
-    type: 3}
+  hitParticlePrefab: {fileID: 4793606469489017642}
   targetLayers:
     serializedVersion: 2
     m_Bits: 8388608
@@ -546,7 +545,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4622952095083638034
 Transform:
   m_ObjectHideFlags: 0

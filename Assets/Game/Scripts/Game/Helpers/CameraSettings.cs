@@ -17,6 +17,13 @@ namespace Game
             public bool invertX;
             public bool invertY;
         }
+        
+        [Serializable]
+        public struct AxisClampSettings
+        {
+            [Range(0f, 1f)] public float minY;
+            [Range(0f, 1f)] public float maxY;
+        }
 
         public Transform follow;
         public Transform lookAt;
@@ -25,6 +32,8 @@ namespace Game
         public InputChoice inputChoice;
         public InvertSettings keyboardAndMouseInvertSettings;
         public InvertSettings controllerInvertSettings;
+        public AxisClampSettings keyboardAndMouseAxisClamp;
+        public AxisClampSettings controllerAxisClamp;
         public bool allowRuntimeCameraSettingsChanges;
         public float xFactor;
         public float yFactor;
@@ -43,6 +52,7 @@ namespace Game
         private void Awake()
         {
             UpdateCameraSettings();
+            UpdateClampSettings();
         }
 
         private void LateUpdate()
@@ -50,21 +60,14 @@ namespace Game
             if (allowRuntimeCameraSettingsChanges)
                 UpdateCameraSettings();
 
-            var input = CharacterInput.Instance;
-            if (input == null) return;
-
-            var look = input.CameraInput;
-
-            Current.m_XAxis.m_InputAxisValue = look.x * xFactor;
-            Current.m_YAxis.m_InputAxisValue = look.y * yFactor;
+            UpdateClampSettings();
+            UpdateInputSettings();
         }
 
         private void UpdateCameraSettings()
         {
             keyboardAndMouseCamera.Follow = follow;
             keyboardAndMouseCamera.LookAt = lookAt;
-            keyboardAndMouseCamera.m_XAxis.m_InvertInput = keyboardAndMouseInvertSettings.invertX;
-            keyboardAndMouseCamera.m_YAxis.m_InvertInput = keyboardAndMouseInvertSettings.invertY;
 
             controllerCamera.m_XAxis.m_InvertInput = controllerInvertSettings.invertX;
             controllerCamera.m_YAxis.m_InvertInput = controllerInvertSettings.invertY;
@@ -73,6 +76,26 @@ namespace Game
 
             keyboardAndMouseCamera.Priority = inputChoice == InputChoice.KeyboardAndMouse ? 1 : 0;
             controllerCamera.Priority = inputChoice == InputChoice.Controller ? 1 : 0;
+        }
+
+        private void UpdateClampSettings()
+        {
+            keyboardAndMouseCamera.m_YAxis.m_MinValue = keyboardAndMouseAxisClamp.minY;
+            keyboardAndMouseCamera.m_YAxis.m_MaxValue = keyboardAndMouseAxisClamp.maxY;
+
+            controllerCamera.m_YAxis.m_MinValue = controllerAxisClamp.minY;
+            controllerCamera.m_YAxis.m_MaxValue = controllerAxisClamp.maxY;
+        }
+
+        private void UpdateInputSettings()
+        {
+            var input = CharacterInput.Instance;
+            if (input == null) return;
+
+            var look = input.CameraInput;
+
+            Current.m_XAxis.m_InputAxisValue = look.x * xFactor;
+            Current.m_YAxis.m_InputAxisValue = look.y * yFactor;
         }
     } 
 }
