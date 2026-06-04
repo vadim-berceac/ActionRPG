@@ -14,17 +14,17 @@ namespace Game
 
         public bool respawning { get { return m_Respawning; } }
 
-        public float maxForwardSpeed = 8f;        // How fast Ellen can run.
-        public float gravity = 20f;               // How fast Ellen accelerates downwards when airborne.
-        public float jumpSpeed = 10f;             // How fast Ellen takes off when jumping.
-        public float minTurnSpeed = 400f;         // How fast Ellen turns when moving at maximum speed.
-        public float maxTurnSpeed = 1200f;        // How fast Ellen turns when stationary.
-        public float idleTimeout = 5f;            // How long before Ellen starts considering random idles.
-        public bool canAttack;                    // Whether or not Ellen can swing her staff.
-        
-        public MeleeWeapon meleeWeapon;
+        public float maxForwardSpeed = 8f; 
+        public float gravity = 20f;
+        public float jumpSpeed = 10f;
+        public float minTurnSpeed = 400f;
+        public float maxTurnSpeed = 1200f;
+        public float idleTimeout = 5f;
+        public bool canAttack; 
+
+        public PropBones propBones;
         public WeaponData weaponData;
-        public RandomAudioPlayer footstepPlayer;         // Random Audio Players used for various situations.
+        public RandomAudioPlayer footstepPlayer;
         public RandomAudioPlayer hurtAudioPlayer;
         public RandomAudioPlayer landingPlayer;
         public RandomAudioPlayer emoteLandingPlayer;
@@ -32,38 +32,37 @@ namespace Game
         public RandomAudioPlayer emoteAttackPlayer;
         public RandomAudioPlayer emoteJumpPlayer;
 
-        private CameraSettings _cameraSettings;            // Reference used to determine the camera's direction.
+        private CameraSettings _cameraSettings;
         private HealthUI _healthUI;
         
-        protected AnimatorStateInfo m_CurrentStateInfo;    // Information about the base layer of the animator cached.
+        protected MeleeWeapon m_MeleeWeapon;
+        protected AnimatorStateInfo m_CurrentStateInfo;
         protected AnimatorStateInfo m_NextStateInfo;
         protected bool m_IsAnimatorTransitioning;
-        protected AnimatorStateInfo m_PreviousCurrentStateInfo;    // Information about the base layer of the animator from last frame.
+        protected AnimatorStateInfo m_PreviousCurrentStateInfo;
         protected AnimatorStateInfo m_PreviousNextStateInfo;
         protected bool m_PreviousIsAnimatorTransitioning;
-        protected bool m_IsGrounded = true;            // Whether or not Ellen is currently standing on the ground.
-        protected bool m_PreviouslyGrounded = true;    // Whether or not Ellen was standing on the ground last frame.
-        protected bool m_ReadyToJump;                  // Whether or not the input state and Ellen are correct to allow jumping.
-        protected float m_DesiredForwardSpeed;         // How fast Ellen aims be going along the ground based on input.
-        protected float m_ForwardSpeed;                // How fast Ellen is currently going along the ground.
-        protected float m_VerticalSpeed;               // How fast Ellen is currently moving up or down.
-        protected CharacterInput m_Input;                 // Reference used to determine how Ellen should move.
-        protected CharacterController m_CharCtrl;      // Reference used to actually move Ellen.
-        protected Animator m_Animator;                 // Reference used to make decisions based on Ellen's current animation and to set parameters.
-        protected Material m_CurrentWalkingSurface;    // Reference used to make decisions about audio.
-        protected Quaternion m_TargetRotation;         // What rotation Ellen is aiming to have based on input.
-        protected float m_AngleDiff;                   // Angle in degrees between Ellen's current rotation and her target rotation.
-        protected Collider[] m_OverlapResult = new Collider[8];    // Used to cache colliders that are near Ellen.
-        protected bool m_InAttack;                     // Whether Ellen is currently in the middle of a melee attack.
-        protected bool m_InCombo;                      // Whether Ellen is currently in the middle of her melee combo.
-        protected Damageable m_Damageable;             // Reference used to set invulnerablity and health based on respawning.
-        protected Renderer[] m_Renderers;              // References used to make sure Renderers are reset properly. 
-        protected Checkpoint m_CurrentCheckpoint;      // Reference used to reset Ellen to the correct position on respawn.
-        protected bool m_Respawning;                   // Whether Ellen is currently respawning.
-        protected float m_IdleTimer;                   // Used to count up to Ellen considering a random idle.
+        protected bool m_IsGrounded = true;
+        protected bool m_PreviouslyGrounded = true;
+        protected bool m_ReadyToJump;
+        protected float m_DesiredForwardSpeed;
+        protected float m_ForwardSpeed;
+        protected float m_VerticalSpeed;
+        protected CharacterInput m_Input;
+        protected CharacterController m_CharCtrl;
+        protected Animator m_Animator;
+        protected Material m_CurrentWalkingSurface;
+        protected Quaternion m_TargetRotation;
+        protected float m_AngleDiff;
+        protected Collider[] m_OverlapResult = new Collider[8];
+        protected bool m_InAttack;
+        protected bool m_InCombo;
+        protected Damageable m_Damageable;
+        protected Renderer[] m_Renderers;
+        protected Checkpoint m_CurrentCheckpoint;
+        protected bool m_Respawning;
+        protected float m_IdleTimer;
 
-        // These constants are used to ensure Ellen moves and behaves properly.
-        // It is advised you don't change them without fully understanding what they do in code.
         const float k_AirborneTurnSpeedProportion = 5.4f;
         const float k_GroundedRayDistance = 1f;
         const float k_JumpAbortSpeed = 10f;
@@ -72,8 +71,6 @@ namespace Game
         const float k_StickingGravityProportion = 0.3f;
         const float k_GroundAcceleration = 20f;
         const float k_GroundDeceleration = 25f;
-
-        // Parameters
 
         readonly int m_HashAirborneVerticalSpeed = Animator.StringToHash("AirborneVerticalSpeed");
         readonly int m_HashForwardSpeed = Animator.StringToHash("ForwardSpeed");
@@ -90,17 +87,15 @@ namespace Game
         readonly int m_HashStateTime = Animator.StringToHash("StateTime");
         readonly int m_HashFootFall = Animator.StringToHash("FootFall");
 
-        // States
         readonly int m_HashLocomotion = Animator.StringToHash("Locomotion");
         readonly int m_HashAirborne = Animator.StringToHash("Airborne");
-        readonly int m_HashLanding = Animator.StringToHash("Landing");    // Also a parameter.
+        readonly int m_HashLanding = Animator.StringToHash("Landing"); 
         readonly int m_HashEllenDeath = Animator.StringToHash("Death");
         int m_HashCombo1;
         int m_HashCombo2;
         int m_HashCombo3;
         int m_HashCombo4;
 
-        // Tags
         readonly int m_HashBlockInput = Animator.StringToHash("BlockInput");
 
         protected bool IsMoveInput
@@ -121,10 +116,7 @@ namespace Game
             
             _healthUI = healthUI;
             
-            m_HashCombo1 = Animator.StringToHash(weaponData.ComboNames[0]);
-            m_HashCombo2 = Animator.StringToHash(weaponData.ComboNames[1]);
-            m_HashCombo3 = Animator.StringToHash(weaponData.ComboNames[2]);
-            m_HashCombo4 = Animator.StringToHash(weaponData.ComboNames[3]);
+            ConnectCombo();
         }
 
         // Called automatically by Unity when the script first exists in the scene.
@@ -134,8 +126,10 @@ namespace Game
             m_Animator = GetComponent<Animator>();
             m_CharCtrl = GetComponent<CharacterController>();
 
-            meleeWeapon.SetOwner(gameObject);
-
+            if (weaponData)
+            {
+                CreateWeapon();
+            }
             s_Instance = this;
         }
 
@@ -150,8 +144,6 @@ namespace Game
             m_Damageable.isInvulnerable = true;
             
             _healthUI.representedDamageable = m_Damageable;
-
-            EquipMeleeWeapon(false);
 
             m_Renderers = GetComponentsInChildren<Renderer>();
         }
@@ -197,6 +189,14 @@ namespace Game
             m_PreviouslyGrounded = m_IsGrounded;
         }
 
+        private void ConnectCombo()
+        {
+            m_HashCombo1 = Animator.StringToHash(weaponData.ComboNames[0]);
+            m_HashCombo2 = Animator.StringToHash(weaponData.ComboNames[1]);
+            m_HashCombo3 = Animator.StringToHash(weaponData.ComboNames[2]);
+            m_HashCombo4 = Animator.StringToHash(weaponData.ComboNames[3]);
+        }
+
         // Called at the start of FixedUpdate to record the current state of the base layer of the animator.
         void CacheAnimatorState()
         {
@@ -217,6 +217,14 @@ namespace Game
             m_Input.InputBlocked = inputBlocked;
         }
 
+        private void CreateWeapon()
+        {
+            var weaponObj = weaponData.GetViewInstance(transform);
+            m_MeleeWeapon = weaponObj.GetComponent<MeleeWeapon>();
+            m_MeleeWeapon.SetOwner(gameObject);
+            EquipMeleeWeapon(false);
+        }
+
         // Called after the animator state has been cached to determine whether or not the staff should be active or not.
         bool IsWeaponEquiped()
         {
@@ -231,7 +239,9 @@ namespace Game
         // Called each physics step with a parameter based on the return value of IsWeaponEquiped.
         void EquipMeleeWeapon(bool equip)
         {
-            meleeWeapon.view.SetActive(equip);
+            var bone = equip ? weaponData.ActiveProp : weaponData.UnActiveProp;
+            var newParent = propBones.GetPropBone(bone.PropType).Prop;
+            m_MeleeWeapon.SetViewParent(newParent, bone);
             m_InAttack = false;
             m_InCombo = equip;
 
@@ -537,14 +547,14 @@ namespace Game
         // This is called by an animation event when Ellen swings her staff.
         public void MeleeAttackStart(int throwing = 0)
         {
-            meleeWeapon.BeginAttack(throwing != 0);
+            m_MeleeWeapon.BeginAttack(throwing != 0);
             m_InAttack = true;
         }
 
         // This is called by an animation event when Ellen finishes swinging her staff.
         public void MeleeAttackEnd()
         {
-            meleeWeapon.EndAttack();
+            m_MeleeWeapon.EndAttack();
             m_InAttack = false;
         }
 

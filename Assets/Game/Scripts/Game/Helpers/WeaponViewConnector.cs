@@ -8,8 +8,9 @@ namespace Game
         [SerializeField] private Transform source;
         [SerializeField] private Transform toFollow;
 
-        private void Awake()
+        public void SetPropBone(Transform bone)
         {
+            toFollow = bone;
             source.parent = toFollow;
             source.localPosition = Vector3.zero;
             source.localScale = Vector3.one;

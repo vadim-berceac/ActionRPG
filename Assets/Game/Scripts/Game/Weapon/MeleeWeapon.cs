@@ -23,6 +23,7 @@ namespace Game
         }
 
         public GameObject view;
+        public GameObject trail;
         public ParticleSystem hitParticlePrefab;
         public LayerMask targetLayers;
 
@@ -66,21 +67,30 @@ namespace Game
             }
         }
 
-        private void OnEnable()
-        {
-
-        }
-
         //whoever own the weapon is responsible for calling that. Allow to avoid "self harm"
         public void SetOwner(GameObject owner)
         {
             m_Owner = owner;
         }
 
+        public void SetViewParent(Transform patent, PropBoneSettings settings)
+        {
+            view.transform.parent = patent;
+            view.transform.localPosition = settings.Position;
+            view.transform.localRotation = Quaternion.Euler(settings.Rotation);
+            view.transform.localScale = Vector3.one * settings.Scale;
+        }
+
         public void BeginAttack(bool thowingAttack)
         {
             if (attackAudio != null)
+            {
                 attackAudio.PlayRandomClip();
+            }
+            if (trail != null)
+            {
+                trail.SetActive(true);
+            }
             throwingHit = thowingAttack;
 
             m_InAttack = true;
@@ -103,7 +113,11 @@ namespace Game
         public void EndAttack()
         {
             m_InAttack = false;
-
+            
+            if (trail != null)
+            {
+                trail.SetActive(false);
+            }
 
 #if UNITY_EDITOR
             for (int i = 0; i < attackPoints.Length; ++i)

@@ -1,11 +1,11 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Game
 {
     public class TimeEffect : MonoBehaviour
     {
+        public float duration;
         public Light staffLight;
         
         Animation m_Animation;
@@ -22,15 +22,22 @@ namespace Game
             gameObject.SetActive(true);
             staffLight.enabled = true;
 
+            float time;
             if (m_Animation)
+            {
                 m_Animation.Play();
-
-            StartCoroutine(DisableAtEndOfAnimation());
+                time = m_Animation.clip.length;
+            }
+            else
+            {
+                time = duration;
+            }
+            StartCoroutine(DisableAtEndOfAnimation(time));
         }
 
-        IEnumerator DisableAtEndOfAnimation()
+        IEnumerator DisableAtEndOfAnimation(float time)
         {
-            yield return new WaitForSeconds(m_Animation.clip.length);
+            yield return new WaitForSeconds(time);
 
             gameObject.SetActive(false);
             staffLight.enabled = false;

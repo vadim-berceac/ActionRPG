@@ -12,6 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b0dc2dd87660fe4085006830a7b173e, type: 3}
   m_Name: WeaponData_polearm
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
+  <ViewPrefab>k__BackingField: {fileID: 1205787345809761593, guid: 90f7696d74bd5ab41abc2f9876dadaec,
+    type: 3}
+  <GroundPrefab>k__BackingField: {fileID: 0}
+  <ActiveProp>k__BackingField:
+    <PropType>k__BackingField: 0
+    <Position>k__BackingField: {x: 0.022, y: 0, z: -0.011}
+    <Rotation>k__BackingField: {x: 273.54382, y: 269.99988, z: 90.00014}
+    <Scale>k__BackingField: 1
+  <UnActiveProp>k__BackingField:
+    <PropType>k__BackingField: 5
+    <Position>k__BackingField: {x: -0.188, y: 0.446, z: -0.198}
+    <Rotation>k__BackingField: {x: 58.17189, y: 90, z: 90}
+    <Scale>k__BackingField: 1
   <ComboNames>k__BackingField:
   - PolearmCombo1
   - PolearmCombo2
