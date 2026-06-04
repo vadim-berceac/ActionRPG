@@ -8,6 +8,7 @@ public class WeaponData : ScriptableObject
     [field: SerializeField] public PropBoneSettings ActiveProp { get; set; }
     [field: SerializeField] public PropBoneSettings UnActiveProp { get; set; }
     [field: SerializeField] public string[] ComboNames { get; private set; }
+    [field: SerializeField, Range(0, 10)] public int AnimationSetIndex { get; private set; }
 
     public GameObject GetViewInstance(Transform parent)
     {

@@ -86,6 +86,7 @@ namespace Game
         readonly int m_HashHurtFromY = Animator.StringToHash("HurtFromY");
         readonly int m_HashStateTime = Animator.StringToHash("StateTime");
         readonly int m_HashFootFall = Animator.StringToHash("FootFall");
+        readonly int m_HashWeaponIndex = Animator.StringToHash("WeaponIndex");
 
         readonly int m_HashLocomotion = Animator.StringToHash("Locomotion");
         readonly int m_HashAirborne = Animator.StringToHash("Airborne");
@@ -115,8 +116,6 @@ namespace Game
             _cameraSettings.SetTarget(transform, transform.Find("HeadTarget"));
             
             _healthUI = healthUI;
-            
-            ConnectCombo();
         }
 
         // Called automatically by Unity when the script first exists in the scene.
@@ -169,6 +168,7 @@ namespace Game
             EquipMeleeWeapon(IsWeaponEquiped());
 
             m_Animator.SetFloat(m_HashStateTime, Mathf.Repeat(m_Animator.GetCurrentAnimatorStateInfo(0).normalizedTime, 1f));
+            m_Animator.SetInteger(m_HashWeaponIndex, weaponData ? weaponData.AnimationSetIndex : 0);
             m_Animator.ResetTrigger(m_HashMeleeAttack);
 
             if (m_Input.Attack && canAttack)
@@ -223,6 +223,7 @@ namespace Game
             m_MeleeWeapon = weaponObj.GetComponent<MeleeWeapon>();
             m_MeleeWeapon.SetOwner(gameObject);
             EquipMeleeWeapon(false);
+            ConnectCombo();
         }
 
         // Called after the animator state has been cached to determine whether or not the staff should be active or not.
@@ -239,6 +240,10 @@ namespace Game
         // Called each physics step with a parameter based on the return value of IsWeaponEquiped.
         void EquipMeleeWeapon(bool equip)
         {
+            if (!weaponData)
+            {
+                return;
+            }
             var bone = equip ? weaponData.ActiveProp : weaponData.UnActiveProp;
             var newParent = propBones.GetPropBone(bone.PropType).Prop;
             m_MeleeWeapon.SetViewParent(newParent, bone);
