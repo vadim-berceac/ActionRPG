@@ -48,7 +48,6 @@ MonoBehaviour:
   damage: 1
   view: {fileID: 4628936375136608706}
   trail: {fileID: 6111596532843432574}
-  hitParticlePrefab: {fileID: 4793606469489017642}
   targetLayers:
     serializedVersion: 2
     m_Bits: 8388608

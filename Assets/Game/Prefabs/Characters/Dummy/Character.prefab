@@ -262,10 +262,7 @@ MonoBehaviour:
   playDelay: 0
   defaultBank:
     name: 
-    clips:
-    - {fileID: 8300000, guid: e392c24220f584716a9da9b4a5ed54db, type: 3}
-    - {fileID: 8300000, guid: 294825915c0374b9884335dd1ffff953, type: 3}
-    - {fileID: 8300000, guid: 8af4f5d15d2da4f56ae3070a34a82f2c, type: 3}
+    clips: []
   overrides: []
   playing: 0
   canPlay: 0
@@ -417,10 +414,7 @@ MonoBehaviour:
   playDelay: 0
   defaultBank:
     name: 
-    clips:
-    - {fileID: 8300000, guid: f68ddfc440159481a8161c58cffafe5b, type: 3}
-    - {fileID: 8300000, guid: 3a20c49057aa948c0a286b130618dd85, type: 3}
-    - {fileID: 8300000, guid: 3b4b51a819b914c96aa4457e5108e50c, type: 3}
+    clips: []
   overrides: []
   playing: 0
   canPlay: 0
@@ -447,7 +441,7 @@ AudioSource:
   Priority: 1
   DopplerLevel: 1
   MinDistance: 1
-  MaxDistance: 50
+  MaxDistance: 10
   Pan2D: 0
   rolloffMode: 1
   BypassEffects: 0
@@ -628,7 +622,8 @@ MonoBehaviour:
   defaultBank:
     name: 
     clips:
-    - {fileID: 8300000, guid: ea996d57b5a024ea8bc20461e2bd84b1, type: 3}
+    - {fileID: 8300000, guid: 0309c372d83fc1e41bccb539ff0272cc, type: 3}
+    - {fileID: 8300000, guid: f40277c2aa7428243a6e82a19e0a39e1, type: 3}
   overrides: []
   playing: 0
   canPlay: 0
@@ -646,7 +641,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.5
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -5785,8 +5780,8 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 1
   DopplerLevel: 1
-  MinDistance: 6
-  MaxDistance: 50
+  MinDistance: 0
+  MaxDistance: 25
   Pan2D: 0
   rolloffMode: 1
   BypassEffects: 0
@@ -5967,7 +5962,9 @@ MonoBehaviour:
   defaultBank:
     name: 
     clips:
-    - {fileID: 8300000, guid: 0fcf9924f0a4b4d4fa08969181f04328, type: 3}
+    - {fileID: 8300000, guid: 4abee9b82493ff74b9f7c95108b3e065, type: 3}
+    - {fileID: 8300000, guid: 4f075a965c3ef5c4989c48dd5f46e18b, type: 3}
+    - {fileID: 8300000, guid: acc9f0c821c7e9642ac13333aaa4bd73, type: 3}
   overrides: []
   playing: 0
   canPlay: 0
@@ -5985,7 +5982,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.5
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -5994,7 +5991,7 @@ AudioSource:
   Priority: 1
   DopplerLevel: 1
   MinDistance: 1
-  MaxDistance: 50
+  MaxDistance: 15
   Pan2D: 0
   rolloffMode: 1
   BypassEffects: 0
@@ -6119,10 +6116,7 @@ MonoBehaviour:
   playDelay: 0
   defaultBank:
     name: 
-    clips:
-    - {fileID: 8300000, guid: 440f9cdd32b944fa88a709f8070be83b, type: 3}
-    - {fileID: 8300000, guid: 2ffb3a9726594493d925a3e15caba2d4, type: 3}
-    - {fileID: 8300000, guid: 3285f27f839c341a19687afaf448022f, type: 3}
+    clips: []
   overrides: []
   playing: 0
   canPlay: 0
@@ -6149,7 +6143,7 @@ AudioSource:
   Priority: 1
   DopplerLevel: 1
   MinDistance: 1
-  MaxDistance: 50
+  MaxDistance: 10
   Pan2D: 0
   rolloffMode: 1
   BypassEffects: 0
