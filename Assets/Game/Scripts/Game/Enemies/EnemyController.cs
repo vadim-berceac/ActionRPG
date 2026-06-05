@@ -1,16 +1,14 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Security.Cryptography;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.AI;
 
 namespace Game
 {
-//this assure it's runned before any behaviour that may use it, as the animator need to be fecthed
     [DefaultExecutionOrder(-1)]
     [RequireComponent(typeof(NavMeshAgent))]
     public class EnemyController : MonoBehaviour
     {
+        [SerializeField] private string playerTag = "Player";
+        
         public bool interpolateTurning = false;
         public bool applyAnimationRotation = false;
 
@@ -27,10 +25,12 @@ namespace Game
         protected bool m_ExternalForceAddGravity = true;
         protected Vector3 m_ExternalForce;
         protected bool m_Grounded;
-
-        protected Rigidbody m_Rigidbody;
-
+        
         const float k_GroundedRayDistance = .8f;
+        private Collider m_BlockerCollider;
+
+        private Vector3 m_VerticalVelocity = Vector3.zero;
+        private const float Gravity = -28f;
 
         void OnEnable()
         {
@@ -39,14 +39,13 @@ namespace Game
             m_Animator.updateMode = AnimatorUpdateMode.Fixed;
 
             m_NavMeshAgent.updatePosition = false;
+            
+            m_BlockerCollider = GetComponent<Collider>();
+            if (m_BlockerCollider == null)
+                m_BlockerCollider = GetComponentInChildren<Collider>();
 
-            m_Rigidbody = GetComponentInChildren<Rigidbody>();
-            if (m_Rigidbody == null)
-                m_Rigidbody = gameObject.AddComponent<Rigidbody>();
-
-            m_Rigidbody.isKinematic = true;
-            m_Rigidbody.useGravity = false;
-            m_Rigidbody.interpolation = RigidbodyInterpolation.Interpolate;
+            if (m_BlockerCollider != null)
+                m_BlockerCollider.isTrigger = true;
 
             m_FollowNavmeshAgent = true;
         }
@@ -56,32 +55,35 @@ namespace Game
             animator.speed = CharacterInput.Instance != null && CharacterInput.Instance.HaveControl() ? 1.0f : 0.0f;
 
             CheckGrounded();
+            ApplyGravity();
+        }
 
+        private void CheckGrounded()
+        {
+            Vector3 origin = transform.position + k_GroundedRayDistance * 0.5f * Vector3.up;
+           
+            m_Grounded = Physics.Raycast(origin, Vector3.down, out var hit, k_GroundedRayDistance, 
+                                         Physics.AllLayers, QueryTriggerInteraction.Collide);
+        }
+
+        private void ApplyGravity()
+        {
             if (m_UnderExternalForce)
-                ForceMovement();
-        }
+                return;
 
-        void CheckGrounded()
-        {
-            RaycastHit hit;
-            Ray ray = new Ray(transform.position + Vector3.up * k_GroundedRayDistance * 0.5f, -Vector3.up);
-            m_Grounded = Physics.Raycast(ray, out hit, k_GroundedRayDistance, Physics.AllLayers,
-                QueryTriggerInteraction.Ignore);
-        }
-
-        void ForceMovement()
-        {
-            if(m_ExternalForceAddGravity)
-                m_ExternalForce += Physics.gravity * Time.deltaTime;
-
-            RaycastHit hit;
-            Vector3 movement = m_ExternalForce * Time.deltaTime;
-            if (!m_Rigidbody.SweepTest(movement.normalized, out hit, movement.sqrMagnitude))
+            if (m_Grounded && m_VerticalVelocity.y <= 0)
             {
-                m_Rigidbody.MovePosition(m_Rigidbody.position + movement);
+                m_VerticalVelocity.y = -2f; 
+            }
+            else
+            {
+                m_VerticalVelocity.y += Gravity * Time.deltaTime;
             }
 
-            m_NavMeshAgent.Warp(m_Rigidbody.position);
+            if (!m_Grounded || m_VerticalVelocity.y > 0)
+            {
+                transform.position += m_VerticalVelocity * Time.deltaTime;
+            }
         }
 
         private void OnAnimatorMove()
@@ -89,18 +91,26 @@ namespace Game
             if (m_UnderExternalForce)
                 return;
 
+            var deltaPosition = m_Animator.deltaPosition;
+
             if (m_FollowNavmeshAgent)
             {
-                m_NavMeshAgent.speed = (m_Animator.deltaPosition / Time.deltaTime).magnitude;
+                m_NavMeshAgent.speed = deltaPosition.magnitude / Time.deltaTime;
                 transform.position = m_NavMeshAgent.nextPosition;
             }
             else
             {
-                RaycastHit hit;
-                if (!m_Rigidbody.SweepTest(m_Animator.deltaPosition.normalized, out hit,
-                    m_Animator.deltaPosition.sqrMagnitude))
+                if (deltaPosition.sqrMagnitude > 0.0001f)
                 {
-                    m_Rigidbody.MovePosition(m_Rigidbody.position + m_Animator.deltaPosition);
+                    var dir = deltaPosition.normalized;
+                    var dist = deltaPosition.magnitude;
+
+                    if (!Physics.SphereCast(transform.position + Vector3.up * 0.8f, 
+                            0.45f, dir, out var hit, dist * 1.2f) || 
+                        !hit.collider.CompareTag(playerTag))
+                    {
+                        transform.position += deltaPosition;
+                    }
                 }
             }
 
@@ -109,15 +119,29 @@ namespace Game
                 transform.forward = m_Animator.deltaRotation * transform.forward;
             }
         }
+        
+        private void OnTriggerStay(Collider other)
+        {
+            if (!other.CompareTag(playerTag)) 
+                return;
 
-        // used to disable position being set by the navmesh agent, for case where we want the animation to move the enemy instead (e.g. Chomper attack)
+            var pushDir = (other.transform.position - transform.position).normalized;
+            pushDir.y = 0;
+
+            var cc = other.GetComponent<CharacterController>();
+            if (cc != null)
+            {
+                cc.Move(pushDir * 3.5f * Time.deltaTime); 
+            }
+        }
+
         public void SetFollowNavmeshAgent(bool follow)
         {
             if (!follow && m_NavMeshAgent.enabled)
             {
                 m_NavMeshAgent.ResetPath();
             }
-            else if(follow && !m_NavMeshAgent.enabled)
+            else if (follow && !m_NavMeshAgent.enabled)
             {
                 m_NavMeshAgent.Warp(transform.position);
             }
@@ -135,6 +159,8 @@ namespace Game
             m_NavMeshAgent.enabled = false;
             m_UnderExternalForce = true;
             m_ExternalForceAddGravity = useGravity;
+
+            m_VerticalVelocity = force;
         }
 
         public void ClearForce()

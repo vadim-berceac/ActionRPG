@@ -137,7 +137,7 @@ namespace Game
 
                     int contacts = Physics.SphereCastNonAlloc(r, pts.radius, s_RaycastHitCache, attackVector.magnitude,
                         ~0,
-                        QueryTriggerInteraction.Ignore);
+                        QueryTriggerInteraction.Collide);
 
                     for (int k = 0; k < contacts; ++k)
                     {
