@@ -51,3 +51,5 @@ MonoBehaviour:
     value: The treasure is finally mine!
   - key: POLEARM
     value: Polearm - E to pick up
+  - key: 1HSWORD
+    value: Sword - E to pick up
