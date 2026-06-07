@@ -4,55 +4,48 @@ using Zenject;
 
 public class PickupItem : MonoBehaviour
 {
-   [SerializeField] private GameObject root;
-   [SerializeField] private InteractOnTrigger trigger;
-   [SerializeField] private WeaponData data;
-   
-   private PlayerNewInput _playerInput;
-   private PlayerController _playerController;
-   private bool _canPickup;
+    [SerializeField] private GameObject root;
+    [SerializeField] private InteractOnTrigger trigger;
+    [SerializeField] private WeaponData data;
 
-   [Inject]
-   private void Construct(PlayerNewInput playerInput, PlayerController playerController)
-   {
-      _playerInput = playerInput;
-      _playerController = playerController;
-      
-      trigger.OnEnter.AddListener(OnInteractZoneOn);
-      trigger.OnExit.AddListener(OnInteractZoneLeave);
-      
-      _playerInput.Interact += OnInteract;
-   }
-   
-   private void OnDestroy()
-   {
-      trigger.OnEnter.RemoveListener(OnInteractZoneOn);
-      trigger.OnExit.RemoveListener(OnInteractZoneLeave);
+    private PlayerNewInput _playerInput;
+    private PlayerController _playerController;
+    private PickupSelectionService _selectionService;
 
-      if (_playerInput != null)
-      {
-         _playerInput.Interact -= OnInteract;
-      }
-   }
+    [Inject]
+    private void Construct(PlayerNewInput playerInput, PlayerController playerController, PickupSelectionService selectionService)
+    {
+        _playerInput = playerInput;
+        _playerController = playerController;
+        _selectionService = selectionService;
 
-   private void OnInteractZoneOn()
-   {
-      _canPickup = true;
-   }
-   
-   private void OnInteractZoneLeave()
-   {
-      _canPickup = false;
-   }
+        trigger.OnEnter.AddListener(OnEnter);
+        trigger.OnExit.AddListener(OnExit);
+        _playerInput.Interact += OnInteract;
+    }
 
-   private void OnInteract()
-   {
-      if (!_canPickup)
-      {
-         return;
-      }
-      
-      _playerController.CreateWeapon(data, true);
-      Destroy(root);
-   }
+    private void OnDestroy()
+    {
+        if (trigger != null)
+        {
+            trigger.OnEnter.RemoveListener(OnEnter);
+            trigger.OnExit.RemoveListener(OnExit);
+        }
+
+        if (_playerInput != null)
+            _playerInput.Interact -= OnInteract;
+
+        _selectionService?.Deselect(this);
+    }
+
+    private void OnEnter() => _selectionService.Select(this);
+    private void OnExit()  => _selectionService.Deselect(this);
+
+    private void OnInteract()
+    {
+        if (!_selectionService.IsSelected(this)) return;
+
+        _playerController.CreateWeapon(data, true);
+        Destroy(root);
+    }
 }

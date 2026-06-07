@@ -34,6 +34,7 @@ namespace Game
 
         private CameraSettings _cameraSettings;
         private HealthUI _healthUI;
+        private DiContainer _diContainer;
         
         protected MeleeWeapon m_MeleeWeapon;
         protected AnimatorStateInfo m_CurrentStateInfo;
@@ -110,8 +111,9 @@ namespace Game
         }
 
         [Inject]
-        private void Construct(CameraSettings cameraSettings, HealthUI healthUI)
+        private void Construct(DiContainer container, CameraSettings cameraSettings, HealthUI healthUI)
         {
+            _diContainer = container;
             _cameraSettings = cameraSettings;
             _cameraSettings.SetTarget(transform, transform.Find("HeadTarget"));
             
@@ -228,10 +230,10 @@ namespace Game
 
             if (dropPrevious && weaponData != null)
             {
-                weaponData.GetGroundInstance(transform);
+                weaponData.GetGroundInstance(transform, _diContainer);
             }
             weaponData = fromData;
-            var weaponObj = weaponData.GetViewInstance(transform);
+            var weaponObj = weaponData.GetViewInstance(transform, _diContainer);
             m_MeleeWeapon = weaponObj.GetComponent<MeleeWeapon>();
             m_MeleeWeapon.SetOwner(gameObject);
             EquipMeleeWeapon(false);

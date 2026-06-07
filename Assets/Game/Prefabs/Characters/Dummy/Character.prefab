@@ -55,7 +55,7 @@ GameObject:
   - component: {fileID: 5555669641611656938}
   m_Layer: 9
   m_Name: Character
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -192,7 +192,7 @@ MonoBehaviour:
   idleTimeout: 5
   canAttack: 1
   propBones: {fileID: 7615473877076330449}
-  weaponData: {fileID: 11400000, guid: dc77a825655c3f440a0b3d4cc9929be1, type: 2}
+  weaponData: {fileID: 0}
   footstepPlayer: {fileID: 1322580226803652676}
   hurtAudioPlayer: {fileID: 7649901834184707166}
   landingPlayer: {fileID: 479897810173061569}
