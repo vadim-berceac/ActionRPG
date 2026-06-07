@@ -127,7 +127,7 @@ namespace Game
 
             if (weaponData)
             {
-                CreateWeapon();
+                CreateWeapon(weaponData, false);
             }
             s_Instance = this;
         }
@@ -154,6 +154,8 @@ namespace Game
 
             for (int i = 0; i < m_Renderers.Length; ++i)
             {
+                if(m_Renderers[i] == null) continue;
+                
                 m_Renderers[i].enabled = true;
             }
         }
@@ -217,8 +219,18 @@ namespace Game
             m_Input.InputBlocked = inputBlocked;
         }
 
-        private void CreateWeapon()
+        public void CreateWeapon(WeaponData fromData, bool dropPrevious)
         {
+            if (m_MeleeWeapon != null)
+            {
+                m_MeleeWeapon.DestroyInstance();
+            }
+
+            if (dropPrevious && weaponData != null)
+            {
+                weaponData.GetGroundInstance(transform);
+            }
+            weaponData = fromData;
             var weaponObj = weaponData.GetViewInstance(transform);
             m_MeleeWeapon = weaponObj.GetComponent<MeleeWeapon>();
             m_MeleeWeapon.SetOwner(gameObject);

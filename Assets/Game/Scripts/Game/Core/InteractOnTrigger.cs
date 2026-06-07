@@ -50,6 +50,11 @@ namespace Game
             OnExit.Invoke();
         }
 
+        protected virtual void OnDestroy()
+        {
+            OnExit?.Invoke();
+        }
+
         void OnDrawGizmos()
         {
             Gizmos.DrawIcon(transform.position, "InteractionTrigger", false);

@@ -17,12 +17,14 @@ public class PlayerNewInput : ICharacterInput, IDisposable
     public bool Jump { get; set; }
     public bool Attack { get; set; }
 
+    public event Action Interact;
     public event Action Pause;
     
     private readonly InputAction _moveAction;
     private readonly InputAction _lookAction;
     private readonly InputAction _jumpAction;
     private readonly InputAction _attackAction;
+    private readonly InputAction _interactAction;
     private readonly InputAction _pauseAction;
 
     private PlayerNewInput(InputActionAsset actionAsset)
@@ -31,6 +33,7 @@ public class PlayerNewInput : ICharacterInput, IDisposable
         _lookAction = actionAsset.FindAction("Look");
         _jumpAction = actionAsset.FindAction("Jump");
         _attackAction = actionAsset.FindAction("Attack");
+        _interactAction = actionAsset.FindAction("Interact");
         _pauseAction = actionAsset.FindAction("Pause");
         
         Subscribe();
@@ -52,6 +55,7 @@ public class PlayerNewInput : ICharacterInput, IDisposable
         _attackAction.started += OnAttack;
         _attackAction.canceled += OnAttackCanceled;
         
+        _interactAction.started += OnInteract;
         _pauseAction.performed += OnPause;
     }
 
@@ -69,6 +73,7 @@ public class PlayerNewInput : ICharacterInput, IDisposable
         _attackAction.started -= OnAttack;
         _attackAction.canceled -= OnAttackCanceled;
         
+        _interactAction.started -= OnInteract;
         _pauseAction.performed -= OnPause;
     }
 
@@ -112,9 +117,14 @@ public class PlayerNewInput : ICharacterInput, IDisposable
         Attack = false;
     }
 
+    private void OnInteract(InputAction.CallbackContext context)
+    {
+        Interact?.Invoke();
+    }
+
     private void OnPause(InputAction.CallbackContext context)
     {
-       Pause?.Invoke();
+        Pause?.Invoke();
     }
 
     public void Dispose()

@@ -20,4 +20,16 @@ public class WeaponData : ScriptableObject
         instance.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
         return instance;
     }
+
+    public GameObject GetGroundInstance(Transform parent)
+    {
+        if (GroundPrefab == null)
+        {
+            return null;
+        }
+        var instance = Instantiate(GroundPrefab, parent);
+        instance.transform.SetLocalPositionAndRotation(Vector3.one, Quaternion.identity);
+        instance.transform.SetParent(null);
+        return instance;
+    }
 }

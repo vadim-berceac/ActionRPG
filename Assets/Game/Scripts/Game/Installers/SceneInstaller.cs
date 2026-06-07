@@ -28,5 +28,11 @@ public class SceneInstaller : MonoInstaller
             .BindInterfacesAndSelfTo<PlayerNewInput>()
             .AsSingle()
             .NonLazy();
+        
+        Container.
+            Bind<PlayerController>()
+            .FromComponentInHierarchy()
+            .AsSingle()
+            .NonLazy();
     }
 }

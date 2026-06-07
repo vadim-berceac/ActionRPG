@@ -198,6 +198,12 @@ namespace Game
             return true;
         }
 
+        public void DestroyInstance()
+        {
+            Destroy(view.gameObject);
+            Destroy(gameObject);
+        }
+
 #if UNITY_EDITOR
 
         private void OnDrawGizmosSelected()
