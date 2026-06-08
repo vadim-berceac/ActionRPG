@@ -93,6 +93,8 @@ namespace Game
         readonly int m_HashAirborne = Animator.StringToHash("Airborne");
         readonly int m_HashLanding = Animator.StringToHash("Landing"); 
         readonly int m_HashEllenDeath = Animator.StringToHash("Death");
+        readonly int m_HashCombatIdle = Animator.StringToHash("CombatIdle");
+        readonly int m_HashSheatheBlendStart = Animator.StringToHash("SheatheBlendStart");
         int m_HashCombo1;
         int m_HashCombo2;
         int m_HashCombo3;
@@ -169,10 +171,10 @@ namespace Game
 
             UpdateInputBlocking();
 
-            EquipMeleeWeapon(IsWeaponEquiped());
+            EquipMeleeWeapon(IsWeaponEquipped());
 
             m_Animator.SetFloat(m_HashStateTime, Mathf.Repeat(m_Animator.GetCurrentAnimatorStateInfo(0).normalizedTime, 1f));
-            m_Animator.SetInteger(m_HashWeaponIndex, weaponData ? weaponData.AnimationSetIndex : 0);
+            m_Animator.SetFloat(m_HashWeaponIndex, weaponData ? weaponData.AnimationSetIndex : 0);
             m_Animator.ResetTrigger(m_HashMeleeAttack);
 
             if (m_Input.Attack && canAttack)
@@ -239,19 +241,20 @@ namespace Game
             EquipMeleeWeapon(false);
             ConnectCombo();
         }
-
-        // Called after the animator state has been cached to determine whether or not the staff should be active or not.
-        bool IsWeaponEquiped()
+        
+        bool IsWeaponEquipped()
         {
-            bool equipped = m_NextStateInfo.shortNameHash == m_HashCombo1 || m_CurrentStateInfo.shortNameHash == m_HashCombo1;
+            var equipped = m_NextStateInfo.shortNameHash == m_HashCombo1 || m_CurrentStateInfo.shortNameHash == m_HashCombo1;
             equipped |= m_NextStateInfo.shortNameHash == m_HashCombo2 || m_CurrentStateInfo.shortNameHash == m_HashCombo2;
             equipped |= m_NextStateInfo.shortNameHash == m_HashCombo3 || m_CurrentStateInfo.shortNameHash == m_HashCombo3;
             equipped |= m_NextStateInfo.shortNameHash == m_HashCombo4 || m_CurrentStateInfo.shortNameHash == m_HashCombo4;
+            equipped |= m_NextStateInfo.shortNameHash == m_HashCombatIdle || m_CurrentStateInfo.shortNameHash == m_HashCombatIdle;
+            equipped |= m_NextStateInfo.shortNameHash == m_HashSheatheBlendStart || m_CurrentStateInfo.shortNameHash == m_HashSheatheBlendStart;
 
             return equipped;
         }
 
-        // Called each physics step with a parameter based on the return value of IsWeaponEquiped.
+        // Called each physics step with a parameter based on the return value of IsWeaponEquipped.
         void EquipMeleeWeapon(bool equip)
         {
             if (!weaponData)

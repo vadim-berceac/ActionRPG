@@ -1,7 +1,7 @@
 fileFormatVersion: 2
 guid: 3dcb16cfc86c6c346896561c1dcc2c60
 ModelImporter:
-  serializedVersion: 22200
+  serializedVersion: 24200
   internalIDToNameTable: []
   externalObjects: {}
   materials:
@@ -16,8 +16,6 @@ ModelImporter:
     optimizeGameObjects: 0
     removeConstantScaleCurves: 0
     motionNodeName: 
-    rigImportErrors: 
-    rigImportWarnings: 
     animationImportErrors: 
     animationImportWarnings: 
     animationRetargetingWarnings: 
@@ -33,11 +31,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: HumanM@SheatheBack01_L
+      name: HumanM@SheatheBack01_L_start
       takeName: Untitled
       internalID: 3094330708855449807
       firstFrame: 0
-      lastFrame: 22
+      lastFrame: 10.1
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -179,6 +177,35 @@ ModelImporter:
       maskType: 1
       maskSource: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a, type: 2}
       additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: SheatheBack01_L_end
+      takeName: HumanM@SheatheBack01_L
+      internalID: -1357880498610984214
+      firstFrame: 10.9
+      lastFrame: 22
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a, type: 2}
+      additiveReferencePoseFrame: 0
     isReadable: 0
   meshes:
     lODScreenPercentages: []
@@ -205,6 +232,9 @@ ModelImporter:
     maxBonesPerVertex: 4
     minBoneWeight: 0.001
     optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
     meshOptimizationFlags: -1
     indexFormat: 0
     secondaryUVAngleDistortion: 8
