@@ -35,6 +35,7 @@ namespace Game
         private CameraSettings _cameraSettings;
         private HealthUI _healthUI;
         private DiContainer _diContainer;
+        private bool _isWeaponEquipped;
         
         protected MeleeWeapon m_MeleeWeapon;
         protected AnimatorStateInfo m_CurrentStateInfo;
@@ -57,7 +58,6 @@ namespace Game
         protected float m_AngleDiff;
         protected Collider[] m_OverlapResult = new Collider[8];
         protected bool m_InAttack;
-        protected bool m_InCombo;
         protected Damageable m_Damageable;
         protected Renderer[] m_Renderers;
         protected Checkpoint m_CurrentCheckpoint;
@@ -87,14 +87,13 @@ namespace Game
         readonly int m_HashHurtFromY = Animator.StringToHash("HurtFromY");
         readonly int m_HashStateTime = Animator.StringToHash("StateTime");
         readonly int m_HashFootFall = Animator.StringToHash("FootFall");
+        readonly int m_WeaponEquipped = Animator.StringToHash("WeaponEquipped");
         readonly int m_HashWeaponIndex = Animator.StringToHash("WeaponIndex");
-
+       
         readonly int m_HashLocomotion = Animator.StringToHash("Locomotion");
         readonly int m_HashAirborne = Animator.StringToHash("Airborne");
         readonly int m_HashLanding = Animator.StringToHash("Landing"); 
         readonly int m_HashEllenDeath = Animator.StringToHash("Death");
-        readonly int m_HashCombatIdle = Animator.StringToHash("CombatIdle");
-        readonly int m_HashSheatheBlendStart = Animator.StringToHash("SheatheBlendStart");
         int m_HashCombo1;
         int m_HashCombo2;
         int m_HashCombo3;
@@ -171,10 +170,9 @@ namespace Game
 
             UpdateInputBlocking();
 
-            EquipMeleeWeapon(IsWeaponEquipped());
+            EquipMeleeWeapon(_isWeaponEquipped);
 
             m_Animator.SetFloat(m_HashStateTime, Mathf.Repeat(m_Animator.GetCurrentAnimatorStateInfo(0).normalizedTime, 1f));
-            m_Animator.SetFloat(m_HashWeaponIndex, weaponData ? weaponData.AnimationSetIndex : 0);
             m_Animator.ResetTrigger(m_HashMeleeAttack);
 
             if (m_Input.Attack && canAttack)
@@ -201,6 +199,18 @@ namespace Game
             m_HashCombo2 = Animator.StringToHash(weaponData.ComboNames[1]);
             m_HashCombo3 = Animator.StringToHash(weaponData.ComboNames[2]);
             m_HashCombo4 = Animator.StringToHash(weaponData.ComboNames[3]);
+        }
+
+        private bool CheckCombo()
+        {
+            var combo = false;
+
+            combo |= m_CurrentStateInfo.shortNameHash == m_HashCombo1 || m_NextStateInfo.shortNameHash == m_HashCombo1;
+            combo |= m_CurrentStateInfo.shortNameHash == m_HashCombo2 || m_NextStateInfo.shortNameHash == m_HashCombo2;
+            combo |= m_CurrentStateInfo.shortNameHash == m_HashCombo3 || m_NextStateInfo.shortNameHash == m_HashCombo3;
+            combo |= m_CurrentStateInfo.shortNameHash == m_HashCombo4 || m_NextStateInfo.shortNameHash == m_HashCombo4;
+            
+            return combo;
         }
 
         // Called at the start of FixedUpdate to record the current state of the base layer of the animator.
@@ -240,21 +250,20 @@ namespace Game
             m_MeleeWeapon.SetOwner(gameObject);
             EquipMeleeWeapon(false);
             ConnectCombo();
+            
+            SetIsWeaponEquipped(false);
         }
         
-        bool IsWeaponEquipped()
+        public void SetIsWeaponEquipped(bool value)
         {
-            var equipped = m_NextStateInfo.shortNameHash == m_HashCombo1 || m_CurrentStateInfo.shortNameHash == m_HashCombo1;
-            equipped |= m_NextStateInfo.shortNameHash == m_HashCombo2 || m_CurrentStateInfo.shortNameHash == m_HashCombo2;
-            equipped |= m_NextStateInfo.shortNameHash == m_HashCombo3 || m_CurrentStateInfo.shortNameHash == m_HashCombo3;
-            equipped |= m_NextStateInfo.shortNameHash == m_HashCombo4 || m_CurrentStateInfo.shortNameHash == m_HashCombo4;
-            equipped |= m_NextStateInfo.shortNameHash == m_HashCombatIdle || m_CurrentStateInfo.shortNameHash == m_HashCombatIdle;
-            equipped |= m_NextStateInfo.shortNameHash == m_HashSheatheBlendStart || m_CurrentStateInfo.shortNameHash == m_HashSheatheBlendStart;
-
-            return equipped;
+           _isWeaponEquipped = value;
+           m_Animator.SetBool(m_WeaponEquipped, value);
+           
+           var index = value && weaponData? weaponData.AnimationSetIndex : 0;
+           m_Animator.SetFloat(m_HashWeaponIndex, index);
         }
 
-        // Called each physics step with a parameter based on the return value of IsWeaponEquipped.
+        // Called each physics step with a parameter based on the return value of SetIsWeaponEquipped.
         void EquipMeleeWeapon(bool equip)
         {
             if (!weaponData)
@@ -265,7 +274,6 @@ namespace Game
             var newParent = propBones.GetPropBone(bone.PropType).Prop;
             m_MeleeWeapon.SetViewParent(newParent, bone);
             m_InAttack = false;
-            m_InCombo = equip;
 
             if (!equip)
                 m_Animator.ResetTrigger(m_HashMeleeAttack);
@@ -305,7 +313,7 @@ namespace Game
                 m_VerticalSpeed = -gravity * k_StickingGravityProportion;
 
                 // If jump is held, Ellen is ready to jump and not currently in the middle of a melee combo...
-                if (m_Input.JumpInput && m_ReadyToJump && !m_InCombo)
+                if (m_Input.JumpInput && m_ReadyToJump && !CheckCombo())
                 {
                     // ... then override the previously set vertical speed and make sure she cannot jump again.
                     m_VerticalSpeed = jumpSpeed;
@@ -422,7 +430,7 @@ namespace Game
             bool updateOrientationForAirborne = !m_IsAnimatorTransitioning && m_CurrentStateInfo.shortNameHash == m_HashAirborne || m_NextStateInfo.shortNameHash == m_HashAirborne;
             bool updateOrientationForLanding = !m_IsAnimatorTransitioning && m_CurrentStateInfo.shortNameHash == m_HashLanding || m_NextStateInfo.shortNameHash == m_HashLanding;
 
-            return updateOrientationForLocomotion || updateOrientationForAirborne || updateOrientationForLanding || m_InCombo && !m_InAttack;
+            return updateOrientationForLocomotion || updateOrientationForAirborne || updateOrientationForLanding || CheckCombo() && !m_InAttack;
         }
 
         // Called each physics step after SetTargetRotation if there is move input and Ellen is in the correct animator state according to IsOrientationUpdated.
