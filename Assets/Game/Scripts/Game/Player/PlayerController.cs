@@ -204,6 +204,11 @@ namespace Game
         private bool CheckCombo()
         {
             var combo = false;
+            
+            if (weaponData == null)
+            {
+                return false;
+            }
 
             combo |= m_CurrentStateInfo.shortNameHash == m_HashCombo1 || m_NextStateInfo.shortNameHash == m_HashCombo1;
             combo |= m_CurrentStateInfo.shortNameHash == m_HashCombo2 || m_NextStateInfo.shortNameHash == m_HashCombo2;
