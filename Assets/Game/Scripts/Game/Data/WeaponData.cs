@@ -4,12 +4,19 @@ using Zenject;
 [CreateAssetMenu(fileName = "WeaponData", menuName = "Scriptable Objects/WeaponData")]
 public class WeaponData : ScriptableObject
 {
+    public enum WearType
+    {
+        OneHanded,
+        TwoHanded,
+        Additional
+    }
     [field: SerializeField] public GameObject ViewPrefab { get; set; }
     [field: SerializeField] public GameObject GroundPrefab { get; set; }
     [field: SerializeField] public PropBoneSettings ActiveProp { get; set; }
     [field: SerializeField] public PropBoneSettings UnActiveProp { get; set; }
     [field: SerializeField] public string[] ComboNames { get; private set; }
     [field: SerializeField, Range(0, 10)] public int AnimationSetIndex { get; private set; }
+    [field: SerializeField] public WearType Wear { get; private set; }
 
     public GameObject GetViewInstance(Transform parent, DiContainer container)
     {

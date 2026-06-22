@@ -16,7 +16,7 @@ namespace Game
                 _player = animator.GetComponent<PlayerController>();
             }
 
-            //_player.m_MeleeWeapon.effects[effectIndex].Activate();
+            //_player.PrimaryWeaponInstance.effects[effectIndex].Activate();
         }
 
     } 

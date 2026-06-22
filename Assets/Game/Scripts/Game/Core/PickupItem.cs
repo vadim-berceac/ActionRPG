@@ -45,7 +45,27 @@ public class PickupItem : MonoBehaviour
     {
         if (!_selectionService.IsSelected(this)) return;
 
-        _playerController.CreateWeapon(data, true);
-        Destroy(root);
+        if (data.Wear == WeaponData.WearType.Additional)
+        {
+            if (_playerController.primaryWeaponData == null ||
+                _playerController.primaryWeaponData.Wear == WeaponData.WearType.OneHanded)
+            {
+                _playerController.CreateAdditionalWeapon(data, true);
+                Destroy(root);
+            }
+        }
+        else
+        {
+            if (data.Wear == WeaponData.WearType.OneHanded || _playerController.additionalWeaponData == null)
+            {
+                _playerController.CreatePrimaryWeapon(data, true);
+            }
+            else
+            {
+                _playerController.CreatePrimaryWeapon(data, true, true);
+            }
+            Destroy(root);
+        }
+        
     }
 }

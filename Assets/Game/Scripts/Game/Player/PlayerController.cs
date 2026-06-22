@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using Game.Message;
+using UnityEngine.Serialization;
 using Zenject;
 
 namespace Game
@@ -23,7 +24,8 @@ namespace Game
         public bool canAttack; 
 
         public PropBones propBones;
-        public WeaponData weaponData;
+        public WeaponData primaryWeaponData;
+        public WeaponData additionalWeaponData;
         public RandomAudioPlayer footstepPlayer;
         public RandomAudioPlayer hurtAudioPlayer;
         public RandomAudioPlayer landingPlayer;
@@ -37,7 +39,8 @@ namespace Game
         private DiContainer _diContainer;
         private bool _isWeaponEquipped;
         
-        protected MeleeWeapon m_MeleeWeapon;
+        protected MeleeWeapon PrimaryWeaponInstance;
+        protected MeleeWeapon AdditionalWeaponInstance;
         protected AnimatorStateInfo m_CurrentStateInfo;
         protected AnimatorStateInfo m_NextStateInfo;
         protected bool m_IsAnimatorTransitioning;
@@ -90,6 +93,7 @@ namespace Game
         readonly int m_HashFootFall = Animator.StringToHash("FootFall");
         readonly int m_WeaponEquipped = Animator.StringToHash("WeaponEquipped");
         readonly int m_HashWeaponIndex = Animator.StringToHash("WeaponIndex");
+        readonly int m_HashHasAdditionalWeapon = Animator.StringToHash("HasAdditionalWeapon");
        
         readonly int m_HashLocomotion = Animator.StringToHash("Locomotion");
         readonly int m_HashAirborne = Animator.StringToHash("Airborne");
@@ -126,9 +130,13 @@ namespace Game
             m_Animator = GetComponent<Animator>();
             m_CharCtrl = GetComponent<CharacterController>();
 
-            if (weaponData)
+            if (primaryWeaponData)
             {
-                CreateWeapon(weaponData, false);
+                CreatePrimaryWeapon(primaryWeaponData, false);
+            }
+            if (additionalWeaponData)
+            {
+                CreateAdditionalWeapon(additionalWeaponData, false);
             }
             s_Instance = this;
         }
@@ -162,22 +170,18 @@ namespace Game
         }
 
         // Called automatically by Unity once every Physics step.
-        void FixedUpdate()
+        private void FixedUpdate()
         {
             CacheAnimatorState();
 
             UpdateInputBlocking();
 
-            EquipMeleeWeapon(_isWeaponEquipped);
+            EquipMeleeWeapon(_isWeaponEquipped, primaryWeaponData, PrimaryWeaponInstance, m_HashAttack1);
+            EquipMeleeWeapon(_isWeaponEquipped, additionalWeaponData, AdditionalWeaponInstance, m_HashAttack2);
 
-            m_Animator.SetFloat(m_HashStateTime, Mathf.Repeat(m_Animator.GetCurrentAnimatorStateInfo(0).normalizedTime, 1f));
-            m_Animator.ResetTrigger(m_HashAttack1);
-
-            if (m_Input.Attack1 && canAttack)
-                m_Animator.SetTrigger(m_HashAttack1);
+            UpdateStateTime();
             
-            if (m_Input.Attack2 && canAttack)
-                m_Animator.SetTrigger(m_HashAttack2);
+            ProcessAttack();
 
             CalculateForwardMovement();
             CalculateVerticalMovement();
@@ -194,18 +198,18 @@ namespace Game
             m_PreviouslyGrounded = m_IsGrounded;
         }
 
-        private void ConnectCombo()
+        private void ConnectCombo(WeaponData data)
         {
-            m_ComboHashes = new int[weaponData.ComboNames.Length];
-            for (var i = 0; i < weaponData.ComboNames.Length; i++)
+            m_ComboHashes = new int[data.ComboNames.Length];
+            for (var i = 0; i < data.ComboNames.Length; i++)
             {
-                m_ComboHashes[i] = Animator.StringToHash(weaponData.ComboNames[i]);
+                m_ComboHashes[i] = Animator.StringToHash(data.ComboNames[i]);
             }
         }
 
         private bool CheckCombo()
         {
-            if (weaponData == null) return false;
+            if (primaryWeaponData == null) return false;
 
             foreach (var hash in m_ComboHashes)
             {
@@ -236,25 +240,51 @@ namespace Game
             m_Input.InputBlocked = inputBlocked;
         }
 
-        public void CreateWeapon(WeaponData fromData, bool dropPrevious)
+        private void CreateWeapon(WeaponData fromData, ref WeaponData prevData, ref MeleeWeapon weaponInstance, bool dropPrevious, int trigger)
         {
-            if (m_MeleeWeapon != null)
+            if (weaponInstance != null)
             {
-                m_MeleeWeapon.DestroyInstance();
+                weaponInstance.DestroyInstance();
             }
 
-            if (dropPrevious && weaponData != null)
+            if (dropPrevious && prevData != null)
             {
-                weaponData.GetGroundInstance(transform, _diContainer);
+                prevData.GetGroundInstance(transform, _diContainer);
             }
-            weaponData = fromData;
-            var weaponObj = weaponData.GetViewInstance(transform, _diContainer);
-            m_MeleeWeapon = weaponObj.GetComponent<MeleeWeapon>();
-            m_MeleeWeapon.SetOwner(gameObject);
-            EquipMeleeWeapon(false);
-            ConnectCombo();
+            prevData = fromData;
+            var weaponObj = prevData.GetViewInstance(transform, _diContainer);
+            weaponInstance = weaponObj.GetComponent<MeleeWeapon>();
+            weaponInstance.SetOwner(gameObject);
+            EquipMeleeWeapon(false, prevData, weaponInstance, trigger);
+
+            ConnectCombo(prevData);
             
             SetIsWeaponEquipped(false);
+        }
+
+        public void CreatePrimaryWeapon(WeaponData fromData, bool dropPrevious, bool dropAdditional = false)
+        {
+            CreateWeapon(fromData, ref primaryWeaponData, ref PrimaryWeaponInstance, dropPrevious, m_HashAttack1);
+
+            if (dropAdditional)
+            {
+                if (additionalWeaponData != null)
+                {
+                    additionalWeaponData.GetGroundInstance(transform, _diContainer);
+                }
+                
+                if (AdditionalWeaponInstance != null)
+                {
+                    AdditionalWeaponInstance.DestroyInstance();
+                }
+
+                additionalWeaponData = null;
+            }
+        }
+        
+        public void CreateAdditionalWeapon(WeaponData fromData, bool dropPrevious)
+        {
+            CreateWeapon(fromData, ref additionalWeaponData, ref AdditionalWeaponInstance, dropPrevious, m_HashAttack2);
         }
         
         public void SetIsWeaponEquipped(bool value)
@@ -262,24 +292,47 @@ namespace Game
            _isWeaponEquipped = value;
            m_Animator.SetBool(m_WeaponEquipped, value);
            
-           var index = value && weaponData? weaponData.AnimationSetIndex : 0;
+           var index = value && primaryWeaponData? primaryWeaponData.AnimationSetIndex : 0;
            m_Animator.SetFloat(m_HashWeaponIndex, index);
         }
 
-        // Called each physics step with a parameter based on the return value of SetIsWeaponEquipped.
-        void EquipMeleeWeapon(bool equip)
+        private void ProcessAttack()
         {
-            if (!weaponData)
+            m_Animator.SetBool(m_HashHasAdditionalWeapon, additionalWeaponData != null);
+            m_Animator.ResetTrigger(m_HashAttack1);
+            m_Animator.ResetTrigger(m_HashAttack2);
+
+            if (m_Input.Attack1 && canAttack)
+                m_Animator.SetTrigger(m_HashAttack1);
+            
+            if (m_Input.Attack2 && canAttack)
+                m_Animator.SetTrigger(m_HashAttack2);
+        }
+
+        private void UpdateStateTime()
+        {
+            m_Animator.SetFloat(m_HashStateTime, Mathf.Repeat(m_Animator.GetCurrentAnimatorStateInfo(0).normalizedTime, 1f));
+        }
+
+        // Called each physics step with a parameter based on the return value of SetIsWeaponEquipped.
+        void EquipMeleeWeapon(bool equip, WeaponData data, MeleeWeapon weaponInstance, int trigger)
+        {
+            if (!data)
             {
                 return;
             }
-            var bone = equip ? weaponData.ActiveProp : weaponData.UnActiveProp;
+            var bone = equip ? data.ActiveProp : data.UnActiveProp;
             var newParent = propBones.GetPropBone(bone.PropType).Prop;
-            m_MeleeWeapon.SetViewParent(newParent, bone);
+
+            if (weaponInstance && newParent)
+            {
+                weaponInstance.SetViewParent(newParent, bone);
+            }
+            
             m_InAttack = false;
 
             if (!equip)
-                m_Animator.ResetTrigger(m_HashAttack1);
+                m_Animator.ResetTrigger(trigger);
         }
 
         // Called each physics step.
@@ -585,14 +638,35 @@ namespace Game
         // This is called by an animation event when Ellen swings her staff.
         public void MeleeAttackStart(int throwing = 0)
         {
-            m_MeleeWeapon.BeginAttack(throwing != 0);
+            if(PrimaryWeaponInstance == null) return;
+            
+            PrimaryWeaponInstance.BeginAttack(throwing != 0);
             m_InAttack = true;
         }
 
         // This is called by an animation event when Ellen finishes swinging her staff.
         public void MeleeAttackEnd()
         {
-            m_MeleeWeapon.EndAttack();
+            if(PrimaryWeaponInstance == null) return;
+            
+            PrimaryWeaponInstance.EndAttack();
+            m_InAttack = false;
+        }
+        
+        public void AdditionalAttackStart(int throwing = 0)
+        {
+            if(AdditionalWeaponInstance == null) return;
+            
+            AdditionalWeaponInstance.BeginAttack(throwing != 0);
+            m_InAttack = true;
+        }
+
+        // This is called by an animation event when Ellen finishes swinging her staff.
+        public void AdditionalAttackEnd()
+        {
+            if(AdditionalWeaponInstance == null) return;
+            
+            AdditionalWeaponInstance.EndAttack();
             m_InAttack = false;
         }
 

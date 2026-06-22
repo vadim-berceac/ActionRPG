@@ -29,4 +29,5 @@ MonoBehaviour:
   <ComboNames>k__BackingField:
   - ShieldCombo1
   - ShieldCombo2
-  <AnimationSetIndex>k__BackingField: 4
+  <AnimationSetIndex>k__BackingField: 0
+  <Wear>k__BackingField: 2

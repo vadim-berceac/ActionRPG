@@ -192,7 +192,8 @@ MonoBehaviour:
   idleTimeout: 5
   canAttack: 1
   propBones: {fileID: 7615473877076330449}
-  weaponData: {fileID: 0}
+  primaryWeaponData: {fileID: 0}
+  additionalWeaponData: {fileID: 0}
   footstepPlayer: {fileID: 1322580226803652676}
   hurtAudioPlayer: {fileID: 7649901834184707166}
   landingPlayer: {fileID: 479897810173061569}
