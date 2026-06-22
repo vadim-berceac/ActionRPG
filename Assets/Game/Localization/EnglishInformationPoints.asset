@@ -53,3 +53,5 @@ MonoBehaviour:
     value: Polearm - E to pick up
   - key: 1HSWORD
     value: Sword - E to pick up
+  - key: 2HSWORD
+    value: Two-handed Sword - E to pick up

@@ -56,10 +56,10 @@ MonoBehaviour:
     offset: {x: -0.4, y: 0, z: 0}
     attackRoot: {fileID: 4627241781867504290}
   - radius: 0.3
-    offset: {x: 0, y: 0, z: 0}
+    offset: {x: -0.03, y: 0, z: 0}
     attackRoot: {fileID: 4627241781867504290}
   - radius: 0.3
-    offset: {x: 0.7, y: 0, z: 0}
+    offset: {x: 0.27, y: 0, z: 0}
     attackRoot: {fileID: 4627241781867504290}
   effects: []
   hitAudio: {fileID: 4732374630674220482}
