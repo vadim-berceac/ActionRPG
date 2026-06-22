@@ -79,7 +79,8 @@ namespace Game
         readonly int m_HashTimeoutToIdle = Animator.StringToHash("TimeoutToIdle");
         readonly int m_HashGrounded = Animator.StringToHash("Grounded");
         readonly int m_HashInputDetected = Animator.StringToHash("InputDetected");
-        readonly int m_HashMeleeAttack = Animator.StringToHash("MeleeAttack");
+        readonly int m_HashAttack1 = Animator.StringToHash("Attack1");
+        readonly int m_HashAttack2 = Animator.StringToHash("Attack2");
         readonly int m_HashHurt = Animator.StringToHash("Hurt");
         readonly int m_HashDeath = Animator.StringToHash("Death");
         readonly int m_HashRespawn = Animator.StringToHash("Respawn");
@@ -94,10 +95,7 @@ namespace Game
         readonly int m_HashAirborne = Animator.StringToHash("Airborne");
         readonly int m_HashLanding = Animator.StringToHash("Landing"); 
         readonly int m_HashEllenDeath = Animator.StringToHash("Death");
-        int m_HashCombo1;
-        int m_HashCombo2;
-        int m_HashCombo3;
-        int m_HashCombo4;
+        private int[] m_ComboHashes;
 
         readonly int m_HashBlockInput = Animator.StringToHash("BlockInput");
 
@@ -173,10 +171,13 @@ namespace Game
             EquipMeleeWeapon(_isWeaponEquipped);
 
             m_Animator.SetFloat(m_HashStateTime, Mathf.Repeat(m_Animator.GetCurrentAnimatorStateInfo(0).normalizedTime, 1f));
-            m_Animator.ResetTrigger(m_HashMeleeAttack);
+            m_Animator.ResetTrigger(m_HashAttack1);
 
-            if (m_Input.Attack && canAttack)
-                m_Animator.SetTrigger(m_HashMeleeAttack);
+            if (m_Input.Attack1 && canAttack)
+                m_Animator.SetTrigger(m_HashAttack1);
+            
+            if (m_Input.Attack2 && canAttack)
+                m_Animator.SetTrigger(m_HashAttack2);
 
             CalculateForwardMovement();
             CalculateVerticalMovement();
@@ -195,27 +196,24 @@ namespace Game
 
         private void ConnectCombo()
         {
-            m_HashCombo1 = Animator.StringToHash(weaponData.ComboNames[0]);
-            m_HashCombo2 = Animator.StringToHash(weaponData.ComboNames[1]);
-            m_HashCombo3 = Animator.StringToHash(weaponData.ComboNames[2]);
-            m_HashCombo4 = Animator.StringToHash(weaponData.ComboNames[3]);
+            m_ComboHashes = new int[weaponData.ComboNames.Length];
+            for (var i = 0; i < weaponData.ComboNames.Length; i++)
+            {
+                m_ComboHashes[i] = Animator.StringToHash(weaponData.ComboNames[i]);
+            }
         }
 
         private bool CheckCombo()
         {
-            var combo = false;
-            
-            if (weaponData == null)
+            if (weaponData == null) return false;
+
+            foreach (var hash in m_ComboHashes)
             {
-                return false;
+                if (m_CurrentStateInfo.shortNameHash == hash || m_NextStateInfo.shortNameHash == hash)
+                    return true;
             }
 
-            combo |= m_CurrentStateInfo.shortNameHash == m_HashCombo1 || m_NextStateInfo.shortNameHash == m_HashCombo1;
-            combo |= m_CurrentStateInfo.shortNameHash == m_HashCombo2 || m_NextStateInfo.shortNameHash == m_HashCombo2;
-            combo |= m_CurrentStateInfo.shortNameHash == m_HashCombo3 || m_NextStateInfo.shortNameHash == m_HashCombo3;
-            combo |= m_CurrentStateInfo.shortNameHash == m_HashCombo4 || m_NextStateInfo.shortNameHash == m_HashCombo4;
-            
-            return combo;
+            return false;
         }
 
         // Called at the start of FixedUpdate to record the current state of the base layer of the animator.
@@ -281,7 +279,7 @@ namespace Game
             m_InAttack = false;
 
             if (!equip)
-                m_Animator.ResetTrigger(m_HashMeleeAttack);
+                m_Animator.ResetTrigger(m_HashAttack1);
         }
 
         // Called each physics step.
@@ -492,19 +490,24 @@ namespace Game
                 emoteDeathPlayer.PlayRandomClip();
             }
 
-            if (m_CurrentStateInfo.shortNameHash == m_HashCombo1 && m_PreviousCurrentStateInfo.shortNameHash != m_HashCombo1 ||
-                m_CurrentStateInfo.shortNameHash == m_HashCombo2 && m_PreviousCurrentStateInfo.shortNameHash != m_HashCombo2 ||
-                m_CurrentStateInfo.shortNameHash == m_HashCombo3 && m_PreviousCurrentStateInfo.shortNameHash != m_HashCombo3 ||
-                m_CurrentStateInfo.shortNameHash == m_HashCombo4 && m_PreviousCurrentStateInfo.shortNameHash != m_HashCombo4)
+            if (m_ComboHashes == null || m_ComboHashes.Length < 1)
             {
-                emoteAttackPlayer.PlayRandomClip();
+                return;
+            }
+            foreach (var hash in m_ComboHashes)
+            {
+                if (m_CurrentStateInfo.shortNameHash == hash && m_PreviousCurrentStateInfo.shortNameHash != hash)
+                {
+                    emoteAttackPlayer.PlayRandomClip();
+                    break;
+                }
             }
         }
 
         // Called each physics step to count up to the point where Ellen considers a random idle.
         void TimeoutToIdle()
         {
-            bool inputDetected = IsMoveInput || m_Input.Attack || m_Input.JumpInput;
+            bool inputDetected = IsMoveInput || m_Input.Attack1 || m_Input.Attack2 || m_Input.JumpInput;
             if (m_IsGrounded && !inputDetected)
             {
                 m_IdleTimer += Time.deltaTime;

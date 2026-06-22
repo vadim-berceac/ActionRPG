@@ -7,7 +7,7 @@ public interface ICharacterInput
     public Vector2 Move { get; set; }
     public Vector2 Look { get; set; }
     public bool Jump { get; set; }
-    public bool Attack { get; set; }
+    public bool Attack1 { get; set; }
 }
 
 public class PlayerNewInput : ICharacterInput, IDisposable
@@ -15,7 +15,8 @@ public class PlayerNewInput : ICharacterInput, IDisposable
     public Vector2 Move { get; set; }
     public Vector2 Look { get; set; }
     public bool Jump { get; set; }
-    public bool Attack { get; set; }
+    public bool Attack1 { get; set; }
+    public bool Attack2 { get; set; }
 
     public event Action Interact;
     public event Action Pause;
@@ -23,7 +24,8 @@ public class PlayerNewInput : ICharacterInput, IDisposable
     private readonly InputAction _moveAction;
     private readonly InputAction _lookAction;
     private readonly InputAction _jumpAction;
-    private readonly InputAction _attackAction;
+    private readonly InputAction _attack1Action;
+    private readonly InputAction _attack2Action;
     private readonly InputAction _interactAction;
     private readonly InputAction _pauseAction;
 
@@ -32,7 +34,8 @@ public class PlayerNewInput : ICharacterInput, IDisposable
         _moveAction = actionAsset.FindAction("Move");
         _lookAction = actionAsset.FindAction("Look");
         _jumpAction = actionAsset.FindAction("Jump");
-        _attackAction = actionAsset.FindAction("Attack");
+        _attack1Action = actionAsset.FindAction("Attack1");
+        _attack2Action = actionAsset.FindAction("Attack2");
         _interactAction = actionAsset.FindAction("Interact");
         _pauseAction = actionAsset.FindAction("Pause");
         
@@ -52,8 +55,11 @@ public class PlayerNewInput : ICharacterInput, IDisposable
         _jumpAction.started += OnJump;
         _jumpAction.canceled += OnJumpCanceled;
 
-        _attackAction.started += OnAttack;
-        _attackAction.canceled += OnAttackCanceled;
+        _attack1Action.started += OnAttack1;
+        _attack1Action.canceled += OnAttack1Canceled;
+        
+        _attack2Action.started += OnAttack2;
+        _attack2Action.canceled += OnAttack2Canceled;
         
         _interactAction.started += OnInteract;
         _pauseAction.performed += OnPause;
@@ -70,8 +76,11 @@ public class PlayerNewInput : ICharacterInput, IDisposable
         _jumpAction.started -= OnJump;
         _jumpAction.canceled -= OnJumpCanceled;
 
-        _attackAction.started -= OnAttack;
-        _attackAction.canceled -= OnAttackCanceled;
+        _attack1Action.started -= OnAttack1;
+        _attack1Action.canceled -= OnAttack1Canceled;
+        
+        _attack2Action.started -= OnAttack2;
+        _attack2Action.canceled -= OnAttack2Canceled;
         
         _interactAction.started -= OnInteract;
         _pauseAction.performed -= OnPause;
@@ -107,14 +116,24 @@ public class PlayerNewInput : ICharacterInput, IDisposable
         Jump = false;
     }
 
-    private void OnAttack(InputAction.CallbackContext context)
+    private void OnAttack1(InputAction.CallbackContext context)
     {
-        Attack = true;
+        Attack1 = true;
     }
     
-    private void OnAttackCanceled(InputAction.CallbackContext context)
+    private void OnAttack1Canceled(InputAction.CallbackContext context)
     {
-        Attack = false;
+        Attack1 = false;
+    }
+    
+    private void OnAttack2(InputAction.CallbackContext context)
+    {
+        Attack2 = true;
+    }
+    
+    private void OnAttack2Canceled(InputAction.CallbackContext context)
+    {
+        Attack2 = false;
     }
 
     private void OnInteract(InputAction.CallbackContext context)

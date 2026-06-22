@@ -12,7 +12,8 @@ public class CharacterInput : MonoBehaviour
     public Vector2 MoveInput => InputBlocked ? Vector2.zero : _input.Move;
     public Vector2 CameraInput => InputBlocked ? Vector2.zero : _input.Look;
     public bool JumpInput => !InputBlocked && _input.Jump;
-    public bool Attack => !InputBlocked && _input.Attack;
+    public bool Attack1 => !InputBlocked && _input.Attack1;
+    public bool Attack2 => !InputBlocked && _input.Attack2;
 
     [Inject]
     public void Construct (PlayerNewInput input)
