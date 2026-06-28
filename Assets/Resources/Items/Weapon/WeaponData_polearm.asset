@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b0dc2dd87660fe4085006830a7b173e, type: 3}
   m_Name: WeaponData_polearm
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
+  <Name>k__BackingField: Polearm
+  <Description>k__BackingField: 
+  <CanBeEquipped>k__BackingField: 1
   <ViewPrefab>k__BackingField: {fileID: 1205787345809761593, guid: 90f7696d74bd5ab41abc2f9876dadaec,
     type: 3}
   <GroundPrefab>k__BackingField: {fileID: 8401756962499706326, guid: a44286e9d900d6741bbd13c6c59144b9,

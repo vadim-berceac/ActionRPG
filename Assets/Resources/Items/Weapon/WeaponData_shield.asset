@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b0dc2dd87660fe4085006830a7b173e, type: 3}
   m_Name: WeaponData_shield
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
+  <Name>k__BackingField: Shield
+  <Description>k__BackingField: 
+  <CanBeEquipped>k__BackingField: 1
   <ViewPrefab>k__BackingField: {fileID: 1205787345809761593, guid: e0a1b23e5a6e6624691c8ad1c3850eb9,
     type: 3}
   <GroundPrefab>k__BackingField: {fileID: 8401756962499706326, guid: 657c74dbc1ca7454b80de675efa78d05,

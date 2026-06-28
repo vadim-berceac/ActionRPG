@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b0dc2dd87660fe4085006830a7b173e, type: 3}
   m_Name: WeaponData_1h_sword
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
+  <Name>k__BackingField: Sword 1H
+  <Description>k__BackingField: 
+  <CanBeEquipped>k__BackingField: 1
   <ViewPrefab>k__BackingField: {fileID: 1205787345809761593, guid: 9e8377d7073cc4340b664adb496a529c,
     type: 3}
   <GroundPrefab>k__BackingField: {fileID: 8401756962499706326, guid: 30201ffa63fd9fb4e98c2cfdf0008e5f,
@@ -32,3 +35,4 @@ MonoBehaviour:
   - 1HSwordCombo3
   - 1HSwordCombo4
   <AnimationSetIndex>k__BackingField: 2
+  <Wear>k__BackingField: 0

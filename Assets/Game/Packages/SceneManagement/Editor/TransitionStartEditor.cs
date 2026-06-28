@@ -98,7 +98,7 @@ namespace Game
                         }
                         else
                         {
-                            itemIndex = EditorGUILayout.Popup(new GUIContent("Item " + i), itemIndex, m_InventoryControllerItems);
+                            itemIndex = EditorGUILayout.Popup(new GUIContent("ItemData " + i), itemIndex, m_InventoryControllerItems);
                             elementProp.stringValue = m_InventoryControllerItems[itemIndex].text;
                         }
 

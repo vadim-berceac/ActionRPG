@@ -45,27 +45,29 @@ public class PickupItem : MonoBehaviour
     {
         if (!_selectionService.IsSelected(this)) return;
 
-        if (data.Wear == WeaponData.WearType.Additional)
-        {
-            if (_humanoidController.primaryWeaponData == null ||
-                _humanoidController.primaryWeaponData.Wear == WeaponData.WearType.OneHanded)
-            {
-                _humanoidController.CreateAdditionalWeapon(data, true);
-                Destroy(root);
-            }
-        }
-        else
-        {
-            if (data.Wear == WeaponData.WearType.OneHanded || _humanoidController.additionalWeaponData == null)
-            {
-                _humanoidController.CreatePrimaryWeapon(data, true);
-            }
-            else
-            {
-                _humanoidController.CreatePrimaryWeapon(data, true, true);
-            }
-            Destroy(root);
-        }
+        // if (data.Wear == WeaponData.WearType.Additional)
+        // {
+        //     if (_humanoidController.primaryWeaponData == null ||
+        //         _humanoidController.primaryWeaponData.Wear == WeaponData.WearType.OneHanded)
+        //     {
+        //         _humanoidController.CreateAdditionalWeapon(data, true);
+        //         Destroy(root);
+        //     }
+        // }
+        // else
+        // {
+        //     if (data.Wear == WeaponData.WearType.OneHanded || _humanoidController.additionalWeaponData == null)
+        //     {
+        //         _humanoidController.CreatePrimaryWeapon(data, true);
+        //     }
+        //     else
+        //     {
+        //         _humanoidController.CreatePrimaryWeapon(data, true, true);
+        //     }
+        //     Destroy(root);
+        // }
         
+        _humanoidController.Inventory.Add(data);
+        Destroy(root);
     }
 }

@@ -7,9 +7,11 @@ namespace Game
 {
     [RequireComponent(typeof(CharacterController))]
     [RequireComponent(typeof(Animator))]
+    [RequireComponent(typeof(Inventory))]
     public class HumanoidController : MonoBehaviour, IMessageReceiver
     {
         protected static HumanoidController s_Instance;
+        public Inventory Inventory { get; private set; }
         public static HumanoidController instance => s_Instance;
 
         public bool Respawning => _respawning;
@@ -23,8 +25,6 @@ namespace Game
         public bool canAttack;
 
         public PropBones propBones;
-        public WeaponData primaryWeaponData;
-        public WeaponData additionalWeaponData;
         public RandomAudioPlayer footstepPlayer;
         public RandomAudioPlayer hurtAudioPlayer;
         public RandomAudioPlayer landingPlayer;
@@ -40,6 +40,9 @@ namespace Game
 
         private AnimatorStateCache _animCache;
 
+        
+        private WeaponData _primaryWeaponData;
+        private WeaponData _additionalWeaponData;
         private MeleeWeapon _primaryWeaponInstance;
         private MeleeWeapon _additionalWeaponInstance;
         private bool _isGrounded = true;
@@ -77,6 +80,8 @@ namespace Game
         public void SetCanAttack(bool canAttack)
             => this.canAttack = canAttack;
 
+        public int PrimaryWeaponIndex => _primaryWeaponData ? _primaryWeaponData.AnimationSetIndex : 0;
+
         [Inject]
         private void Construct(DiContainer container, CameraSettings cameraSettings, HealthUI healthUI)
         {
@@ -90,12 +95,10 @@ namespace Game
         {
             _input    = GetComponent<CharacterInput>();
             _charCtrl = GetComponent<CharacterController>();
+            Inventory = GetComponent<Inventory>();
             _animCache     = new AnimatorStateCache(GetComponent<Animator>());
-
-            if (primaryWeaponData)
-                CreatePrimaryWeapon(primaryWeaponData, false);
-            if (additionalWeaponData)
-                CreateAdditionalWeapon(additionalWeaponData, false);
+            InitWeapons();
+            CreateWeapons();
 
             s_Instance = this;
         }
@@ -129,8 +132,8 @@ namespace Game
 
             UpdateInputBlocking();
 
-            EquipMeleeWeapon(_isWeaponEquipped, primaryWeaponData,    _primaryWeaponInstance,    _animCache.HashAttack1);
-            EquipMeleeWeapon(_isWeaponEquipped, additionalWeaponData, _additionalWeaponInstance, _animCache.HashAttack2);
+            ConnectWeaponToHands(_isWeaponEquipped, _primaryWeaponData,    _primaryWeaponInstance,    _animCache.HashAttack1);
+            ConnectWeaponToHands(_isWeaponEquipped, _additionalWeaponData, _additionalWeaponInstance, _animCache.HashAttack2);
 
             _animCache.SetStateTime();
             ProcessAttack();
@@ -149,6 +152,27 @@ namespace Game
             _previouslyGrounded = _isGrounded;
         }
 
+        private void InitWeapons()
+        {
+            _primaryWeaponData = Inventory.GetWeaponData(WeaponData.WearType.OneHanded);
+
+            if (_primaryWeaponData != null)
+            {
+                _additionalWeaponData = Inventory.GetWeaponData(WeaponData.WearType.Additional);
+                return;
+            }
+            
+            _primaryWeaponData = Inventory.GetWeaponData(WeaponData.WearType.TwoHanded);
+        }
+
+        private void CreateWeapons()
+        {
+            if (_primaryWeaponData)
+                CreatePrimaryWeapon(_primaryWeaponData, false);
+            if (_additionalWeaponData)
+                CreateAdditionalWeapon(_additionalWeaponData, false);
+        }
+
         private void ConnectCombo(WeaponData data)
         {
             m_ComboHashes = new int[data.ComboNames.Length];
@@ -160,7 +184,7 @@ namespace Game
 
         private bool CheckCombo()
         {
-            if (primaryWeaponData == null || m_ComboHashes == null) return false;
+            if (_primaryWeaponData == null || m_ComboHashes == null) return false;
 
             foreach (var hash in m_ComboHashes)
             {
@@ -187,40 +211,40 @@ namespace Game
             var weaponObj = prevData.GetViewInstance(transform, _diContainer);
             weaponInstance = weaponObj.GetComponent<MeleeWeapon>();
             weaponInstance.SetOwner(gameObject);
-            EquipMeleeWeapon(false, prevData, weaponInstance, trigger);
+            ConnectWeaponToHands(false, prevData, weaponInstance, trigger);
             ConnectCombo(prevData);
             SetIsWeaponEquipped(false);
         }
 
         public void CreatePrimaryWeapon(WeaponData fromData, bool dropPrevious, bool dropAdditional = false)
         {
-            CreateWeapon(fromData, ref primaryWeaponData, ref _primaryWeaponInstance, dropPrevious, _animCache.HashAttack1);
+            CreateWeapon(fromData, ref _primaryWeaponData, ref _primaryWeaponInstance, dropPrevious, _animCache.HashAttack1);
 
             if (dropAdditional)
             {
-                if (additionalWeaponData != null)
-                    additionalWeaponData.GetGroundInstance(transform, _diContainer);
+                if (_additionalWeaponData != null)
+                    _additionalWeaponData.GetGroundInstance(transform, _diContainer);
                 if (_additionalWeaponInstance != null)
                     _additionalWeaponInstance.DestroyInstance();
-                additionalWeaponData = null;
+                _additionalWeaponData = null;
             }
         }
 
         public void CreateAdditionalWeapon(WeaponData fromData, bool dropPrevious)
         {
-            CreateWeapon(fromData, ref additionalWeaponData, ref _additionalWeaponInstance, dropPrevious, _animCache.HashAttack2);
+            CreateWeapon(fromData, ref _additionalWeaponData, ref _additionalWeaponInstance, dropPrevious, _animCache.HashAttack2);
         }
 
         public void SetIsWeaponEquipped(bool value)
         {
             _isWeaponEquipped = value;
-            var index = value && primaryWeaponData ? primaryWeaponData.AnimationSetIndex : 0;
+            var index = value && _primaryWeaponData ? _primaryWeaponData.AnimationSetIndex : 0;
             _animCache.SetWeaponEquipped(value, index);
         }
 
         private void ProcessAttack()
         {
-            _animCache.SetHasAdditionalWeapon(additionalWeaponData != null);
+            _animCache.SetHasAdditionalWeapon(_additionalWeaponData != null);
             _animCache.ResetAttack1();
             _animCache.ResetAttack2();
 
@@ -228,7 +252,7 @@ namespace Game
             if (_input.Attack2 && canAttack) _animCache.TriggerAttack2();
         }
 
-        private void EquipMeleeWeapon(bool equip, WeaponData data, MeleeWeapon weaponInstance, int trigger)
+        private void ConnectWeaponToHands(bool equip, WeaponData data, MeleeWeapon weaponInstance, int trigger)
         {
             if (!data) return;
 

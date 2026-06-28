@@ -35,7 +35,7 @@ public class WeaponIndex : StateMachineBehaviour
             return;
         }
         
-        animator.SetFloat(m_HashWeaponIndex, _humanoid.primaryWeaponData ? _humanoid.primaryWeaponData.AnimationSetIndex : 0);
+        animator.SetFloat(m_HashWeaponIndex, _humanoid.PrimaryWeaponIndex);
     }
 }
 
