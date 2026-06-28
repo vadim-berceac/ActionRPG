@@ -9,13 +9,13 @@ namespace Game
     {
         private void Awake()
         {
-            //we make sure the checkpoint is part of the Checkpoint layer, which is set to interact ONLY with the player layer.
+            //we make sure the checkpoint is part of the Checkpoint layer, which is set to interact ONLY with the humanoid layer.
             gameObject.layer = LayerMask.NameToLayer("Checkpoint");
         }
 
         private void OnTriggerEnter(Collider other)
         {
-            PlayerController controller = other.GetComponent<PlayerController>();
+            HumanoidController controller = other.GetComponent<HumanoidController>();
 
             if (controller == null)
                 return;

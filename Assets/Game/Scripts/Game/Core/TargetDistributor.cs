@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Game
 {
     // This class allow to distribute arc around a target, used for "crowding" by ennemis, so they all
-    // come at the player (or any target) from different direction.
+    // come at the humanoid (or any target) from different direction.
     [DefaultExecutionOrder(-1)]
     public class TargetDistributor : MonoBehaviour
     {

@@ -1,12 +1,13 @@
+
 namespace Game.GameCommands
 {
     public class RespawnPlayer : GameCommandHandler
     {
-        public PlayerController player;
+        public HumanoidController humanoid;
 
         public override void PerformInteraction()
         {
-            player.Respawn();
+            humanoid.Respawn();
         }
     }
 }

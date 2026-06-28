@@ -6,7 +6,7 @@ public class WeaponEqupped : StateMachineBehaviour
    [SerializeField] private bool value;
    [SerializeField] private bool onStart;
    
-   private PlayerController _player;
+   private HumanoidController _humanoid;
 
    public override void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
    {
@@ -24,10 +24,10 @@ public class WeaponEqupped : StateMachineBehaviour
 
    private void SetValue(Animator animator)
    {
-      if(_player == null) _player = animator.gameObject.GetComponent<PlayerController>();
+      if(_humanoid == null) _humanoid = animator.gameObject.GetComponent<HumanoidController>();
       
-      if(_player == null) return;
+      if(_humanoid == null) return;
       
-      _player?.SetIsWeaponEquipped(value);
+      _humanoid?.SetIsWeaponEquipped(value);
    }
 }

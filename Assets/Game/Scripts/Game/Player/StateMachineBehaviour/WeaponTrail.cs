@@ -3,15 +3,15 @@ using UnityEngine;
 
 public class WeaponTrail : StateMachineBehaviour
 {
-    private PlayerController _player;
+    private HumanoidController _humanoid;
     
     override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
-        if (_player == null)
+        if (_humanoid == null)
         {
-            _player = animator.GetComponent<PlayerController>();
+            _humanoid = animator.GetComponent<HumanoidController>();
         }
 
-        //_player.PrimaryWeaponInstance.effects[effectIndex].Activate();
+        //_humanoid.PrimaryWeaponInstance.effects[effectIndex].Activate();
     }
 }

@@ -11,7 +11,7 @@ public class TimelineTriggerZone : MonoBehaviour
         Once, Everytime,
     }
 
-    [Tooltip("This is the gameobject which will trigger the director to play.  For example, the player.")]
+    [Tooltip("This is the gameobject which will trigger the director to play.  For example, the humanoid.")]
     public GameObject triggeringGameObject;
     public PlayableDirector director;
     public TriggerType triggerType;

@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Game
 {
     /// <summary>
-    /// This class is used to put the player character into a specific state, usually upon entering a scene.
+    /// This class is used to put the humanoid character into a specific state, usually upon entering a scene.
     /// </summary>
     public class CharacterStateSetter : MonoBehaviour
     {

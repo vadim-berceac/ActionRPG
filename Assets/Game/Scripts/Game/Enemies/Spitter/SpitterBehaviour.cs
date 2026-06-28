@@ -37,9 +37,9 @@ namespace Game
         public RandomAudioPlayer spottedAudio;
 
         public EnemyController controller { get { return m_Controller; } }
-        public PlayerController target { get { return m_Target; } }
+        public HumanoidController target { get { return m_Target; } }
 
-        protected PlayerController m_Target = null;
+        protected HumanoidController m_Target = null;
         protected EnemyController m_Controller;
         protected bool m_Fleeing = false;
 
@@ -163,7 +163,7 @@ namespace Game
 
             if (m_Fleeing || fromTarget.sqrMagnitude <= fleeingDistance * fleeingDistance)
             {
-                //player is too close from us, pick a point diametrically oppossite at twice that distance and try to move there.
+                //humanoid is too close from us, pick a point diametrically oppossite at twice that distance and try to move there.
                 Vector3 fleePoint = transform.position + fromTarget.normalized * 2 * fleeingDistance;
 
                 Debug.DrawLine(fleePoint, fleePoint + Vector3.up * 10.0f);
@@ -182,7 +182,7 @@ namespace Game
 
             if (m_Fleeing && fromTarget.sqrMagnitude > fleeingDistance * fleeingDistance * 4)
             {
-                //we're twice the fleeing distance from the player and fleeing, we can stop now
+                //we're twice the fleeing distance from the humanoid and fleeing, we can stop now
                 m_Fleeing = false;
                 controller.animator.SetBool(hashFleeing, m_Fleeing);
             }
@@ -220,7 +220,7 @@ namespace Game
             if (m_Target.playerScanner.detectionRadius < m_Target.fleeingDistance)
             {
                 EditorGUILayout.HelpBox("The scanner detection radius is smaller than the fleeing range.\n" +
-                    "The spitter will never shoot at the player as it will flee past the range at which it can see the player",
+                    "The spitter will never shoot at the humanoid as it will flee past the range at which it can see the humanoid",
                     MessageType.Warning, true);    
             }
             

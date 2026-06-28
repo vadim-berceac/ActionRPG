@@ -18,7 +18,7 @@ namespace Game
             m_MonoBehaviour.FindTarget();
 
             if(m_MonoBehaviour.target != null)
-                m_MonoBehaviour.StartPursuit(); // if the player got back in our vision range, resume pursuit!
+                m_MonoBehaviour.StartPursuit(); // if the humanoid got back in our vision range, resume pursuit!
             else 
                 m_MonoBehaviour.WalkBackToBase();
         }

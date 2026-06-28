@@ -17,7 +17,7 @@ namespace Game
 
         }
 
-        // Update is called once per frame
+        // OnUpdate is called once per frame
         void Update()
         {
             RaycastHit hit;

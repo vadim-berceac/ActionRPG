@@ -6,17 +6,17 @@ namespace Game
     {
         public int effectIndex;
         
-        private PlayerController _player;
+        private HumanoidController _humanoid;
 
         // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
         override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
-            if (_player == null)
+            if (_humanoid == null)
             {
-                _player = animator.GetComponent<PlayerController>();
+                _humanoid = animator.GetComponent<HumanoidController>();
             }
 
-            //_player.PrimaryWeaponInstance.effects[effectIndex].Activate();
+            //_humanoid.PrimaryWeaponInstance.effects[effectIndex].Activate();
         }
 
     } 

@@ -9,14 +9,14 @@ public class PickupItem : MonoBehaviour
     [SerializeField] private WeaponData data;
 
     private PlayerNewInput _playerInput;
-    private PlayerController _playerController;
+    private HumanoidController _humanoidController;
     private PickupSelectionService _selectionService;
 
     [Inject]
-    private void Construct(PlayerNewInput playerInput, PlayerController playerController, PickupSelectionService selectionService)
+    private void Construct(PlayerNewInput playerInput, HumanoidController humanoidController, PickupSelectionService selectionService)
     {
         _playerInput = playerInput;
-        _playerController = playerController;
+        _humanoidController = humanoidController;
         _selectionService = selectionService;
 
         trigger.OnEnter.AddListener(OnEnter);
@@ -47,22 +47,22 @@ public class PickupItem : MonoBehaviour
 
         if (data.Wear == WeaponData.WearType.Additional)
         {
-            if (_playerController.primaryWeaponData == null ||
-                _playerController.primaryWeaponData.Wear == WeaponData.WearType.OneHanded)
+            if (_humanoidController.primaryWeaponData == null ||
+                _humanoidController.primaryWeaponData.Wear == WeaponData.WearType.OneHanded)
             {
-                _playerController.CreateAdditionalWeapon(data, true);
+                _humanoidController.CreateAdditionalWeapon(data, true);
                 Destroy(root);
             }
         }
         else
         {
-            if (data.Wear == WeaponData.WearType.OneHanded || _playerController.additionalWeaponData == null)
+            if (data.Wear == WeaponData.WearType.OneHanded || _humanoidController.additionalWeaponData == null)
             {
-                _playerController.CreatePrimaryWeapon(data, true);
+                _humanoidController.CreatePrimaryWeapon(data, true);
             }
             else
             {
-                _playerController.CreatePrimaryWeapon(data, true, true);
+                _humanoidController.CreatePrimaryWeapon(data, true, true);
             }
             Destroy(root);
         }

@@ -54,7 +54,7 @@ namespace KevinIglesias
             }
         }
 
-        // OnStateExit is called on each Update frame between OnStateEnter and OnStateExit callbacks
+        // OnStateExit is called on each OnUpdate frame between OnStateEnter and OnStateExit callbacks
         override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
             if(condition == BowConditions.OnExit)

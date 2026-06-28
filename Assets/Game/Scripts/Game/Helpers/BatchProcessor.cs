@@ -26,7 +26,7 @@ namespace Game
             s_ProcessList.Remove(function);
         }
 
-        // Update is called once per frame
+        // OnUpdate is called once per frame
         void Update()
         {
             for (int i = 0; i < s_ProcessList.Count; ++i)

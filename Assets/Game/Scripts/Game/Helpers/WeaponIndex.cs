@@ -6,7 +6,7 @@ public class WeaponIndex : StateMachineBehaviour
     [SerializeField] private Mode setMode;
     [SerializeField] private bool onStart;
     
-    private PlayerController _player;
+    private HumanoidController _humanoid;
     readonly int m_HashWeaponIndex = Animator.StringToHash("WeaponIndex");
     
     public override void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
@@ -25,9 +25,9 @@ public class WeaponIndex : StateMachineBehaviour
 
     private void SetValue(Animator animator)
     {
-        if(_player == null) _player = animator.gameObject.GetComponent<PlayerController>();
+        if(_humanoid == null) _humanoid = animator.gameObject.GetComponent<HumanoidController>();
         
-        if(_player == null) return;
+        if(_humanoid == null) return;
         
         if (setMode == Mode.Zero)
         {
@@ -35,7 +35,7 @@ public class WeaponIndex : StateMachineBehaviour
             return;
         }
         
-        animator.SetFloat(m_HashWeaponIndex, _player.primaryWeaponData ? _player.primaryWeaponData.AnimationSetIndex : 0);
+        animator.SetFloat(m_HashWeaponIndex, _humanoid.primaryWeaponData ? _humanoid.primaryWeaponData.AnimationSetIndex : 0);
     }
 }
 

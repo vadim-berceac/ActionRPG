@@ -41,7 +41,7 @@ public class SceneInstaller : MonoInstaller
             .NonLazy();
         
         Container
-            .Bind<PlayerController>()
+            .Bind<HumanoidController>()
             .FromComponentInHierarchy()
             .AsSingle()
             .NonLazy();

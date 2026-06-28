@@ -12,7 +12,7 @@ namespace Game
 
         void OnTriggerEnter(Collider other)
         {
-            var pc = other.GetComponent<PlayerController>();
+            var pc = other.GetComponent<HumanoidController>();
             if (pc != null)
             {
                 pc.Die(new Damageable.DamageMessage());

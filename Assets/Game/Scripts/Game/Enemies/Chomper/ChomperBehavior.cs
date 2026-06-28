@@ -21,7 +21,7 @@ namespace Game
 
         public EnemyController controller { get { return m_Controller; } }
 
-        public PlayerController target { get { return m_Target; } }
+        public HumanoidController target { get { return m_Target; } }
         public TargetDistributor.TargetFollower followerData { get { return m_FollowerInstance; } }
 
         public Vector3 originalPosition { get; protected set; }
@@ -30,7 +30,7 @@ namespace Game
 
         public MeleeWeapon meleeWeapon;
         public TargetScanner playerScanner;
-        [Tooltip("Time in seconde before the Chomper stop pursuing the player when the player is out of sight")]
+        [Tooltip("Time in seconde before the Chomper stop pursuing the humanoid when the humanoid is out of sight")]
         public float timeToStopPursuit;
 
         [Header("Audio")]
@@ -44,7 +44,7 @@ namespace Game
 
         protected float m_TimerSinceLostTarget = 0.0f;
 
-        protected PlayerController m_Target = null;
+        protected HumanoidController m_Target = null;
         protected EnemyController m_Controller;
         protected TargetDistributor.TargetFollower m_FollowerInstance = null;
 
@@ -107,11 +107,11 @@ namespace Game
         public void FindTarget()
         {
             //we ignore height difference if the target was already seen
-            PlayerController target = playerScanner.Detect(transform, m_Target == null);
+            HumanoidController target = playerScanner.Detect(transform, m_Target == null);
 
             if (m_Target == null)
             {
-                //we just saw the player for the first time, pick an empty spot to target around them
+                //we just saw the humanoid for the first time, pick an empty spot to target around them
                 if (target != null)
                 {
                     m_Controller.animator.SetTrigger(hashSpotted);
@@ -123,8 +123,8 @@ namespace Game
             }
             else
             {
-                //we lost the target. But chomper have a special behaviour : they only loose the player scent if they move past their detection range
-                //and they didn't see the player for a given time. Not if they move out of their detectionAngle. So we check that this is the case before removing the target
+                //we lost the target. But chomper have a special behaviour : they only loose the humanoid scent if they move past their detection range
+                //and they didn't see the humanoid for a given time. Not if they move out of their detectionAngle. So we check that this is the case before removing the target
                 if (target == null)
                 {
                     m_TimerSinceLostTarget += Time.deltaTime;
