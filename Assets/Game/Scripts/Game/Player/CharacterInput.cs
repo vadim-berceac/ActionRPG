@@ -20,6 +20,7 @@ public class PlayerNewInput : ICharacterInput, IDisposable
 
     public event Action Interact;
     public event Action Pause;
+    public event Action Inventory;
     
     private readonly InputAction _moveAction;
     private readonly InputAction _lookAction;
@@ -28,6 +29,7 @@ public class PlayerNewInput : ICharacterInput, IDisposable
     private readonly InputAction _attack2Action;
     private readonly InputAction _interactAction;
     private readonly InputAction _pauseAction;
+    private readonly InputAction _inventoryAction;
 
     private PlayerNewInput(InputActionAsset actionAsset)
     {
@@ -38,6 +40,7 @@ public class PlayerNewInput : ICharacterInput, IDisposable
         _attack2Action = actionAsset.FindAction("Attack2");
         _interactAction = actionAsset.FindAction("Interact");
         _pauseAction = actionAsset.FindAction("Pause");
+        _inventoryAction = actionAsset.FindAction("Inventory");
         
         Subscribe();
         
@@ -63,6 +66,7 @@ public class PlayerNewInput : ICharacterInput, IDisposable
         
         _interactAction.started += OnInteract;
         _pauseAction.performed += OnPause;
+        _inventoryAction.started += OnInventory;
     }
 
     private void Unsubscribe()
@@ -84,6 +88,7 @@ public class PlayerNewInput : ICharacterInput, IDisposable
         
         _interactAction.started -= OnInteract;
         _pauseAction.performed -= OnPause;
+        _inventoryAction.started -= OnInventory;
     }
 
     private void OnMove(InputAction.CallbackContext context)
@@ -144,6 +149,11 @@ public class PlayerNewInput : ICharacterInput, IDisposable
     private void OnPause(InputAction.CallbackContext context)
     {
         Pause?.Invoke();
+    }
+
+    private void OnInventory(InputAction.CallbackContext context)
+    {
+        Inventory?.Invoke();
     }
 
     public void Dispose()

@@ -14,6 +14,7 @@ namespace Game
         public GameObject optionsCanvas;
         public GameObject controlsCanvas;
         public GameObject audioCanvas;
+        public GameObject inventoryCanvas;
 
         protected bool m_InPause;
         protected PlayableDirector[] m_Directors;
@@ -40,12 +41,14 @@ namespace Game
 
             m_Directors = FindObjectsByType<PlayableDirector> (FindObjectsSortMode.None);
 
-            _playerNewInput.Pause += SwitchPauseState;
+            _playerNewInput.Pause += ShowPauseMenu;
+            _playerNewInput.Inventory += ShowInventory;
         }
 
         private void OnDestroy()
         {
-            _playerNewInput.Pause -= SwitchPauseState;
+            _playerNewInput.Pause -= ShowPauseMenu;
+            _playerNewInput.Inventory -= ShowInventory;
         }
 
         public void Quit()
@@ -60,17 +63,33 @@ namespace Game
         public void ExitPause()
         {
             m_InPause = true;
-            SwitchPauseState();
+            SwitchWindows(ref pauseCanvas);
+        }
+
+        public void ExitInventory()
+        {
+            m_InPause = true;
+            SwitchWindows(ref inventoryCanvas);
         }
 
         public void RestartLevel()
         {
             m_InPause = true;
-            SwitchPauseState();
+            SwitchWindows(ref pauseCanvas);
             SceneController.RestartZone();
         }
 
-        protected void SwitchPauseState()
+        private void ShowInventory()
+        {
+            SwitchWindows(ref inventoryCanvas);
+        }
+
+        private void ShowPauseMenu()
+        {
+            SwitchWindows(ref pauseCanvas);
+        }
+
+        private void SwitchWindows(ref GameObject window)
         {
             if (m_InPause && Time.timeScale > 0 || !m_InPause && ScreenFader.IsFading)
                 return;
@@ -103,8 +122,8 @@ namespace Game
 
             Time.timeScale = m_InPause ? 1 : 0;
 
-            if (pauseCanvas)
-                pauseCanvas.SetActive(!m_InPause);
+            if (window)
+                window.SetActive(!m_InPause);
 
             if (optionsCanvas)
                 optionsCanvas.SetActive(false);
@@ -114,6 +133,9 @@ namespace Game
 
             if (audioCanvas)
                 audioCanvas.SetActive(false);
+            
+            if(pauseCanvas.activeInHierarchy && inventoryCanvas)
+                inventoryCanvas.SetActive(false);
 
             m_InPause = !m_InPause;
         }
