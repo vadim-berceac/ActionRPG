@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Zenject;
 
@@ -17,28 +18,36 @@ public class InventoryFiller : MonoBehaviour
         _inventory = playerTag.PlayerInventory;
     }
 
-    private void OnEnable()
+    private async void OnEnable()
     {
-       ClearCells();
-       FillCells();
+        await ClearCells();
+        await FillCells();
     }
 
-    private void ClearCells()
+    private async UniTask ClearCells()
     {
         foreach (var item in _inventoryCells)
         {
             Destroy(item.gameObject);
         }
         _inventoryCells.Clear();
+        
+        await UniTask.Yield(PlayerLoopTiming.Update);
     }
 
-    private void FillCells()
+    private async UniTask FillCells()
     {
         foreach (var item in _inventory.InventoryItemSlots)
         {
             var instance = Instantiate(InventoryCellPrefab, InventoryCellsParent).GetComponent<InventoryCellView>();
+            if (instance == null)
+            {
+                continue;
+            }
             _inventoryCells.Add(instance);
-            instance.Initialize(item);
+            instance.Initialize(_inventory, item);
         }
+        
+        await UniTask.Yield(PlayerLoopTiming.Update);
     }
 }

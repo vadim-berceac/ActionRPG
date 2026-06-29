@@ -24,7 +24,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 112}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 35284
+  controlID: 1746
   draggingID: 0
 --- !u!114 &2
 MonoBehaviour:
@@ -154,7 +154,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 112}
   m_MaxSize: {x: 16192, y: 16192}
   vertical: 1
-  controlID: 35285
+  controlID: 1747
   draggingID: 0
 --- !u!114 &4
 MonoBehaviour:
@@ -180,7 +180,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 56}
   m_MaxSize: {x: 16192, y: 8096}
   vertical: 0
-  controlID: 35286
+  controlID: 1748
   draggingID: 0
 --- !u!114 &5
 MonoBehaviour:
@@ -253,21 +253,13 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs:
-      - m_Data: 50644
+      m_SelectedIDs: []
       m_LastClickedID:
         m_Data: 0
       m_ExpandedIDs:
-      - m_Data: -251314
-      - m_Data: -3682
-      - m_Data: -3674
-      - m_Data: -3648
-      - m_Data: -3096
-      - m_Data: -3088
-      - m_Data: -3052
-      - m_Data: -3026
+      - m_Data: -3344
       - m_Data: -1380
-      - m_Data: 53500
+      - m_Data: 53522
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -367,7 +359,7 @@ MonoBehaviour:
       m_Data: 60056
     m_ExpandedIDs:
     - m_Data: 0
-    - m_Data: 59660
+    - m_Data: 59662
     - m_Data: 1000000000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -401,7 +393,7 @@ MonoBehaviour:
       m_Data: 0
     m_ExpandedIDs:
     - m_Data: 0
-    - m_Data: 59660
+    - m_Data: 59662
     - m_Data: 1000000000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -509,7 +501,7 @@ MonoBehaviour:
     m_CachedPref: 275
     m_ControlHash: 1412526313
     m_PrefName: Preview_InspectorPreview
-  m_LastInspectedObjectInstanceID: 50644
+  m_LastInspectedObjectInstanceID: -1
   m_LastVerticalScrollValue: 0
   m_GlobalObjectId: 
   m_InspectorMode: 0
@@ -657,7 +649,7 @@ MonoBehaviour:
       m_Data: 59660
     m_ExpandedIDs:
     - m_Data: 0
-    - m_Data: 59660
+    - m_Data: 59662
     - m_Data: 1000000000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -691,7 +683,7 @@ MonoBehaviour:
       m_Data: 0
     m_ExpandedIDs:
     - m_Data: 0
-    - m_Data: 59660
+    - m_Data: 59662
     - m_Data: 1000000000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -1559,7 +1551,7 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Resources/Items/Weapon
+    - Assets/Game/Prefabs/UIPrefabs
     m_Globs: []
     m_ProductIds: 
     m_AnyWithAssetOrigin: 0
@@ -1569,27 +1561,25 @@ MonoBehaviour:
   m_ViewMode: 1
   m_StartGridSize: 16
   m_LastFolders:
-  - Assets/Resources/Items/Weapon
+  - Assets/Game/Prefabs/UIPrefabs
   m_LastFoldersGridSize: 16
   m_LastProjectPath: D:\GitHub\ActionRPG
   m_LockTracker:
     m_IsLocked: 0
   m_LastLocalAssetsSearchArea: 1
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 464.40002}
+    scrollPos: {x: 0, y: 0}
     m_SelectedIDs:
-    - m_Data: 60934
+    - m_Data: 61516
     m_LastClickedID:
-      m_Data: 60934
+      m_Data: 61516
     m_ExpandedIDs:
     - m_Data: 0
-    - m_Data: 59660
-    - m_Data: 60038
-    - m_Data: 60042
-    - m_Data: 60054
-    - m_Data: 60062
-    - m_Data: 60064
-    - m_Data: 60076
+    - m_Data: 59662
+    - m_Data: 59998
+    - m_Data: 60002
+    - m_Data: 60012
+    - m_Data: 61518
     - m_Data: 1000000000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -1623,7 +1613,7 @@ MonoBehaviour:
       m_Data: 0
     m_ExpandedIDs:
     - m_Data: 0
-    - m_Data: 59660
+    - m_Data: 59662
     - m_Data: 1000000000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -1651,9 +1641,8 @@ MonoBehaviour:
       m_Icon: {fileID: 0}
       m_ResourceFile: 
   m_ListAreaState:
-    m_SelectedInstanceIDs:
-    - m_Data: 50644
-    m_LastClickedInstanceID: 50644
+    m_SelectedInstanceIDs: []
+    m_LastClickedInstanceID: 0
     m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs:
     - m_Data: 107562
@@ -1776,8 +1765,8 @@ MonoBehaviour:
     - m_Data: 171642
     m_RenameOverlay:
       m_UserAcceptedRename: 0
-      m_Name: DescriptionFiller
-      m_OriginalName: DescriptionFiller
+      m_Name: InventoryCell
+      m_OriginalName: InventoryCell
       m_EditFieldRect:
         serializedVersion: 2
         x: 0
@@ -1785,7 +1774,7 @@ MonoBehaviour:
         width: 0
         height: 0
       m_UserData:
-        m_Data: 450236
+        m_Data: 56762
       m_IsWaitingForDelay: 0
       m_IsRenaming: 0
       m_OriginalEventType: 0
@@ -1827,7 +1816,7 @@ MonoBehaviour:
     serializedVersion: 2
     x: 0
     y: 680
-    width: 1504.6
+    width: 1317.4
     height: 387.59998
   m_SerializedDataModeController:
     m_DataMode: 0
@@ -3357,8 +3346,8 @@ MonoBehaviour:
     y: 0
     width: 729.6
     height: 1023.19995
-  m_MinSize: {x: 276, y: 76}
-  m_MaxSize: {x: 4001, y: 4026}
+  m_MinSize: {x: 275, y: 50}
+  m_MaxSize: {x: 4000, y: 4000}
   m_ActualView: {fileID: 20}
   m_Panes:
   - {fileID: 20}

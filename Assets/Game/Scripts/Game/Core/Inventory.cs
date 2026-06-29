@@ -1,10 +1,20 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
 public class Inventory : MonoBehaviour
 {
     [field: SerializeField] public List<InventoryItemSlot> InventoryItemSlots { get; private set; }
+    
+    private DiContainer _container;
 
+    [Inject]
+    private void Construct(DiContainer container)
+    {
+        _container = container;
+    }
+    
     public WeaponData GetWeaponData(WeaponData.WearType type)
     {
         foreach (var itemSlot in InventoryItemSlots)
@@ -63,6 +73,7 @@ public class Inventory : MonoBehaviour
             if (itemSlot.Amount <= 0)
             {
                 InventoryItemSlots.Remove(itemSlot);
+                itemSlot.Dispose();
             }
             
             return true;
@@ -70,10 +81,20 @@ public class Inventory : MonoBehaviour
         
         return false;
     }
+
+    public bool TryDrop(ItemData itemData, int amount = 1)
+    {
+        if (TryRemove(itemData, amount))
+        {
+            itemData.GetGroundInstance(transform, _container);
+            return true;
+        }
+        return false;
+    }
 }
 
 [System.Serializable]
-public class InventoryItemSlot
+public class InventoryItemSlot : IDisposable
 {
     [field: SerializeField] public ItemData ItemData { get; private set; }
     [field: SerializeField] public int Amount { get; private set; }
@@ -89,5 +110,10 @@ public class InventoryItemSlot
     public void SetAmount(int amount)
     {
         Amount = amount;
+    }
+
+    public void Dispose()
+    {
+        Debug.Log("Слот уничтожен - должно вызваться событие на уничтожение кнопки в инвентаре");
     }
 }

@@ -11,7 +11,6 @@ public class WeaponData : ItemData
         Additional
     }
     [field: SerializeField] public GameObject ViewPrefab { get; set; }
-    [field: SerializeField] public GameObject GroundPrefab { get; set; }
     [field: SerializeField] public PropBoneSettings ActiveProp { get; set; }
     [field: SerializeField] public PropBoneSettings UnActiveProp { get; set; }
     [field: SerializeField] public string[] ComboNames { get; private set; }
@@ -26,16 +25,6 @@ public class WeaponData : ItemData
         }
         var instance = container.InstantiatePrefab(ViewPrefab, parent);
         instance.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
-        return instance;
-    }
-
-    public GameObject GetGroundInstance(Transform parent, DiContainer container)
-    {
-        if (GroundPrefab == null) return null;
-
-        var instance = container.InstantiatePrefab(GroundPrefab, parent);
-        instance.transform.SetLocalPositionAndRotation(Vector3.one, Quaternion.identity);
-        instance.transform.SetParent(null);
         return instance;
     }
 }
