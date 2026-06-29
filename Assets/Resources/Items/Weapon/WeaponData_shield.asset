@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: WeaponData_shield
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   <Name>k__BackingField: Shield
-  <Description>k__BackingField: 
+  <Icon>k__BackingField: {fileID: 0}
+  <Description>k__BackingField: '  Simple shield.'
   <CanBeEquipped>k__BackingField: 1
   <ViewPrefab>k__BackingField: {fileID: 1205787345809761593, guid: e0a1b23e5a6e6624691c8ad1c3850eb9,
     type: 3}

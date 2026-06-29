@@ -4,6 +4,7 @@ using Game.Message;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.AI;
+using Zenject;
 #if UNITY_EDITOR
 using MessageType = UnityEditor.MessageType;
 #endif
@@ -45,6 +46,8 @@ namespace Game
 
         protected Vector3 m_RememberedTargetPosition;
 
+        [Inject] private readonly PlayerTag _playerTag;
+        
         protected void OnEnable()
         {
             m_Controller = GetComponentInChildren<EnemyController>();
@@ -191,7 +194,7 @@ namespace Game
         public void FindTarget()
         {
             //we ignore height difference if the target was already seen
-            m_Target = playerScanner.Detect(transform, m_Target == null);
+            m_Target = playerScanner.Detect(transform, _playerTag.Player,  m_Target == null);
             m_Controller.animator.SetBool(hashHaveEnemy, m_Target != null);
         }
 

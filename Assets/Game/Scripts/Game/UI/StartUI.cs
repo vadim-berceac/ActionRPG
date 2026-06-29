@@ -134,7 +134,10 @@ namespace Game
             if (audioCanvas)
                 audioCanvas.SetActive(false);
             
-            if(pauseCanvas.activeInHierarchy && inventoryCanvas)
+            if (pauseCanvas.activeInHierarchy && inventoryCanvas)
+                inventoryCanvas.SetActive(false);
+            
+            if (window == pauseCanvas)
                 inventoryCanvas.SetActive(false);
 
             m_InPause = !m_InPause;

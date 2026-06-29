@@ -1,11 +1,11 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
+using Zenject;
 
 namespace Game
 {
     public class HealthUI : MonoBehaviour
     {
-        public Damageable representedDamageable;
+        private Damageable _representedDamageable;
         public GameObject healthIconPrefab;
 
         protected Animator[] m_HealthIconAnimators;
@@ -14,16 +14,17 @@ namespace Game
         protected readonly int m_HashInactiveState = Animator.StringToHash("Inactive");
         protected const float k_HeartIconAnchorWidth = 0.041f;
 
-        IEnumerator Start()
+        [Inject]
+        private void Construct(PlayerTag playerTag)
         {
-            if (representedDamageable == null)
-                yield break;
+            _representedDamageable = playerTag.PlayerHealth;
+        }
 
-            yield return null;
+        private void Start()
+        {
+            m_HealthIconAnimators = new Animator[_representedDamageable.maxHitPoints];
 
-            m_HealthIconAnimators = new Animator[representedDamageable.maxHitPoints];
-
-            for (int i = 0; i < representedDamageable.maxHitPoints; i++)
+            for (int i = 0; i < _representedDamageable.maxHitPoints; i++)
             {
                 GameObject healthIcon = Instantiate(healthIconPrefab);
                 healthIcon.transform.SetParent(transform);
@@ -34,16 +35,16 @@ namespace Game
                 healthIconRect.anchorMax += new Vector2(k_HeartIconAnchorWidth, 0f) * i;
                 m_HealthIconAnimators[i] = healthIcon.GetComponent<Animator>();
 
-                if (representedDamageable.currentHitPoints < i + 1)
+                if (_representedDamageable.currentHitPoints < i + 1)
                 {
                     m_HealthIconAnimators[i].Play(m_HashInactiveState);
                     m_HealthIconAnimators[i].SetBool(m_HashActivePara, false);
                 }
             }
 
-            representedDamageable.OnReceiveDamage.AddListener(ChangeHitPointUI);
-            representedDamageable.OnResetDamage.AddListener(ChangeHitPointUI);
-            representedDamageable.OnDeath.AddListener(ChangeHitPointUI);
+            _representedDamageable.OnReceiveDamage.AddListener(ChangeHitPointUI);
+            _representedDamageable.OnResetDamage.AddListener(ChangeHitPointUI);
+            _representedDamageable.OnDeath.AddListener(ChangeHitPointUI);
         }
 
         public void ChangeHitPointUI()
@@ -53,15 +54,15 @@ namespace Game
 
             for (int i = 0; i < m_HealthIconAnimators.Length; i++)
             {
-                m_HealthIconAnimators[i].SetBool(m_HashActivePara, representedDamageable.currentHitPoints >= i + 1);
+                m_HealthIconAnimators[i].SetBool(m_HashActivePara, _representedDamageable.currentHitPoints >= i + 1);
             }
         }
 
         private void OnDestroy()
         {
-            representedDamageable.OnReceiveDamage.RemoveListener(ChangeHitPointUI);
-            representedDamageable.OnResetDamage.RemoveListener(ChangeHitPointUI);
-            representedDamageable.OnDeath.RemoveListener(ChangeHitPointUI);
+            _representedDamageable.OnReceiveDamage.RemoveListener(ChangeHitPointUI);
+            _representedDamageable.OnResetDamage.RemoveListener(ChangeHitPointUI);
+            _representedDamageable.OnDeath.RemoveListener(ChangeHitPointUI);
         }
     } 
 }

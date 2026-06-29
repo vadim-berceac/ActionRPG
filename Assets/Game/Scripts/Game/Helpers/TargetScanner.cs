@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
 namespace Game
 {
@@ -22,15 +23,15 @@ namespace Game
         /// <param name="detector">The transform from which run the detection</param>
         /// /// <param name="useHeightDifference">If the computation should comapre the height difference to the maxHeightDifference value or ignore</param>
         /// <returns>The humanoid controller if visible, null otherwise</returns>
-        public HumanoidController Detect(Transform detector, bool useHeightDifference = true)
+        public HumanoidController Detect(Transform detector, HumanoidController player, bool useHeightDifference = true)
         {
             //if either the humanoid is not spwned or they are spawning, we do not target them
-            if (HumanoidController.instance == null || HumanoidController.instance.Respawning)
+            if (player == null || player.Respawning)
                 return null;
 
             Vector3 eyePos = detector.position + Vector3.up * heightOffset;
-            Vector3 toPlayer = HumanoidController.instance.transform.position - eyePos;
-            Vector3 toPlayerTop = HumanoidController.instance.transform.position + Vector3.up * 1.5f - eyePos;
+            Vector3 toPlayer = player.transform.position - eyePos;
+            Vector3 toPlayerTop = player.transform.position + Vector3.up * 1.5f - eyePos;
 
             if (useHeightDifference && Mathf.Abs(toPlayer.y + heightOffset) > maxHeightDifference)
             { //if the target is too high or too low no need to try to reach it, just abandon pursuit
@@ -58,7 +59,7 @@ namespace Game
                         viewBlockerLayerMask, QueryTriggerInteraction.Ignore);
 
                     if (canSee)
-                        return HumanoidController.instance;
+                        return player;
                 }
             }
 

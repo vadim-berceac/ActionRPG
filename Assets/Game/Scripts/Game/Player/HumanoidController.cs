@@ -10,10 +10,6 @@ namespace Game
     [RequireComponent(typeof(Inventory))]
     public class HumanoidController : MonoBehaviour, IMessageReceiver
     {
-        protected static HumanoidController s_Instance;
-        public Inventory Inventory { get; private set; }
-        public static HumanoidController instance => s_Instance;
-
         public bool Respawning => _respawning;
 
         public float maxForwardSpeed = 8f;
@@ -34,13 +30,12 @@ namespace Game
         public RandomAudioPlayer emoteJumpPlayer;
 
         private CameraSettings _cameraSettings;
-        private HealthUI _healthUI;
         private DiContainer _diContainer;
         private bool _isWeaponEquipped;
 
         private AnimatorStateCache _animCache;
 
-        
+        private Inventory _inventory;
         private WeaponData _primaryWeaponData;
         private WeaponData _additionalWeaponData;
         private MeleeWeapon _primaryWeaponInstance;
@@ -88,19 +83,16 @@ namespace Game
             _diContainer = container;
             _cameraSettings = cameraSettings;
             _cameraSettings.SetTarget(transform, transform.Find("HeadTarget"));
-            _healthUI = healthUI;
         }
 
         private void Awake()
         {
             _input    = GetComponent<CharacterInput>();
             _charCtrl = GetComponent<CharacterController>();
-            Inventory = GetComponent<Inventory>();
+            _inventory = GetComponent<Inventory>();
             _animCache     = new AnimatorStateCache(GetComponent<Animator>());
             InitWeapons();
             CreateWeapons();
-
-            s_Instance = this;
         }
 
         private void OnEnable()
@@ -110,8 +102,6 @@ namespace Game
             _damageable = GetComponent<Damageable>();
             _damageable.onDamageMessageReceivers.Add(this);
             _damageable.isInvulnerable = true;
-
-            _healthUI.representedDamageable = _damageable;
             _renderers = GetComponentsInChildren<Renderer>();
         }
 
@@ -154,15 +144,15 @@ namespace Game
 
         private void InitWeapons()
         {
-            _primaryWeaponData = Inventory.GetWeaponData(WeaponData.WearType.OneHanded);
+            _primaryWeaponData = _inventory.GetWeaponData(WeaponData.WearType.OneHanded);
 
             if (_primaryWeaponData != null)
             {
-                _additionalWeaponData = Inventory.GetWeaponData(WeaponData.WearType.Additional);
+                _additionalWeaponData = _inventory.GetWeaponData(WeaponData.WearType.Additional);
                 return;
             }
             
-            _primaryWeaponData = Inventory.GetWeaponData(WeaponData.WearType.TwoHanded);
+            _primaryWeaponData = _inventory.GetWeaponData(WeaponData.WearType.TwoHanded);
         }
 
         private void CreateWeapons()

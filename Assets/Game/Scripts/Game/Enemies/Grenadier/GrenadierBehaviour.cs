@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using Zenject;
 
 namespace Game
 {
@@ -67,6 +68,8 @@ namespace Game
         protected Color m_OriginalCoreMaterial;
 
         protected float m_ShieldActivationTime;
+        
+        [Inject] private readonly PlayerTag _playerTag;
 
 
         void OnEnable()
@@ -103,7 +106,7 @@ namespace Game
 
         public void FindTarget()
         {
-            m_Target = playerScanner.Detect(transform);
+            m_Target = playerScanner.Detect(transform, _playerTag.Player);
         }
 
         public void StartPursuit()

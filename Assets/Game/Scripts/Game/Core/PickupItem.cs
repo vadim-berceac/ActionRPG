@@ -9,14 +9,15 @@ public class PickupItem : MonoBehaviour
     [SerializeField] private WeaponData data;
 
     private PlayerNewInput _playerInput;
-    private HumanoidController _humanoidController;
+    private Inventory _inventory;
+    
     private PickupSelectionService _selectionService;
 
     [Inject]
-    private void Construct(PlayerNewInput playerInput, HumanoidController humanoidController, PickupSelectionService selectionService)
+    private void Construct(PlayerNewInput playerInput, PlayerTag player, PickupSelectionService selectionService)
     {
         _playerInput = playerInput;
-        _humanoidController = humanoidController;
+        _inventory = player.PlayerInventory;
         _selectionService = selectionService;
 
         trigger.OnEnter.AddListener(OnEnter);
@@ -67,7 +68,7 @@ public class PickupItem : MonoBehaviour
         //     Destroy(root);
         // }
         
-        _humanoidController.Inventory.Add(data);
+        _inventory.Add(data);
         Destroy(root);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Game.Message;
 using UnityEngine;
+using Zenject;
 
 namespace Game
 {
@@ -47,6 +48,8 @@ namespace Game
         protected HumanoidController m_Target = null;
         protected EnemyController m_Controller;
         protected TargetDistributor.TargetFollower m_FollowerInstance = null;
+        
+        [Inject] private readonly PlayerTag _playerTag;
 
         protected void OnEnable()
         {
@@ -107,7 +110,7 @@ namespace Game
         public void FindTarget()
         {
             //we ignore height difference if the target was already seen
-            HumanoidController target = playerScanner.Detect(transform, m_Target == null);
+            HumanoidController target = playerScanner.Detect(transform, _playerTag.Player, m_Target == null);
 
             if (m_Target == null)
             {

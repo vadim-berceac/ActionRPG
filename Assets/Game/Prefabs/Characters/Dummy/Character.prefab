@@ -47,6 +47,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 919562152349746805}
+  - component: {fileID: 8328305847013917851}
   - component: {fileID: 3589592028908676066}
   - component: {fileID: 1221178880529204029}
   - component: {fileID: 8221082309353826462}
@@ -82,6 +83,21 @@ Transform:
   - {fileID: 203577376559529239}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 310, z: 0}
+--- !u!114 &8328305847013917851
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1125372579252015583}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eea9a4f937e4be641a1083c208abe966, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerTag
+  <Player>k__BackingField: {fileID: 3129279076112330710}
+  <PlayerInventory>k__BackingField: {fileID: 3077285747228589714}
+  <PlayerHealth>k__BackingField: {fileID: 8221082309353826462}
 --- !u!95 &3589592028908676066
 Animator:
   serializedVersion: 7
