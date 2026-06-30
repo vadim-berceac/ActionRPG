@@ -243,7 +243,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82ab8a8a2a571264991c399b8b8828da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Inventory
-  <InventoryItemSlots>k__BackingField: []
+  <InventoryItemSlots>k__BackingField:
+  - <ItemData>k__BackingField: {fileID: 11400000, guid: 7d74bb0bc3a9e4c498dec80622ac6ac3,
+      type: 2}
+    <Amount>k__BackingField: 1
+    <EquippedOnStart>k__BackingField: 1
+  - <ItemData>k__BackingField: {fileID: 11400000, guid: dc77a825655c3f440a0b3d4cc9929be1,
+      type: 2}
+    <Amount>k__BackingField: 1
+    <EquippedOnStart>k__BackingField: 1
 --- !u!114 &4971361307042770288
 MonoBehaviour:
   m_ObjectHideFlags: 0

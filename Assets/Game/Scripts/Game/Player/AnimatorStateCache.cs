@@ -43,6 +43,7 @@ namespace Game
         private AnimatorStateInfo _previousNext;
         private bool _isTransitioning;
         private bool _wasTransitioning;
+        private bool _hasAdditionalWeapon;
 
         public float FootFall { get; private set; }
 
@@ -102,7 +103,11 @@ namespace Game
 
         public void SetInputDetected(bool value) => _animator.SetBool(_hashInputDetected, value);
 
-        public void SetHasAdditionalWeapon(bool value) => _animator.SetBool(_hashHasAdditionalWeapon, value);
+        public void SetHasAdditionalWeapon(bool value)
+        { 
+            _hasAdditionalWeapon = value;
+            _animator.SetBool(_hashHasAdditionalWeapon, _hasAdditionalWeapon);
+        }
 
         public void SetWeaponEquipped(bool equipped, float weaponIndex)
         {
@@ -121,7 +126,13 @@ namespace Game
         public void TriggerRespawn()   => _animator.SetTrigger(_hashRespawn);
 
         public void TriggerAttack1()   => _animator.SetTrigger(HashAttack1);
-        public void TriggerAttack2()   => _animator.SetTrigger(HashAttack2);
+        public void TriggerAttack2()
+        {
+            if (_hasAdditionalWeapon)
+            {
+                _animator.SetTrigger(HashAttack2);
+            }
+        }
         public void ResetAttack1()     => _animator.ResetTrigger(HashAttack1);
         public void ResetAttack2()     => _animator.ResetTrigger(HashAttack2);
         public void ResetTrigger(int hash) => _animator.ResetTrigger(hash);
