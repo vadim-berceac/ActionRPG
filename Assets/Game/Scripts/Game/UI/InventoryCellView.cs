@@ -73,6 +73,7 @@ public class InventoryCellView : MonoBehaviour
 
    private void OnLeftClick()
    {
-      Debug.Log(_slot.ItemData.Description);
+      _inventory.TryTransfer(_slot.ItemData, 1);
+      Debug.Log($"Берем{_slot.ItemData} и переносим в экипировку");
    }
 }

@@ -34,6 +34,19 @@ public class InventoryFiller : MonoBehaviour
     {
         await ClearCells();
         await FillCells();
+
+        _inventory.OnSlotCreated += OnCellCreated;
+    }
+
+    private void OnDisable()
+    {
+        _inventory.OnSlotCreated -= OnCellCreated;
+    }
+
+    private async void OnCellCreated(InventoryItemSlot cell)
+    {
+        await ClearCells();
+        await FillCells();
     }
 
     private async UniTask ClearCells()

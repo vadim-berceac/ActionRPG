@@ -35,7 +35,6 @@ namespace Game
 
         private AnimatorStateCache _animCache;
 
-        private Inventory _inventory;
         private WeaponData _primaryWeaponData;
         private WeaponData _additionalWeaponData;
         private MeleeWeapon _primaryWeaponInstance;
@@ -89,10 +88,7 @@ namespace Game
         {
             _input    = GetComponent<CharacterInput>();
             _charCtrl = GetComponent<CharacterController>();
-            _inventory = GetComponent<Inventory>();
             _animCache     = new AnimatorStateCache(GetComponent<Animator>());
-            InitWeapons();
-            CreateWeapons();
         }
 
         private void OnEnable()
@@ -142,27 +138,6 @@ namespace Game
             _previouslyGrounded = _isGrounded;
         }
 
-        private void InitWeapons()
-        {
-            _primaryWeaponData = _inventory.GetWeaponData(WeaponData.WearType.OneHanded);
-
-            if (_primaryWeaponData != null)
-            {
-                _additionalWeaponData = _inventory.GetWeaponData(WeaponData.WearType.Additional);
-                return;
-            }
-            
-            _primaryWeaponData = _inventory.GetWeaponData(WeaponData.WearType.TwoHanded);
-        }
-
-        private void CreateWeapons()
-        {
-            if (_primaryWeaponData)
-                CreatePrimaryWeapon(_primaryWeaponData, false);
-            if (_additionalWeaponData)
-                CreateAdditionalWeapon(_additionalWeaponData, false);
-        }
-
         private void ConnectCombo(WeaponData data)
         {
             m_ComboHashes = new int[data.ComboNames.Length];
@@ -189,13 +164,18 @@ namespace Game
             _input.InputBlocked = _animCache.IsInputBlocked();
         }
 
-        private void CreateWeapon(WeaponData fromData, ref WeaponData prevData, ref MeleeWeapon weaponInstance, bool dropPrevious, int trigger)
+        private void CreateWeapon(WeaponData fromData, ref WeaponData prevData, ref MeleeWeapon weaponInstance, int trigger)
         {
-            if (weaponInstance != null)
+            if (fromData == null)
+            {
                 weaponInstance.DestroyInstance();
-
-            if (dropPrevious && prevData != null)
-                prevData.GetGroundInstance(transform, _diContainer);
+                prevData = null;
+                return;
+            }
+            if (weaponInstance != null)
+            {
+                weaponInstance.DestroyInstance();
+            }
 
             prevData = fromData;
             var weaponObj = prevData.GetViewInstance(transform, _diContainer);
@@ -206,23 +186,14 @@ namespace Game
             SetIsWeaponEquipped(false);
         }
 
-        public void CreatePrimaryWeapon(WeaponData fromData, bool dropPrevious, bool dropAdditional = false)
+        public void CreatePrimaryWeapon(WeaponData fromData)
         {
-            CreateWeapon(fromData, ref _primaryWeaponData, ref _primaryWeaponInstance, dropPrevious, _animCache.HashAttack1);
-
-            if (dropAdditional)
-            {
-                if (_additionalWeaponData != null)
-                    _additionalWeaponData.GetGroundInstance(transform, _diContainer);
-                if (_additionalWeaponInstance != null)
-                    _additionalWeaponInstance.DestroyInstance();
-                _additionalWeaponData = null;
-            }
+            CreateWeapon(fromData, ref _primaryWeaponData, ref _primaryWeaponInstance, _animCache.HashAttack1);
         }
 
-        public void CreateAdditionalWeapon(WeaponData fromData, bool dropPrevious)
+        public void CreateAdditionalWeapon(WeaponData fromData)
         {
-            CreateWeapon(fromData, ref _additionalWeaponData, ref _additionalWeaponInstance, dropPrevious, _animCache.HashAttack2);
+            CreateWeapon(fromData, ref _additionalWeaponData, ref _additionalWeaponInstance, _animCache.HashAttack2);
         }
 
         public void SetIsWeaponEquipped(bool value)

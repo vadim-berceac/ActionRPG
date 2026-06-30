@@ -7,12 +7,33 @@ public class Inventory : MonoBehaviour
 {
     [field: SerializeField] public List<InventoryItemSlot> InventoryItemSlots { get; private set; }
     
+    public event Action<ItemData, int> OnTransfer;
+    public event Action<InventoryItemSlot> OnSlotCreated;
+    
     private DiContainer _container;
 
     [Inject]
     private void Construct(DiContainer container)
     {
         _container = container;
+    }
+
+    private void Start()
+    {
+        Initialize();
+    }
+
+    private void Initialize()
+    {
+        foreach (var itemSlot in InventoryItemSlots.ToArray())
+        {
+            if (!itemSlot.EquippedOnStart || !itemSlot.ItemData.CanBeEquipped || itemSlot.Amount <= 0)
+            {
+                continue;
+            }
+
+            TryTransfer(itemSlot.ItemData, 1);
+        }
     }
     
     public WeaponData GetWeaponData(WeaponData.WearType type)
@@ -50,7 +71,9 @@ public class Inventory : MonoBehaviour
 
         if (!slotFind)
         {
-            InventoryItemSlots.Add(new InventoryItemSlot(itemData, amount));
+            var newCell = new InventoryItemSlot(itemData, amount);
+            InventoryItemSlots.Add(newCell);
+            OnSlotCreated?.Invoke(newCell);
         }
     }
 
@@ -87,6 +110,16 @@ public class Inventory : MonoBehaviour
         if (TryRemove(itemData, amount))
         {
             itemData.GetGroundInstance(transform, _container);
+            return true;
+        }
+        return false;
+    }
+
+    public bool TryTransfer(ItemData itemData, int amount = 1)
+    {
+        if (TryRemove(itemData, amount))
+        {
+            OnTransfer?.Invoke(itemData, amount);
             return true;
         }
         return false;
