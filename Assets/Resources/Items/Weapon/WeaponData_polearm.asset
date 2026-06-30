@@ -13,12 +13,13 @@ MonoBehaviour:
   m_Name: WeaponData_polearm
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   <Name>k__BackingField: Polearm
-  <Icon>k__BackingField: {fileID: 0}
+  <Icon>k__BackingField: {fileID: -1357097517, guid: bd3f511481dc55845823dc12621ccd29,
+    type: 3}
+  <GroundPrefab>k__BackingField: {fileID: 8401756962499706326, guid: a44286e9d900d6741bbd13c6c59144b9,
+    type: 3}
   <Description>k__BackingField: '  Simple polearm.'
   <CanBeEquipped>k__BackingField: 1
   <ViewPrefab>k__BackingField: {fileID: 1205787345809761593, guid: 90f7696d74bd5ab41abc2f9876dadaec,
-    type: 3}
-  <GroundPrefab>k__BackingField: {fileID: 8401756962499706326, guid: a44286e9d900d6741bbd13c6c59144b9,
     type: 3}
   <ActiveProp>k__BackingField:
     <PropType>k__BackingField: 0

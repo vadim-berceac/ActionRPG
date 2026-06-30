@@ -13,12 +13,13 @@ MonoBehaviour:
   m_Name: WeaponData_1h_sword
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   <Name>k__BackingField: Sword 1H
-  <Icon>k__BackingField: {fileID: 0}
+  <Icon>k__BackingField: {fileID: 1946456253, guid: bd3f511481dc55845823dc12621ccd29,
+    type: 3}
+  <GroundPrefab>k__BackingField: {fileID: 8401756962499706326, guid: 30201ffa63fd9fb4e98c2cfdf0008e5f,
+    type: 3}
   <Description>k__BackingField: '  Simple one handed sword.'
   <CanBeEquipped>k__BackingField: 1
   <ViewPrefab>k__BackingField: {fileID: 1205787345809761593, guid: 9e8377d7073cc4340b664adb496a529c,
-    type: 3}
-  <GroundPrefab>k__BackingField: {fileID: 8401756962499706326, guid: 30201ffa63fd9fb4e98c2cfdf0008e5f,
     type: 3}
   <ActiveProp>k__BackingField:
     <PropType>k__BackingField: 1

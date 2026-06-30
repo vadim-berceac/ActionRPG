@@ -166,15 +166,16 @@ namespace Game
 
         private void CreateWeapon(WeaponData fromData, ref WeaponData prevData, ref MeleeWeapon weaponInstance, int trigger)
         {
-            if (fromData == null)
-            {
-                weaponInstance.DestroyInstance();
-                prevData = null;
-                return;
-            }
+            SetIsWeaponEquipped(false);
+            
             if (weaponInstance != null)
             {
                 weaponInstance.DestroyInstance();
+            }
+            if (fromData == null)
+            {
+                prevData = null;
+                return;
             }
 
             prevData = fromData;
@@ -183,7 +184,6 @@ namespace Game
             weaponInstance.SetOwner(gameObject);
             ConnectWeaponToHands(false, prevData, weaponInstance, trigger);
             ConnectCombo(prevData);
-            SetIsWeaponEquipped(false);
         }
 
         public void CreatePrimaryWeapon(WeaponData fromData)

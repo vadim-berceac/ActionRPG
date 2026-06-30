@@ -1,3 +1,4 @@
+using System;
 using Game;
 using UnityEngine;
 
@@ -5,12 +6,24 @@ using UnityEngine;
 [RequireComponent(typeof(HumanoidController))]
 public class Equipment : MonoBehaviour
 {
+    public enum EquipmentType
+    {
+        Primary,
+        Additional,
+        Ranged
+    }
     private Inventory _inventory;
     private HumanoidController _humanoidController;
 
     private InventoryItemSlot _primaryWeapon;
     private InventoryItemSlot _additionalWeapon;
     private InventoryItemSlot _rangedWeapon;
+    
+    public ItemData Primary => _primaryWeapon == null ? null : _primaryWeapon.ItemData;
+    public ItemData Additional => _additionalWeapon == null ? null : _additionalWeapon.ItemData;
+    public ItemData Ranged => _rangedWeapon == null ? null : _rangedWeapon.ItemData;
+    
+    public event Action<ItemData, EquipmentType> OnEquip;
 
     private void Awake()
     {
@@ -63,10 +76,10 @@ public class Equipment : MonoBehaviour
 
         if (weapon.Wear == WeaponData.WearType.TwoHanded && _additionalWeapon != null)
         {
-            ReturnToInventory(_additionalWeapon.ItemData, _additionalWeapon.Amount);
             DestroySlot(ref _additionalWeapon);
-            _humanoidController.CreateAdditionalWeapon(null);
+            OnEquip?.Invoke(null, EquipmentType.Additional);
         }
+        OnEquip?.Invoke(weapon, EquipmentType.Primary);
     }
 
     private void TryEquipAdditional(WeaponData weapon, int amount)
@@ -82,6 +95,7 @@ public class Equipment : MonoBehaviour
 
         _additionalWeapon = new InventoryItemSlot(weapon, amount);
         _humanoidController.CreateAdditionalWeapon(weapon);
+        OnEquip?.Invoke(weapon, EquipmentType.Additional);
     }
 
     private void ReturnToInventory(ItemData item, int amount)
@@ -89,10 +103,43 @@ public class Equipment : MonoBehaviour
         _inventory.Add(item, amount);
     }
 
-    public void DestroySlot(ref InventoryItemSlot slot)
+    private void DestroySlot(ref InventoryItemSlot slot)
     {
+        if (slot == null)
+        {
+            return;
+        }
+        if (slot == _primaryWeapon)
+        {
+            _humanoidController.CreatePrimaryWeapon(null);
+        }
+
+        if (slot == _additionalWeapon)
+        {
+            _humanoidController.CreateAdditionalWeapon(null);
+        }
+
+        if (slot == _rangedWeapon)
+        {
+            
+        }
         ReturnToInventory(slot.ItemData, slot.Amount);
         slot.Dispose();
         slot = null;
+    }
+
+    public void DestroyPrimary()
+    {
+        DestroySlot(ref _primaryWeapon);
+    }
+
+    public void DestroyAdditional()
+    {
+        DestroySlot(ref _additionalWeapon);
+    }
+
+    public void DestroyRanged()
+    {
+        DestroySlot(ref _rangedWeapon);
     }
 }
