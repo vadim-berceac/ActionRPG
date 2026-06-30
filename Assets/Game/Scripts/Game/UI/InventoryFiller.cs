@@ -7,6 +7,8 @@ public class InventoryFiller : MonoBehaviour
 {
     [field: SerializeField] public GameObject InventoryCellPrefab { get; set; }
     [field: SerializeField] public Transform InventoryCellsParent { get; set; }
+    [field: SerializeField] public AudioSource Audio { get; set; }
+    [field: SerializeField] public AudioClip ClickClip { get; set; }
     
     private readonly List<InventoryCellView> _inventoryCells = new ();
     
@@ -18,6 +20,11 @@ public class InventoryFiller : MonoBehaviour
         _inventory = playerTag.PlayerInventory;
     }
 
+    public void PlayClickSound()
+    {
+        Audio.PlayOneShot(ClickClip);
+    }
+    
     public async UniTask RemoveCell(InventoryCellView cell)
     {
         if (cell == null || !_inventoryCells.Contains(cell))

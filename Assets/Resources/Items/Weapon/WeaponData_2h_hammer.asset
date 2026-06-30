@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b0dc2dd87660fe4085006830a7b173e, type: 3}
+  m_Name: WeaponData_2h_hammer
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponData
+  <Name>k__BackingField: Hammer 2H
+  <Icon>k__BackingField: {fileID: 1626706997, guid: bd3f511481dc55845823dc12621ccd29,
+    type: 3}
+  <GroundPrefab>k__BackingField: {fileID: 8401756962499706326, guid: 799717d20a503a9489e419064206b112,
+    type: 3}
+  <Description>k__BackingField: '  Robuster hammer.'
+  <CanBeEquipped>k__BackingField: 1
+  <ViewPrefab>k__BackingField: {fileID: 1205787345809761593, guid: 8323a6fa4280df74db3a4381c1c0aae9,
+    type: 3}
+  <ActiveProp>k__BackingField:
+    <PropType>k__BackingField: 1
+    <Position>k__BackingField: {x: -0.007, y: -0.123, z: 0.028}
+    <Rotation>k__BackingField: {x: 274.36597, y: 220.24925, z: 139.36673}
+    <Scale>k__BackingField: 1
+  <UnActiveProp>k__BackingField:
+    <PropType>k__BackingField: 6
+    <Position>k__BackingField: {x: 0.285, y: 0.43, z: -0.184}
+    <Rotation>k__BackingField: {x: 57.515556, y: 270, z: 270}
+    <Scale>k__BackingField: 1
+  <ComboNames>k__BackingField:
+  - 2HSwordCombo1
+  - 2HSwordCombo2
+  - 2HSwordCombo3
+  - 2HSwordCombo4
+  <AnimationSetIndex>k__BackingField: 3
+  <Wear>k__BackingField: 1

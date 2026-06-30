@@ -162,6 +162,72 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: hammer1
+      rect:
+        serializedVersion: 2
+        x: 400
+        y: 367
+        width: 192
+        height: 192
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b8df500e0286e39499e3285c78cf6303
+      internalID: 1626706997
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Dagger1
+      rect:
+        serializedVersion: 2
+        x: 216
+        y: 365
+        width: 192
+        height: 192
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ec2d78553c8e2eb43a44ba94b4f12fc6
+      internalID: -112912479
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Bow1
+      rect:
+        serializedVersion: 2
+        x: 779
+        y: 541
+        width: 192
+        height: 192
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d0c238e29b5b04545864a35a3b2442b2
+      internalID: -1306092830
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -176,9 +242,12 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
+      Bow1: -1306092830
+      Dagger1: -112912479
       Polearm1: -1357097517
       Shield1: 1826257978
       Sword1: 1946456253
+      hammer1: 1626706997
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

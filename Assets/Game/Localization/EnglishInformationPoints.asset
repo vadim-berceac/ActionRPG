@@ -57,3 +57,9 @@ MonoBehaviour:
     value: Two-handed Sword - E to pick up
   - key: SHIELD
     value: Shield - E to pick up
+  - key: HAMMER1H
+    value: Hammer - E to pick up
+  - key: DAGGER
+    value: Dagger - E to pick up
+  - key: BOW1
+    value: Bow - E to pick up

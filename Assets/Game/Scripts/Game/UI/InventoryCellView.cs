@@ -68,11 +68,13 @@ public class InventoryCellView : MonoBehaviour
 
    private void OnRightClick()
    {
+      _filler.PlayClickSound();
       _inventory.TryDrop(_slot.ItemData, 1);
    }
 
    private void OnLeftClick()
    {
+      _filler.PlayClickSound();
       _inventory.TryTransfer(_slot.ItemData, 1);
    }
 }

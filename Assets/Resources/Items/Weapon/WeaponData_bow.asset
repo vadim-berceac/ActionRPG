@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b0dc2dd87660fe4085006830a7b173e, type: 3}
+  m_Name: WeaponData_bow
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponData
+  <Name>k__BackingField: Bow
+  <Icon>k__BackingField: {fileID: -1306092830, guid: bd3f511481dc55845823dc12621ccd29,
+    type: 3}
+  <GroundPrefab>k__BackingField: {fileID: 8401756962499706326, guid: 1bfcdc19087d0964fa382a94c3a504fa,
+    type: 3}
+  <Description>k__BackingField: '  Simple bow.'
+  <CanBeEquipped>k__BackingField: 1
+  <ViewPrefab>k__BackingField: {fileID: 1205787345809761593, guid: f728c532090e76b41ab4aff9b4ab69af,
+    type: 3}
+  <ActiveProp>k__BackingField:
+    <PropType>k__BackingField: 1
+    <Position>k__BackingField: {x: 0.022, y: 0, z: -0.011}
+    <Rotation>k__BackingField: {x: 273.54382, y: 269.99988, z: 90.00014}
+    <Scale>k__BackingField: 1
+  <UnActiveProp>k__BackingField:
+    <PropType>k__BackingField: 6
+    <Position>k__BackingField: {x: 0.285, y: 0.43, z: -0.184}
+    <Rotation>k__BackingField: {x: 57.515556, y: 270, z: 270}
+    <Scale>k__BackingField: 1
+  <ComboNames>k__BackingField:
+  - 2HSwordCombo1
+  - 2HSwordCombo2
+  - 2HSwordCombo3
+  - 2HSwordCombo4
+  <AnimationSetIndex>k__BackingField: 3
+  <Wear>k__BackingField: 1
