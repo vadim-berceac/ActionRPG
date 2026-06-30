@@ -99,6 +99,9 @@ public class InventoryItemSlot : IDisposable
     [field: SerializeField] public ItemData ItemData { get; private set; }
     [field: SerializeField] public int Amount { get; private set; }
     [field: SerializeField] public bool EquippedOnStart { get; private set; }
+    
+    public event Action OnDestroy;
+    public event Action<int> OnAmountChanged;
 
     public InventoryItemSlot(ItemData itemData, int amount = 1)
     {
@@ -110,10 +113,11 @@ public class InventoryItemSlot : IDisposable
     public void SetAmount(int amount)
     {
         Amount = amount;
+        OnAmountChanged?.Invoke(Amount);
     }
 
     public void Dispose()
     {
-        Debug.Log("Слот уничтожен - должно вызваться событие на уничтожение кнопки в инвентаре");
+        OnDestroy?.Invoke();
     }
 }

@@ -9279,7 +9279,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DescriptionFiller
   text: {fileID: 4387920968359925068}
-  audio: {fileID: 82853499343333026}
+  source: {fileID: 82853499343333026}
   clip: {fileID: 8300000, guid: 6b299ed8d39414c719f79a90fef873c9, type: 3}
 --- !u!1 &7120814283006640810
 GameObject:

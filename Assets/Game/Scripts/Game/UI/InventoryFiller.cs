@@ -18,6 +18,18 @@ public class InventoryFiller : MonoBehaviour
         _inventory = playerTag.PlayerInventory;
     }
 
+    public async UniTask RemoveCell(InventoryCellView cell)
+    {
+        if (cell == null || !_inventoryCells.Contains(cell))
+        {
+            return;
+        }
+        
+        _inventoryCells.Remove(cell);
+        
+        await UniTask.Yield(PlayerLoopTiming.Update);
+    }
+
     private async void OnEnable()
     {
         await ClearCells();
@@ -45,7 +57,7 @@ public class InventoryFiller : MonoBehaviour
                 continue;
             }
             _inventoryCells.Add(instance);
-            instance.Initialize(_inventory, item);
+            instance.Initialize(_inventory, this, item);
         }
         
         await UniTask.Yield(PlayerLoopTiming.Update);

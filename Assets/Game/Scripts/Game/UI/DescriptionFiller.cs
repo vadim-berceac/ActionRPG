@@ -1,10 +1,11 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class DescriptionFiller : MonoBehaviour
 {
    [SerializeField] private TextMeshProUGUI text;
-   [SerializeField] private AudioSource audio;
+   [SerializeField] private AudioSource source;
    [SerializeField] private AudioClip clip;
 
    private void Awake()
@@ -20,6 +21,6 @@ public class DescriptionFiller : MonoBehaviour
    private void OnDescriptionChanged(string description)
    {
       text.text = description;
-      audio.PlayOneShot(clip);
+      source.PlayOneShot(clip);
    }
 }
