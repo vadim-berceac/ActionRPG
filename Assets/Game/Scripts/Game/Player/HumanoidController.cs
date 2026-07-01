@@ -37,8 +37,12 @@ namespace Game
 
         private WeaponData _primaryWeaponData;
         private WeaponData _additionalWeaponData;
+        private WeaponData _rangedWeaponData;
+        private WeaponData _ammunitionWeaponData;
         private MeleeWeapon _primaryWeaponInstance;
         private MeleeWeapon _additionalWeaponInstance;
+        private MeleeWeapon _rangedWeaponInstance;
+        private MeleeWeapon _ammunitionWeaponInstance;
         private bool _isGrounded = true;
         private bool _previouslyGrounded = true;
         private bool _readyToJump;
@@ -194,6 +198,16 @@ namespace Game
         public void CreateAdditionalWeapon(WeaponData fromData)
         {
             CreateWeapon(fromData, ref _additionalWeaponData, ref _additionalWeaponInstance, _animCache.HashAttack2);
+        }
+
+        public void CreateRangedWeapon(WeaponData fromData)
+        {
+            CreateWeapon(fromData, ref _rangedWeaponData, ref _rangedWeaponInstance, _animCache.HashAttack2);
+        }
+        
+        public void CreateAmmunition(WeaponData fromData)
+        {
+            
         }
 
         public void SetIsWeaponEquipped(bool value)

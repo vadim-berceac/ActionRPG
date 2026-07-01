@@ -18,6 +18,8 @@ namespace Game
         public int HashHurt        { get; } = Animator.StringToHash("Hurt");
         public int HashAttack1     { get; } = Animator.StringToHash("Attack1");
         public int HashAttack2     { get; } = Animator.StringToHash("Attack2");
+        public int Shoot           { get; } = Animator.StringToHash("Shoot");
+        public int Block           { get; } = Animator.StringToHash("Block");
 
         private readonly int _hashAirborneVerticalSpeed = Animator.StringToHash("AirborneVerticalSpeed");
         private readonly int _hashForwardSpeed          = Animator.StringToHash("ForwardSpeed");

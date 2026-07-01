@@ -22,19 +22,19 @@ MonoBehaviour:
   <ViewPrefab>k__BackingField: {fileID: 1205787345809761593, guid: f728c532090e76b41ab4aff9b4ab69af,
     type: 3}
   <ActiveProp>k__BackingField:
-    <PropType>k__BackingField: 1
+    <PropType>k__BackingField: 0
     <Position>k__BackingField: {x: 0.022, y: 0, z: -0.011}
     <Rotation>k__BackingField: {x: 273.54382, y: 269.99988, z: 90.00014}
     <Scale>k__BackingField: 1
   <UnActiveProp>k__BackingField:
-    <PropType>k__BackingField: 6
-    <Position>k__BackingField: {x: 0.285, y: 0.43, z: -0.184}
-    <Rotation>k__BackingField: {x: 57.515556, y: 270, z: 270}
+    <PropType>k__BackingField: 5
+    <Position>k__BackingField: {x: -0.06, y: 0.014, z: -0.198}
+    <Rotation>k__BackingField: {x: 58.17189, y: 90, z: 90}
     <Scale>k__BackingField: 1
   <ComboNames>k__BackingField:
   - 2HSwordCombo1
   - 2HSwordCombo2
   - 2HSwordCombo3
   - 2HSwordCombo4
-  <AnimationSetIndex>k__BackingField: 3
-  <Wear>k__BackingField: 1
+  <AnimationSetIndex>k__BackingField: 1
+  <Wear>k__BackingField: 3

@@ -8,7 +8,9 @@ public class WeaponData : ItemData
     {
         OneHanded,
         TwoHanded,
-        Additional
+        Additional,
+        Ranged,
+        Ammunition
     }
     [field: SerializeField] public GameObject ViewPrefab { get; set; }
     [field: SerializeField] public PropBoneSettings ActiveProp { get; set; }

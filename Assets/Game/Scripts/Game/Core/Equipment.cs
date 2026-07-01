@@ -10,7 +10,8 @@ public class Equipment : MonoBehaviour
     {
         Primary,
         Additional,
-        Ranged
+        Ranged,
+        Ammunition,
     }
     private Inventory _inventory;
     private HumanoidController _humanoidController;
@@ -18,6 +19,7 @@ public class Equipment : MonoBehaviour
     private InventoryItemSlot _primaryWeapon;
     private InventoryItemSlot _additionalWeapon;
     private InventoryItemSlot _rangedWeapon;
+    private InventoryItemSlot _ammunition;
     
     public ItemData Primary => _primaryWeapon == null ? null : _primaryWeapon.ItemData;
     public ItemData Additional => _additionalWeapon == null ? null : _additionalWeapon.ItemData;
@@ -55,6 +57,14 @@ public class Equipment : MonoBehaviour
 
             case WeaponData.WearType.Additional:
                 TryEquipAdditional(weapon, amount);
+                break;
+            
+            case WeaponData.WearType.Ranged:
+                TryEquipRanged(weapon, amount);
+                break;
+            
+            case WeaponData.WearType.Ammunition:
+                TryEquipAmmunition(weapon, amount);
                 break;
 
             default:
@@ -96,6 +106,34 @@ public class Equipment : MonoBehaviour
         _additionalWeapon = new InventoryItemSlot(weapon, amount);
         _humanoidController.CreateAdditionalWeapon(weapon);
         OnEquip?.Invoke(weapon, EquipmentType.Additional);
+    }
+
+    private void TryEquipRanged(WeaponData weapon, int amount)
+    {
+        if (_rangedWeapon != null)
+        {
+            ReturnToInventory(weapon, amount);
+            return;
+        }
+        
+        _rangedWeapon = new InventoryItemSlot(weapon, amount);
+        _humanoidController.CreateRangedWeapon(weapon);
+        
+        OnEquip?.Invoke(weapon, EquipmentType.Ranged);
+    }
+    
+    private void TryEquipAmmunition(WeaponData weapon, int amount)
+    {
+        if (_ammunition != null)
+        {
+            ReturnToInventory(weapon, amount);
+            return;
+        }
+        
+        _ammunition = new InventoryItemSlot(weapon, amount);
+        _humanoidController.CreateAmmunition(weapon);
+        
+        OnEquip?.Invoke(weapon, EquipmentType.Ammunition);
     }
 
     private void ReturnToInventory(ItemData item, int amount)

@@ -7,6 +7,9 @@ public class EquipmentFiller : MonoBehaviour
    [SerializeField] private Image primary;
    [SerializeField] private Image additional;
    [SerializeField] private Image ranged;
+   [SerializeField] private Image ammunition;
+   [SerializeField] private Image armor;
+   [SerializeField] private Image helmet;
    
    private Equipment _equipment;
 
@@ -108,5 +111,23 @@ public class EquipmentFiller : MonoBehaviour
    {
       _equipment.DestroyRanged();
       ranged.gameObject.SetActive(false);
+   }
+   
+   public void ClearAmmunition()
+   {
+      //_equipment.DestroyRanged();
+      ammunition.gameObject.SetActive(false);
+   }
+   
+   public void ClearArmor()
+   {
+      //_equipment.DestroyRanged();
+      armor.gameObject.SetActive(false);
+   }
+   
+   public void ClearHelmet()
+   {
+      //_equipment.DestroyRanged();
+      helmet.gameObject.SetActive(false);
    }
 }
