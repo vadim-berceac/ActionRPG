@@ -289,7 +289,7 @@ namespace Game
             var moveInput              = _input.MoveInput;
             var localMovementDirection = new Vector3(moveInput.x, 0f, moveInput.y).normalized;
 
-            var forward = Quaternion.Euler(0f, _cameraSettings.Current.m_XAxis.Value, 0f) * Vector3.forward;
+            var forward = Quaternion.Euler(0f, _cameraSettings.CurrentYaw, 0f) * Vector3.forward;
             forward.y = 0f;
             forward.Normalize();
 

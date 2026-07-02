@@ -1,5 +1,5 @@
 ﻿using System;
-using Cinemachine;
+using Unity.Cinemachine;
 using UnityEngine;
 
 namespace Game
@@ -12,21 +12,43 @@ namespace Game
             public bool invertX;
             public bool invertY;
         }
-        
+
         [Serializable]
-        public struct AxisClampSettings
+        public struct SmoothingSettings
         {
-            [Range(0f, 1f)] public float minY;
-            [Range(0f, 1f)] public float maxY;
+            [Tooltip("Время сглаживания инпута по X, сек. Чем больше — тем инертнее камера")]
+            public float smoothTimeX;
+            [Tooltip("Время сглаживания инпута по Y, сек")]
+            public float smoothTimeY;
         }
 
-        public CinemachineFreeLook controllerCamera;
+        [Serializable]
+        public struct RecenterSettings
+        {
+            public bool enabled;
+            [Tooltip("Задержка перед началом рецентровки после последнего инпута, сек")]
+            public float wait;
+            [Tooltip("Длительность рецентровки, сек")]
+            public float time;
+        }
+
+        public float CurrentYaw => orbitalFollow.HorizontalAxis.Value;
+        public CinemachineCamera controllerCamera;
+        public CinemachineOrbitalFollow orbitalFollow;
+
         public InvertSettings controllerInvertSettings;
-        public AxisClampSettings controllerAxisClamp;
+        public SmoothingSettings controllerSmoothing;
+        public RecenterSettings controllerRecentering;
+
         public float xFactor;
         public float yFactor;
 
-        public CinemachineFreeLook Current => controllerCamera;
+        public CinemachineCamera Current => controllerCamera;
+
+        private float m_CurrentX;
+        private float m_VelocityX;
+        private float m_CurrentY;
+        private float m_VelocityY;
 
         public void SetTarget(Transform followTo, Transform look)
         {
@@ -36,27 +58,31 @@ namespace Game
 
         private void Awake()
         {
-            UpdateCameraSettings();
             UpdateClampSettings();
+            UpdateRecenterSettings();
         }
 
         private void LateUpdate()
         {
-            UpdateCameraSettings();
             UpdateClampSettings();
             UpdateInputSettings();
         }
 
-        private void UpdateCameraSettings()
-        {
-            controllerCamera.m_XAxis.m_InvertInput = controllerInvertSettings.invertX;
-            controllerCamera.m_YAxis.m_InvertInput = controllerInvertSettings.invertY;
-        }
-
         private void UpdateClampSettings()
         {
-            controllerCamera.m_YAxis.m_MinValue = controllerAxisClamp.minY;
-            controllerCamera.m_YAxis.m_MaxValue = controllerAxisClamp.maxY;
+            var vertical = orbitalFollow.VerticalAxis;
+            orbitalFollow.VerticalAxis = vertical;
+        }
+
+        private void UpdateRecenterSettings()
+        {
+            var horizontal = orbitalFollow.HorizontalAxis;
+            var recentering = horizontal.Recentering;
+            recentering.Enabled = controllerRecentering.enabled;
+            recentering.Wait = controllerRecentering.wait;
+            recentering.Time = controllerRecentering.time;
+            horizontal.Recentering = recentering;
+            orbitalFollow.HorizontalAxis = horizontal;
         }
 
         private void UpdateInputSettings()
@@ -65,9 +91,22 @@ namespace Game
             if (input == null) return;
 
             var look = input.CameraInput;
+            if (controllerInvertSettings.invertX) look.x = -look.x;
+            if (controllerInvertSettings.invertY) look.y = -look.y;
 
-            Current.m_XAxis.m_InputAxisValue = look.x * xFactor;
-            Current.m_YAxis.m_InputAxisValue = look.y * yFactor;
+            var targetX = look.x * xFactor;
+            var targetY = look.y * yFactor;
+
+            m_CurrentX = Mathf.SmoothDamp(m_CurrentX, targetX, ref m_VelocityX, Mathf.Max(controllerSmoothing.smoothTimeX, 0.0001f));
+            m_CurrentY = Mathf.SmoothDamp(m_CurrentY, targetY, ref m_VelocityY, Mathf.Max(controllerSmoothing.smoothTimeY, 0.0001f));
+
+            var horizontal = orbitalFollow.HorizontalAxis;
+            horizontal.Value += m_CurrentX * Time.deltaTime;
+            orbitalFollow.HorizontalAxis = horizontal;
+
+            var vertical = orbitalFollow.VerticalAxis;
+            vertical.Value += m_CurrentY * Time.deltaTime;
+            orbitalFollow.VerticalAxis = vertical;
         }
-    } 
+    }
 }

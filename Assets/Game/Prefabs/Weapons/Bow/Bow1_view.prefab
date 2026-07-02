@@ -51,10 +51,7 @@ MonoBehaviour:
   targetLayers:
     serializedVersion: 2
     m_Bits: 8388608
-  attackPoints:
-  - radius: 0.3
-    offset: {x: 0.6, y: -0.3, z: 0}
-    attackRoot: {fileID: 4627241781867504290}
+  attackPoints: []
   effects: []
   hitAudio: {fileID: 4732374630674220482}
   attackAudio: {fileID: 4732356596923636976}

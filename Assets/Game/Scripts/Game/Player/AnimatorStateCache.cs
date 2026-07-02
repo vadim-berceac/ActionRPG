@@ -35,7 +35,6 @@ namespace Game
         private readonly int _hashWeaponIndex           = Animator.StringToHash("WeaponIndex");
         private readonly int _hashHasAdditionalWeapon   = Animator.StringToHash("HasAdditionalWeapon");
         private readonly int _hashRespawn               = Animator.StringToHash("Respawn");
-        //private readonly int _hashBlockInput            = Animator.StringToHash("BlockInput");
         
         private const string BlockInput = "BlockInput";
 
