@@ -205,7 +205,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxForwardSpeed: 8
   gravity: 20
-  jumpSpeed: 10
+  jumpSpeed: 5
   minTurnSpeed: 400
   maxTurnSpeed: 1200
   idleTimeout: 5

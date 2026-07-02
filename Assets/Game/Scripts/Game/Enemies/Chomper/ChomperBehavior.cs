@@ -1,5 +1,6 @@
 ﻿using Game.Message;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Zenject;
 
 namespace Game
@@ -29,7 +30,7 @@ namespace Game
         [System.NonSerialized]
         public float attackDistance = 3;
 
-        public MeleeWeapon meleeWeapon;
+        [FormerlySerializedAs("meleeWeapon")] public WeaponInstance weaponInstance;
         public TargetScanner playerScanner;
         [Tooltip("Time in seconde before the Chomper stop pursuing the humanoid when the humanoid is out of sight")]
         public float timeToStopPursuit;
@@ -57,7 +58,7 @@ namespace Game
 
             originalPosition = transform.position;
 
-            meleeWeapon.SetOwner(gameObject);
+            weaponInstance.Initialize(gameObject);
 
             m_Controller.animator.Play(hashIdleState, 0, Random.value);
 
@@ -211,12 +212,12 @@ namespace Game
 
         public void AttackBegin()
         {
-            meleeWeapon.BeginAttack(false);
+            weaponInstance.BeginAttack(false);
         }
 
         public void AttackEnd()
         {
-            meleeWeapon.EndAttack();
+            weaponInstance.EndAttack();
         }
 
         public void OnReceiveMessage(Message.MessageType type, object sender, object msg)
@@ -254,7 +255,7 @@ namespace Game
 
         public void ApplyDamage(Damageable.DamageMessage msg)
         {
-            //TODO : make that more generic, (e.g. move it to the MeleeWeapon code with a boolean to enable shaking of camera on hit?)
+            //TODO : make that more generic, (e.g. move it to the WeaponInstance code with a boolean to enable shaking of camera on hit?)
             if (msg.damager.name == "Staff")
                 CameraShake.Shake(0.06f, 0.1f);
 

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Game
 {
-    public class MeleeWeapon : MonoBehaviour
+    public class WeaponInstance : MonoBehaviour
     {
         public int damage = 1;
 
@@ -51,21 +51,24 @@ namespace Game
         protected ParticleSystem[] m_ParticlesPool = new ParticleSystem[PARTICLE_COUNT];
         protected int m_CurrentParticle = 0;
 
-        protected static RaycastHit[] s_RaycastHitCache = new RaycastHit[32];
-        protected static Collider[] s_ColliderCache = new Collider[32];
+        protected RaycastHit[] s_RaycastHitCache = new RaycastHit[32];
+        protected Collider[] s_ColliderCache = new Collider[32];
+        protected GameObject[] staticParts;
 
         //whoever own the weapon is responsible for calling that. Allow to avoid "self harm"
-        public void SetOwner(GameObject owner)
+        public void Initialize(GameObject owner)
         {
             m_Owner = owner;
         }
 
-        public void SetViewParent(Transform patent, PropBoneSettings settings)
+        public void SetViewParent(PropBones propBones, PropBoneSettings settings)
         {
-            view.transform.parent = patent;
-            view.transform.localPosition = settings.Position;
-            view.transform.localRotation = Quaternion.Euler(settings.Rotation);
-            view.transform.localScale = Vector3.one * settings.Scale;
+            settings.SetPropBone(view.transform, propBones);
+        }
+
+        public void SetStaticParts(GameObject[] parts)
+        {
+            staticParts = parts;
         }
 
         public void BeginAttack(bool thowingAttack)
@@ -200,6 +203,13 @@ namespace Game
 
         public void DestroyInstance()
         {
+            if (staticParts != null && staticParts.Length > 0)
+            {
+                foreach (var part in staticParts)
+                {
+                    Destroy(part);
+                }
+            }
             Destroy(view.gameObject);
             Destroy(gameObject);
         }

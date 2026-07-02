@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Serialization;
 using Zenject;
 
 namespace Game
@@ -36,7 +37,7 @@ namespace Game
         public float meleeRange = 4.0f;
         public float rangeRange = 10.0f;
 
-        public MeleeWeapon fistWeapon;
+        [FormerlySerializedAs("fistWeapon")] public WeaponInstance fistWeaponInstance;
         public RangeWeapon grenadeLauncher;
 
         public GameObject shield;
@@ -79,8 +80,8 @@ namespace Game
 
             SceneLinkedSMB<GrenadierBehaviour>.Initialise(m_EnemyController.animator, this);
 
-            fistWeapon.SetOwner(gameObject);
-            fistWeapon.EndAttack();
+            fistWeaponInstance.Initialize(gameObject);
+            fistWeaponInstance.EndAttack();
 
             m_CoreMaterial = coreRenderer.materials[1];
             m_OriginalCoreMaterial = m_CoreMaterial.GetColor("_Color2");
@@ -121,12 +122,12 @@ namespace Game
 
         public void StartAttack()
         {
-            fistWeapon.BeginAttack(true);
+            fistWeaponInstance.BeginAttack(true);
         }
 
         public void EndAttack()
         {
-            fistWeapon.EndAttack();
+            fistWeaponInstance.EndAttack();
         }
 
         public void Hit()

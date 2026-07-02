@@ -39,10 +39,10 @@ namespace Game
         private WeaponData _additionalWeaponData;
         private WeaponData _rangedWeaponData;
         private WeaponData _ammunitionWeaponData;
-        private MeleeWeapon _primaryWeaponInstance;
-        private MeleeWeapon _additionalWeaponInstance;
-        private MeleeWeapon _rangedWeaponInstance;
-        private MeleeWeapon _ammunitionWeaponInstance;
+        private WeaponInstance _primaryWeaponInstanceInstance;
+        private WeaponInstance _additionalWeaponInstanceInstance;
+        private WeaponInstance _rangedWeaponInstanceInstance;
+        private WeaponInstance _ammunitionWeaponInstanceInstance;
         private bool _isGrounded = true;
         private bool _previouslyGrounded = true;
         private bool _readyToJump;
@@ -122,8 +122,8 @@ namespace Game
 
             UpdateInputBlocking();
 
-            ConnectWeaponToHands(_isWeaponEquipped, _primaryWeaponData,    _primaryWeaponInstance,    _animCache.HashAttack1);
-            ConnectWeaponToHands(_isWeaponEquipped, _additionalWeaponData, _additionalWeaponInstance, _animCache.HashAttack2);
+            ConnectWeaponToHands(_isWeaponEquipped, _primaryWeaponData,    _primaryWeaponInstanceInstance,    _animCache.HashAttack1);
+            ConnectWeaponToHands(_isWeaponEquipped, _additionalWeaponData, _additionalWeaponInstanceInstance, _animCache.HashAttack2);
 
             _animCache.SetStateTime();
             ProcessAttack();
@@ -168,13 +168,13 @@ namespace Game
             _input.InputBlocked = _animCache.IsInputBlocked();
         }
 
-        private void CreateWeapon(WeaponData fromData, ref WeaponData prevData, ref MeleeWeapon weaponInstance, int trigger)
+        private void CreateWeapon(WeaponData fromData, ref WeaponData prevData, ref WeaponInstance weaponInstanceInstance, int trigger)
         {
             SetIsWeaponEquipped(false);
             
-            if (weaponInstance != null)
+            if (weaponInstanceInstance != null)
             {
-                weaponInstance.DestroyInstance();
+                weaponInstanceInstance.DestroyInstance();
             }
             if (fromData == null)
             {
@@ -184,25 +184,26 @@ namespace Game
 
             prevData = fromData;
             var weaponObj = prevData.GetViewInstance(transform, _diContainer);
-            weaponInstance = weaponObj.GetComponent<MeleeWeapon>();
-            weaponInstance.SetOwner(gameObject);
-            ConnectWeaponToHands(false, prevData, weaponInstance, trigger);
+            weaponInstanceInstance = weaponObj.GetComponent<WeaponInstance>();
+            weaponInstanceInstance.Initialize(gameObject);
+            weaponInstanceInstance.SetStaticParts(prevData.GetStaticParts(propBones, _diContainer));
+            ConnectWeaponToHands(false, prevData, weaponInstanceInstance, trigger);
             ConnectCombo(prevData);
         }
 
         public void CreatePrimaryWeapon(WeaponData fromData)
         {
-            CreateWeapon(fromData, ref _primaryWeaponData, ref _primaryWeaponInstance, _animCache.HashAttack1);
+            CreateWeapon(fromData, ref _primaryWeaponData, ref _primaryWeaponInstanceInstance, _animCache.HashAttack1);
         }
 
         public void CreateAdditionalWeapon(WeaponData fromData)
         {
-            CreateWeapon(fromData, ref _additionalWeaponData, ref _additionalWeaponInstance, _animCache.HashAttack2);
+            CreateWeapon(fromData, ref _additionalWeaponData, ref _additionalWeaponInstanceInstance, _animCache.HashAttack2);
         }
 
         public void CreateRangedWeapon(WeaponData fromData)
         {
-            CreateWeapon(fromData, ref _rangedWeaponData, ref _rangedWeaponInstance, _animCache.HashAttack2);
+            CreateWeapon(fromData, ref _rangedWeaponData, ref _rangedWeaponInstanceInstance, _animCache.HashAttack2);
         }
         
         public void CreateAmmunition(WeaponData fromData)
@@ -227,15 +228,16 @@ namespace Game
             if (_input.Attack2 && canAttack) _animCache.TriggerAttack2();
         }
 
-        private void ConnectWeaponToHands(bool equip, WeaponData data, MeleeWeapon weaponInstance, int trigger)
+        private void ConnectWeaponToHands(bool equip, WeaponData data, WeaponInstance weaponInstanceInstance, int trigger)
         {
             if (!data) return;
 
-            var bone      = equip ? data.ActiveProp : data.UnActiveProp;
-            var newParent = propBones.GetPropBone(bone.PropType).Prop;
+            var settings = equip ? data.ActiveProp : data.UnActiveProp;
 
-            if (weaponInstance && newParent)
-                weaponInstance.SetViewParent(newParent, bone);
+            if (weaponInstanceInstance)
+            {
+                weaponInstanceInstance.SetViewParent(propBones, settings);
+            }
 
             _inAttack = false;
 
@@ -476,29 +478,29 @@ namespace Game
 
         public void MeleeAttackStart(int throwing = 0)
         {
-            if (_primaryWeaponInstance == null) return;
-            _primaryWeaponInstance.BeginAttack(throwing != 0);
+            if (_primaryWeaponInstanceInstance == null) return;
+            _primaryWeaponInstanceInstance.BeginAttack(throwing != 0);
             _inAttack = true;
         }
 
         public void MeleeAttackEnd()
         {
-            if (_primaryWeaponInstance == null) return;
-            _primaryWeaponInstance.EndAttack();
+            if (_primaryWeaponInstanceInstance == null) return;
+            _primaryWeaponInstanceInstance.EndAttack();
             _inAttack = false;
         }
 
         public void AdditionalAttackStart(int throwing = 0)
         {
-            if (_additionalWeaponInstance == null) return;
-            _additionalWeaponInstance.BeginAttack(throwing != 0);
+            if (_additionalWeaponInstanceInstance == null) return;
+            _additionalWeaponInstanceInstance.BeginAttack(throwing != 0);
             _inAttack = true;
         }
 
         public void AdditionalAttackEnd()
         {
-            if (_additionalWeaponInstance == null) return;
-            _additionalWeaponInstance.EndAttack();
+            if (_additionalWeaponInstanceInstance == null) return;
+            _additionalWeaponInstanceInstance.EndAttack();
             _inAttack = false;
         }
 

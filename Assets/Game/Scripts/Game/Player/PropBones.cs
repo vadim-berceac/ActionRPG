@@ -30,6 +30,15 @@ public class PropBoneSettings
    [field: SerializeField] public Vector3 Position { get; set; }
    [field: SerializeField] public Vector3 Rotation { get; set; }
    [field: SerializeField] public float Scale { get; set; }
+
+   public void SetPropBone(Transform source, PropBones propBones)
+   {
+      var parent = propBones.GetPropBone(PropType).Prop;
+      source.parent = parent;
+      source.localPosition = Position;
+      source.localRotation = Quaternion.Euler(Rotation);
+      source.localScale = Vector3.one * Scale;
+   }
 }
 
 public enum PropType
