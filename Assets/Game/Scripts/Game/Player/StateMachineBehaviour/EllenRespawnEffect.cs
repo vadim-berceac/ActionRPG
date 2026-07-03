@@ -6,7 +6,12 @@ namespace Game
     {
         public override void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
-            animator.GetComponent<HumanoidController>().Respawn();
+            var controller = animator.GetComponent<HumanoidController>();
+
+            if (controller.IsPlayer)
+            {
+                controller.Respawn();
+            }
         }
     } 
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using Unity.Cinemachine;
 using UnityEngine;
+using Zenject;
 
 namespace Game
 {
@@ -49,17 +50,24 @@ namespace Game
         private float m_VelocityX;
         private float m_CurrentY;
         private float m_VelocityY;
+        private PlayerInputHandlerService _playerInputHandler;
 
-        public void SetTarget(Transform followTo, Transform look)
+        [Inject]
+        private void Construct(PlayerInputHandlerService playerInputHandler)
         {
-            controllerCamera.Follow = followTo;
-            controllerCamera.LookAt = look;
+            _playerInputHandler = playerInputHandler;
         }
-
+        
         private void Awake()
         {
             UpdateClampSettings();
             UpdateRecenterSettings();
+        }
+        
+        public void SetTarget(Transform followTo, Transform look)
+        {
+            controllerCamera.Follow = followTo;
+            controllerCamera.LookAt = look;
         }
 
         private void LateUpdate()
@@ -87,10 +95,7 @@ namespace Game
 
         private void UpdateInputSettings()
         {
-            var input = CharacterInput.Instance;
-            if (input == null) return;
-
-            var look = input.CameraInput;
+            var look = _playerInputHandler.CameraInput;
             if (controllerInvertSettings.invertX) look.x = -look.x;
             if (controllerInvertSettings.invertY) look.y = -look.y;
 

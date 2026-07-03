@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
 namespace Game
 {
@@ -28,6 +29,12 @@ namespace Game
             }
         }
 
+        [Inject]
+        private void Construct(PlayerInputHandlerService service)
+        {
+            MCharacterInput = service;
+        }
+
         public static bool Transitioning
         {
             get { return Instance.m_Transitioning; }
@@ -35,7 +42,7 @@ namespace Game
 
         protected static GameObjectTeleporter instance;
 
-        protected CharacterInput MCharacterInput;
+        protected IInput MCharacterInput;
         protected bool m_Transitioning;
 
         void Awake()
@@ -47,8 +54,6 @@ namespace Game
             }
 
             DontDestroyOnLoad(gameObject);
-
-            MCharacterInput = FindFirstObjectByType<CharacterInput>();
         }
 
         public static void Teleport(TransitionPoint transitionPoint)
@@ -73,8 +78,6 @@ namespace Game
 
             if (releaseControl)
             {
-                if (MCharacterInput == null)
-                    MCharacterInput = FindFirstObjectByType<CharacterInput>();
                 MCharacterInput.ReleaseControl();
             }
 

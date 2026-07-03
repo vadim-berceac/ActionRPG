@@ -51,13 +51,12 @@ GameObject:
   - component: {fileID: 3589592028908676066}
   - component: {fileID: 1221178880529204029}
   - component: {fileID: 8221082309353826462}
-  - component: {fileID: 2109034071593520430}
   - component: {fileID: 3129279076112330710}
   - component: {fileID: 5555669641611656938}
   - component: {fileID: 3077285747228589714}
   - component: {fileID: 4971361307042770288}
   m_Layer: 9
-  m_Name: Character
+  m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -179,18 +178,6 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   onDamageMessageReceivers: []
---- !u!114 &2109034071593520430
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1125372579252015583}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1f5847bd25143b24d9d4b26b0ae56f3a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &3129279076112330710
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -203,6 +190,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: faa8b67e83b73fb4ba6b6a9b2482a664, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  <IsPlayer>k__BackingField: 1
+  <TargetLayer>k__BackingField:
+    serializedVersion: 2
+    m_Bits: 8388608
   maxForwardSpeed: 8
   gravity: 20
   jumpSpeed: 5

@@ -36,6 +36,11 @@ public class SceneInstaller : MonoInstaller
             .NonLazy();
         
         Container
+            .BindInterfacesAndSelfTo<PlayerInputHandlerService>()
+            .AsSingle()
+            .NonLazy();
+        
+        Container
             .BindInterfacesAndSelfTo<PickupSelectionService>()
             .AsSingle()
             .NonLazy();

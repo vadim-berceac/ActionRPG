@@ -19,11 +19,13 @@ namespace Game
         protected bool m_InPause;
         protected PlayableDirector[] m_Directors;
         private PlayerNewInput _playerNewInput;
+        private PlayerInputHandlerService _playerInputHandler;
 
         [Inject]
-        private void Construct(PlayerNewInput playerNewInput)
+        private void Construct(PlayerNewInput playerNewInput, PlayerInputHandlerService playerInputHandlerService)
         {
             _playerNewInput = playerNewInput;
+            _playerInputHandler = playerInputHandlerService;
         }
         
         private void Start()
@@ -116,9 +118,9 @@ namespace Game
                 CameraShake.Stop ();
 
             if (m_InPause)
-                CharacterInput.Instance.GainControl();
+                _playerInputHandler.GainControl();
             else
-                CharacterInput.Instance.ReleaseControl();
+                _playerInputHandler.ReleaseControl();
 
             Time.timeScale = m_InPause ? 1 : 0;
 

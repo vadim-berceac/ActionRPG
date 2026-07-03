@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
+using Zenject;
 
 namespace Game
 {
@@ -31,6 +32,13 @@ namespace Game
 
         private Vector3 m_VerticalVelocity = Vector3.zero;
         private const float Gravity = -28f;
+        private PlayerInputHandlerService _playerInputHandlerService;
+
+        [Inject]
+        private void Construct(PlayerInputHandlerService playerInputHandlerService)
+        {
+            _playerInputHandlerService = playerInputHandlerService;
+        }
 
         void OnEnable()
         {
@@ -52,7 +60,7 @@ namespace Game
 
         private void FixedUpdate()
         {
-            animator.speed = CharacterInput.Instance != null && CharacterInput.Instance.HaveControl() ? 1.0f : 0.0f;
+            animator.speed = _playerInputHandlerService.HaveControl() ? 1.0f : 0.0f;
 
             CheckGrounded();
             ApplyGravity();

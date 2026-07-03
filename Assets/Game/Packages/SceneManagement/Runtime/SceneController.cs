@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Zenject;
 
 namespace Game
 {
@@ -48,8 +49,14 @@ namespace Game
 
         protected Scene m_CurrentZoneScene;
         protected SceneTransitionDestination.DestinationTag m_ZoneRestartDestinationTag;
-        protected CharacterInput MCharacterInput;
+        protected IInput MCharacterInput;
         protected bool m_Transitioning;
+
+        [Inject]
+        private void Construct(PlayerInputHandlerService mCharacterInput)
+        {
+            MCharacterInput = mCharacterInput;
+        }
 
         void Awake()
         {
@@ -60,8 +67,6 @@ namespace Game
             }
 
             DontDestroyOnLoad(gameObject);
-
-            MCharacterInput = FindFirstObjectByType<CharacterInput>();
 
             if (initialSceneTransitionDestination != null)
             {
@@ -108,14 +113,11 @@ namespace Game
             m_Transitioning = true;
             PersistentDataManager.SaveAllData();
 
-            if (MCharacterInput == null)
-                MCharacterInput = FindFirstObjectByType<CharacterInput>();
-            if (MCharacterInput) MCharacterInput.ReleaseControl();
+            MCharacterInput.ReleaseControl();
             yield return StartCoroutine(ScreenFader.FadeSceneOut(ScreenFader.FadeType.Loading));
             PersistentDataManager.ClearPersisters();
             yield return SceneManager.LoadSceneAsync(newSceneName);
-            MCharacterInput = FindFirstObjectByType<CharacterInput>();
-            if (MCharacterInput) MCharacterInput.ReleaseControl();
+            MCharacterInput.ReleaseControl();
             PersistentDataManager.LoadAllData();
             SceneTransitionDestination entrance = GetDestination(destinationTag);
             SetEnteringGameObjectLocation(entrance);
@@ -123,8 +125,7 @@ namespace Game
             if (entrance != null)
                 entrance.OnReachDestination.Invoke();
             yield return StartCoroutine(ScreenFader.FadeSceneIn());
-            if (MCharacterInput)
-                MCharacterInput.GainControl();
+            MCharacterInput.GainControl();
 
             m_Transitioning = false;
         }
