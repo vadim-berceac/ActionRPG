@@ -5,7 +5,7 @@ public interface IInput
     public bool InputBlocked { get; set; }
 
     public Vector2 MoveInput { get; set; }
-    public Vector2 CameraInput { get; set; }
+    public float RotationYaw { get; set; }
     public bool JumpInput { get; set; }
     public bool Attack1 { get; set; }
     public bool Attack2 { get; set; }

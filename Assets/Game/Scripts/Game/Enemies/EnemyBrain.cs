@@ -10,15 +10,15 @@ public class EnemyBrain : MonoBehaviour, IInput
         set {}
     }
 
-    public Vector2 CameraInput
-    {
-        get =>  Vector2.zero; 
-        set {}
-    }
-
     public bool JumpInput
     {
         get =>  false; 
+        set {}
+    }
+    
+    public float RotationYaw
+    {
+        get => 0;
         set {}
     }
 

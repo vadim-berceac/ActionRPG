@@ -8,6 +8,7 @@ namespace Game
     [DefaultExecutionOrder(100)]
     public class ChomperBehavior : MonoBehaviour, IMessageReceiver
     {
+        [field: SerializeField] public LayerMask TargetLayer { get; private set; }
         public static readonly int hashInPursuit = Animator.StringToHash("InPursuit");
         public static readonly int hashAttack = Animator.StringToHash("Attack");
         public static readonly int hashHit = Animator.StringToHash("Hit");
@@ -58,7 +59,7 @@ namespace Game
 
             originalPosition = transform.position;
 
-            weaponInstance.Initialize(gameObject);
+            weaponInstance.Initialize(gameObject, TargetLayer);
 
             m_Controller.animator.Play(hashIdleState, 0, Random.value);
 

@@ -11,6 +11,7 @@ namespace Game
     [RequireComponent(typeof(NavMeshAgent))]
     public class GrenadierBehaviour : MonoBehaviour
     {
+        [field: SerializeField] public LayerMask TargetLayer { get; private set; }
         public enum OrientationState
         {
             IN_TRANSITION,
@@ -80,7 +81,7 @@ namespace Game
 
             SceneLinkedSMB<GrenadierBehaviour>.Initialise(m_EnemyController.animator, this);
 
-            fistWeaponInstance.Initialize(gameObject);
+            fistWeaponInstance.Initialize(gameObject, TargetLayer);
             fistWeaponInstance.EndAttack();
 
             m_CoreMaterial = coreRenderer.materials[1];
@@ -95,7 +96,6 @@ namespace Game
 
         private void Update()
         {
-
             if (m_ShieldActivationTime > 0)
             {
                 m_ShieldActivationTime -= Time.deltaTime;

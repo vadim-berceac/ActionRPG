@@ -51,7 +51,7 @@ namespace Game
         private float _desiredForwardSpeed;
         private float _forwardSpeed;
         private float _verticalSpeed;
-        private IInput _playerInput;
+        private IInput _input;
         private CharacterController _charCtrl;
         private Material _currentWalkingSurface;
         private Quaternion _targetRotation;
@@ -75,7 +75,7 @@ namespace Game
 
         private int[] m_ComboHashes;
 
-        private bool IsMoveInput => !Mathf.Approximately(_playerInput.MoveInput.sqrMagnitude, 0f);
+        private bool IsMoveInput => !Mathf.Approximately(_input.MoveInput.sqrMagnitude, 0f);
 
         public void SetCanAttack(bool canAttack)
             => this.canAttack = canAttack;
@@ -90,12 +90,12 @@ namespace Game
             
             if(IsPlayer)
             {
-                _playerInput = playerInputHandlerService;
+                _input = playerInputHandlerService;
                 _cameraSettings.SetTarget(transform, transform.Find("HeadTarget"));
             }
             else
             {
-                _playerInput = GetComponent<IInput>();
+                _input = GetComponent<IInput>();
             }
         }
 
@@ -175,7 +175,7 @@ namespace Game
 
         private void UpdateInputBlocking()
         {
-            _playerInput.InputBlocked = _animCache.IsInputBlocked();
+            _input.InputBlocked = _animCache.IsInputBlocked();
         }
 
         private void CreateWeapon(WeaponData fromData, ref WeaponData prevData, ref WeaponInstance weaponInstanceInstance, int trigger)
@@ -195,7 +195,7 @@ namespace Game
             prevData = fromData;
             var weaponObj = prevData.GetViewInstance(transform, _diContainer);
             weaponInstanceInstance = weaponObj.GetComponent<WeaponInstance>();
-            weaponInstanceInstance.Initialize(gameObject);
+            weaponInstanceInstance.Initialize(gameObject, TargetLayer);
             weaponInstanceInstance.SetStaticParts(prevData.GetStaticParts(propBones, _diContainer));
             ConnectWeaponToHands(false, prevData, weaponInstanceInstance, trigger);
             ConnectCombo(prevData);
@@ -234,8 +234,8 @@ namespace Game
             _animCache.ResetAttack1();
             _animCache.ResetAttack2();
 
-            if (_playerInput.Attack1 && canAttack) _animCache.TriggerAttack1();
-            if (_playerInput.Attack2 && canAttack) _animCache.TriggerAttack2();
+            if (_input.Attack1 && canAttack) _animCache.TriggerAttack1();
+            if (_input.Attack2 && canAttack) _animCache.TriggerAttack2();
         }
 
         private void ConnectWeaponToHands(bool equip, WeaponData data, WeaponInstance weaponInstanceInstance, int trigger)
@@ -257,7 +257,7 @@ namespace Game
 
         private void CalculateForwardMovement()
         {
-            var moveInput = _playerInput.MoveInput;
+            var moveInput = _input.MoveInput;
             if (moveInput.sqrMagnitude > 1f)
                 moveInput.Normalize();
 
@@ -270,14 +270,14 @@ namespace Game
 
         private void CalculateVerticalMovement()
         {
-            if (!_playerInput.JumpInput && _isGrounded)
+            if (!_input.JumpInput && _isGrounded)
                 _readyToJump = true;
 
             if (_isGrounded)
             {
                 _verticalSpeed = -gravity * StickingGravityProportion;
 
-                if (_playerInput.JumpInput && _readyToJump && !CheckCombo())
+                if (_input.JumpInput && _readyToJump && !CheckCombo())
                 {
                     _verticalSpeed = jumpSpeed;
                     _isGrounded    = false;
@@ -286,7 +286,7 @@ namespace Game
             }
             else
             {
-                if (!_playerInput.JumpInput && _verticalSpeed > 0.0f)
+                if (!_input.JumpInput && _verticalSpeed > 0.0f)
                     _verticalSpeed -= JumpAbortSpeed * Time.deltaTime;
 
                 if (Mathf.Approximately(_verticalSpeed, 0f))
@@ -298,10 +298,10 @@ namespace Game
 
         private void SetTargetRotation()
         {
-            var moveInput              = _playerInput.MoveInput;
+            var moveInput              = _input.MoveInput;
             var localMovementDirection = new Vector3(moveInput.x, 0f, moveInput.y).normalized;
 
-            var forward = Quaternion.Euler(0f, _cameraSettings.CurrentYaw, 0f) * Vector3.forward;
+            var forward = Quaternion.Euler(0f, _input.RotationYaw, 0f) * Vector3.forward;
             forward.y = 0f;
             forward.Normalize();
 
@@ -370,7 +370,7 @@ namespace Game
         {
             _animCache.SetAngleDeltaRad(_angleDiff * Mathf.Deg2Rad);
 
-            var localInput      = new Vector3(_playerInput.MoveInput.x, 0f, _playerInput.MoveInput.y);
+            var localInput      = new Vector3(_input.MoveInput.x, 0f, _input.MoveInput.y);
             var groundedTurnSpeed = Mathf.Lerp(maxTurnSpeed, minTurnSpeed, _forwardSpeed / _desiredForwardSpeed);
             var actualTurnSpeed   = _isGrounded
                 ? groundedTurnSpeed
@@ -428,7 +428,7 @@ namespace Game
 
         private void TimeoutToIdle()
         {
-            var inputDetected = IsMoveInput || _playerInput.Attack1 || _playerInput.Attack2 || _playerInput.JumpInput;
+            var inputDetected = IsMoveInput || _input.Attack1 || _input.Attack2 || _input.JumpInput;
 
             if (_isGrounded && !inputDetected)
             {

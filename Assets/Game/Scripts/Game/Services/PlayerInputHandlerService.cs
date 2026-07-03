@@ -1,11 +1,10 @@
+using Game;
 using UnityEngine;
 using Zenject;
 
 public class PlayerInputHandlerService : IInput
 {
     public bool InputBlocked { get; set; }
-
-    private PlayerNewInput _input;
 
     public Vector2 MoveInput
     {
@@ -25,6 +24,12 @@ public class PlayerInputHandlerService : IInput
         set {}
     }
 
+    public float RotationYaw
+    {
+        get => _cameraSettings.CurrentYaw;
+        set {}
+    }
+
     public bool Attack1
     {
         get =>  !InputBlocked && _input.Attack1; 
@@ -36,14 +41,19 @@ public class PlayerInputHandlerService : IInput
         get =>  !InputBlocked && _input.Attack2; 
         set {}
     }
-
-    [Inject]
-    public void Construct (PlayerNewInput input)
-    {
-        _input = input;
-    }
     
     public bool HaveControl() => !InputBlocked;
     public void ReleaseControl() => InputBlocked = true;
     public void GainControl() => InputBlocked = false;
+    
+    private CameraSettings _cameraSettings;
+    private PlayerNewInput _input;
+    
+    [Inject]
+    public void Construct (PlayerNewInput input, CameraSettings cameraSettings)
+    {
+        _input = input;
+        _cameraSettings = cameraSettings;
+    }
+
 }

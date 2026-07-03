@@ -24,10 +24,7 @@ namespace Game
 
         public GameObject view;
         public GameObject trail;
-        public LayerMask targetLayers;
-
         public AttackPoint[] attackPoints = new AttackPoint[0];
-
         public TimeEffect[] effects;
 
         [Header("Audio")] public RandomAudioPlayer hitAudio;
@@ -40,6 +37,7 @@ namespace Game
         }
 
         protected GameObject m_Owner;
+        protected LayerMask m_targetLayers;
 
         protected Vector3[] m_PreviousPos = null;
         protected Vector3 m_Direction;
@@ -56,9 +54,10 @@ namespace Game
         protected GameObject[] staticParts;
 
         //whoever own the weapon is responsible for calling that. Allow to avoid "self harm"
-        public void Initialize(GameObject owner)
+        public void Initialize(GameObject owner, LayerMask layers)
         {
             m_Owner = owner;
+            m_targetLayers = layers;
         }
 
         public void SetViewParent(PropBones propBones, PropBoneSettings settings)
@@ -170,7 +169,7 @@ namespace Game
             if (d.gameObject == m_Owner)
                 return true; //ignore self harm, but do not end the attack (we don't "bounce" off ourselves)
 
-            if ((targetLayers.value & (1 << other.gameObject.layer)) == 0)
+            if ((m_targetLayers.value & (1 << other.gameObject.layer)) == 0)
             {
                 //hit an object that is not in our layer, this end the attack. we "bounce" off it
                 return false;

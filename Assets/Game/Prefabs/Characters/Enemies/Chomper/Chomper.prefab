@@ -1113,9 +1113,6 @@ MonoBehaviour:
   damage: 1
   view: {fileID: 0}
   trail: {fileID: 0}
-  targetLayers:
-    serializedVersion: 2
-    m_Bits: 512
   attackPoints:
   - radius: 0.35
     offset: {x: 0, y: 0, z: 0}
@@ -3542,7 +3539,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93e09843a5c1c344f9a06661baac93cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  meleeWeapon: {fileID: 114176760753491054}
+  <TargetLayer>k__BackingField:
+    serializedVersion: 2
+    m_Bits: 512
+  weaponInstance: {fileID: 114176760753491054}
   playerScanner:
     heightOffset: 1
     detectionRadius: 15
@@ -3639,6 +3639,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25877601b9081164b9b64ec159b9a452, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerTag: Player
   interpolateTurning: 0
   applyAnimationRotation: 0
 --- !u!195 &195733995024529676
