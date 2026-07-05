@@ -113,11 +113,11 @@ namespace Game
             m_Transitioning = true;
             PersistentDataManager.SaveAllData();
 
-            MCharacterInput.ReleaseControl();
+            //MCharacterInput.ReleaseControl();
             yield return StartCoroutine(ScreenFader.FadeSceneOut(ScreenFader.FadeType.Loading));
             PersistentDataManager.ClearPersisters();
             yield return SceneManager.LoadSceneAsync(newSceneName);
-            MCharacterInput.ReleaseControl();
+            //MCharacterInput.ReleaseControl();
             PersistentDataManager.LoadAllData();
             SceneTransitionDestination entrance = GetDestination(destinationTag);
             SetEnteringGameObjectLocation(entrance);
@@ -125,7 +125,7 @@ namespace Game
             if (entrance != null)
                 entrance.OnReachDestination.Invoke();
             yield return StartCoroutine(ScreenFader.FadeSceneIn());
-            MCharacterInput.GainControl();
+            //MCharacterInput.GainControl();
 
             m_Transitioning = false;
         }
