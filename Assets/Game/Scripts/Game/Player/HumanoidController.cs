@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using Game.Message;
+using Unity.Cinemachine;
 using Zenject;
 
 namespace Game
@@ -578,10 +579,13 @@ namespace Game
             var localHurt = transform.InverseTransformDirection(forward);
             _animCache.SetHurtDirection(localHurt.x, localHurt.z);
 
-            CameraShake.Shake(CameraShake.k_PlayerHitShakeAmount, CameraShake.k_PlayerHitShakeTime);
-
             if (hurtAudioPlayer != null)
                 hurtAudioPlayer.PlayRandomClip();
+
+            if (IsPlayer)
+            {
+                _cameraSettings.Shake(2f, 0.5f, CinemachineImpulseDefinition.ImpulseShapes.Rumble, Vector3.one);
+            }
         }
 
         public void Die(Damageable.DamageMessage damageMessage)

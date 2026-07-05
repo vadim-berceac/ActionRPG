@@ -113,10 +113,7 @@ namespace Game
                     m_Directors[i].Resume ();
                 }
             }
-            
-            if(!m_InPause)
-                CameraShake.Stop ();
-
+           
             if (m_InPause)
                 _playerInputHandler.GainControl();
             else

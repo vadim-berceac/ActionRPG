@@ -36,6 +36,7 @@ namespace Game
         public float CurrentYaw => orbitalFollow.HorizontalAxis.Value;
         public CinemachineCamera controllerCamera;
         public CinemachineOrbitalFollow orbitalFollow;
+        public CinemachineImpulseSource impulseSource;
 
         public InvertSettings controllerInvertSettings;
         public SmoothingSettings controllerSmoothing;
@@ -56,6 +57,19 @@ namespace Game
         private void Construct(PlayerInputHandlerService playerInputHandler)
         {
             _playerInputHandler = playerInputHandler;
+        }
+
+        public void Shake(float amplitude, float duration, CinemachineImpulseDefinition.ImpulseShapes mode,  Vector3? velocity = null)
+        {
+            impulseSource.ImpulseDefinition.ImpulseDuration = duration;
+            impulseSource.ImpulseDefinition.ImpulseShape = mode;
+
+            if (velocity.HasValue)
+            {
+                impulseSource.GenerateImpulseWithVelocity(velocity.Value * amplitude);
+                return;
+            }
+            impulseSource.GenerateImpulseWithForce(amplitude);
         }
         
         private void Awake()

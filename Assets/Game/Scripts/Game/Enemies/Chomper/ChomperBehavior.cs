@@ -256,10 +256,6 @@ namespace Game
 
         public void ApplyDamage(Damageable.DamageMessage msg)
         {
-            //TODO : make that more generic, (e.g. move it to the WeaponInstance code with a boolean to enable shaking of camera on hit?)
-            if (msg.damager.name == "Staff")
-                CameraShake.Shake(0.06f, 0.1f);
-
             float verticalDot = Vector3.Dot(Vector3.up, msg.direction);
             float horizontalDot = Vector3.Dot(transform.right, msg.direction);
 
