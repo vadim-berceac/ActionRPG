@@ -1,9 +1,11 @@
 using Cysharp.Threading.Tasks;
+using Game;
 using UnityEngine;
 
 public class EnemyBrain : MonoBehaviour, IInput
 {
-    [SerializeField] private AnimationCurve animationCurve;
+    [SerializeField] private VisionSystem visionSystem;
+    [SerializeField] private HumanoidController humanoidController;
     [SerializeField] private float rotationSpeed;
     [SerializeField] private Transform[] patrolPoints;
     
@@ -26,11 +28,15 @@ public class EnemyBrain : MonoBehaviour, IInput
         await Fsm.TransitionTo(Fsm.PatrolState);
         Fsm.Ctx.Activate(true);
     }
+
+    private void OnDisable()
+    {
+        Fsm.Dispose();
+    }
     
     private UniTask InitializeFsm()
     {
-        Fsm = new AsyncStateMachine(new StateMachineContext(this, transform, 
-            animationCurve, rotationSpeed, patrolPoints));
+        Fsm = new AsyncStateMachine(new StateMachineContext(this, visionSystem, transform, rotationSpeed, patrolPoints));
         return UniTask.CompletedTask;
     }
 }

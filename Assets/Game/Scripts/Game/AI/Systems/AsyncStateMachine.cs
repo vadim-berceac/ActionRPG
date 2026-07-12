@@ -3,7 +3,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-public class AsyncStateMachine
+public class AsyncStateMachine : IDisposable
 {
     public IAsyncState CurrentState { get; private set; }
     public StateMachineContext Ctx { get; private set; }
@@ -11,6 +11,7 @@ public class AsyncStateMachine
     //States
     public WaitForOrdersState WaitForOrdersState { get; private set; }
     public PatrolState PatrolState { get; private set; }
+    public ChaseState ChaseState { get; private set; }
     public HitReactionState HitReactionState { get; private set; }
     
     private CancellationTokenSource _stateTokenSource;
@@ -22,6 +23,7 @@ public class AsyncStateMachine
         
         WaitForOrdersState = new WaitForOrdersState(this);
         PatrolState = new PatrolState(this);
+        ChaseState = new ChaseState(this);
         HitReactionState = new HitReactionState(this);
     }
 
@@ -77,8 +79,9 @@ public class AsyncStateMachine
         catch (OperationCanceledException) { /* Handled silently */ }
     }
 
-    public void Shutdown()
+    public void Dispose()
     {
+        Ctx.Dispose();
         _stateTokenSource?.Cancel();
         _stateTokenSource?.Dispose();
     }
