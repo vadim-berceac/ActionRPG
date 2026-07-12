@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class CollisionDetector : MonoBehaviour
 {
-    [SerializeField] private GameFlowController gameFlowController;
+    //[SerializeField] private GameFlowController gameFlowController;
     [SerializeField] private LayerMask collisionLayerMask;
     [SerializeField] private Collider selfCollider;
     [SerializeField] private float resetCollisionDelay = 0.5f;
@@ -14,7 +14,7 @@ public class CollisionDetector : MonoBehaviour
     public bool IsOverlapping { get; private set; }
 
     private Collider _lastHitCollider;
-    private GameFlowController _lastHitFlow;
+    //private GameFlowController _lastHitFlow;
     private readonly Collider[] _results = new Collider[16];
     private CancellationTokenSource _cts;
     private CancellationTokenSource _resetCts;
@@ -70,7 +70,7 @@ public class CollisionDetector : MonoBehaviour
     {
         await UniTask.WaitForSeconds(resetCollisionDelay, true, cancellationToken: ct);
         _lastHitCollider = null;
-        _lastHitFlow = null;
+        //_lastHitFlow = null;
     }
 
     private void OnHit(Collider col)
@@ -78,7 +78,7 @@ public class CollisionDetector : MonoBehaviour
         if (col == null || col == _lastHitCollider) return;
 
         _lastHitCollider = col;
-        _lastHitFlow = col.GetComponent<GameFlowController>();
+        //_lastHitFlow = col.GetComponent<GameFlowController>();
 
         _resetCts?.Cancel();
         _resetCts?.Dispose();
@@ -90,11 +90,11 @@ public class CollisionDetector : MonoBehaviour
 
     private void CheckDamage()
     {
-        if (_lastHitFlow == null) return;
+        //if (_lastHitFlow == null) return;
 
-        if (_lastHitFlow.Mass < gameFlowController.Mass) return;
+        //if (_lastHitFlow.Mass < gameFlowController.Mass) return;
 
-        gameFlowController.Fsm.Ctx.HitReaction(true);
+        //gameFlowController.Fsm.Ctx.HitReaction(true);
         Debug.Log("Boom!");
     }
 }

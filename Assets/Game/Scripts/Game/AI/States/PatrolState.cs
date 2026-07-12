@@ -1,9 +1,12 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class PatrolState : AsyncState
 {
+    
+
     public PatrolState(AsyncStateMachine stateMachine) : base(stateMachine)
     {
     }
@@ -11,7 +14,7 @@ public class PatrolState : AsyncState
     public override async UniTask OnEnter(CancellationToken ct)
     {
         await base.OnEnter(ct);
-        
+
         if (StateMachine.Ctx.PatrolWaypoints == null || StateMachine.Ctx.PatrolWaypoints.Length == 0)
         {
             StateMachine.Ctx.SetWaypoints(StateMachine.Ctx.Transform.position.GetRandomPath(Random.Range(3, 10),
@@ -23,7 +26,7 @@ public class PatrolState : AsyncState
     public override async UniTask OnUpdate(CancellationToken ct)
     {
         await base.OnUpdate(ct);
-        
+
         foreach (var point in StateMachine.Ctx.PatrolWaypoints)
         {
             if (CancellationTokenSource.IsCancellationRequested) break;
@@ -38,16 +41,13 @@ public class PatrolState : AsyncState
 
                 var corner = corners[i];
 
-                // moveResult = await StateMachine.Ctx.Transform.MoveAsync(
-                //         StateMachine.Ctx.AnimationCurve,
-                //         corner,
-                //         CancellationTokenSource.Token,
-                //         true,
-                //         StateMachine.Ctx.RotationSpeed)
-                //     .SuppressCancellationThrow();
+                moveResult = await AIMove.MoveTowardsAsync(corner, CancellationTokenSource.Token, StateMachine)
+                    .SuppressCancellationThrow();
 
                 if (moveResult) break;
             }
+
+            StopInput();
 
             if (moveResult) break;
             if (CancellationTokenSource.IsCancellationRequested) break;
@@ -65,8 +65,14 @@ public class PatrolState : AsyncState
     public override async UniTask OnExit(CancellationToken ct)
     {
         await base.OnExit(ct);
+        StopInput();
         Debug.Log("Interrupted patrol routine.");
         await UniTask.CompletedTask;
+    }
+    
+    private void StopInput()
+    {
+        StateMachine.Ctx.Input.MoveInput = Vector2.zero;
     }
 
     protected override bool ShouldInterrupt() =>

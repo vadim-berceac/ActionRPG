@@ -3,6 +3,7 @@ using UnityEngine.AI;
 
 public class StateMachineContext
 {
+    public IInput Input { get; set; }
     public Transform Transform  { get; private set; }
     public AnimationCurve AnimationCurve  { get; private set; }
     public float RotationSpeed { get; private set; }
@@ -13,9 +14,10 @@ public class StateMachineContext
     public readonly int WalkableAreaMask = NavMesh.GetAreaFromName("Walkable") != -1
         ? 1 << NavMesh.GetAreaFromName("Walkable")
         : NavMesh.AllAreas;
-    public StateMachineContext(Transform transform, AnimationCurve animationCurve, 
+    public StateMachineContext(IInput input, Transform transform, AnimationCurve animationCurve, 
         float rotationSpeed, Transform[] patrolWaypoints)
     {
+        Input = input;
         Transform = transform;
         AnimationCurve = animationCurve;
         RotationSpeed = rotationSpeed;
