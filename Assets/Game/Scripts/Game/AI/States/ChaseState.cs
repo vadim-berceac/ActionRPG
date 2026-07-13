@@ -5,7 +5,6 @@ using UnityEngine;
 public class ChaseState : AsyncState
 {
     private const float RepathDistance = 1.5f;
-    private const float ArrivalTolerance = 0.5f;
 
     public ChaseState(AsyncStateMachine stateMachine) : base(stateMachine)
     {

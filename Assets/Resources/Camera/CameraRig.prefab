@@ -312,8 +312,8 @@ MonoBehaviour:
     invertX: 0
     invertY: 0
   controllerSmoothing:
-    smoothTimeX: 0.1
-    smoothTimeY: 0.1
+    smoothTimeX: 0.25
+    smoothTimeY: 1
   controllerRecentering:
     enabled: 0
     wait: 0
