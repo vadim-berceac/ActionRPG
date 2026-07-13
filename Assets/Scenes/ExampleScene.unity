@@ -17747,7 +17747,7 @@ PrefabInstance:
         type: 3}
       propertyPath: <InventoryItemSlots>k__BackingField.Array.data[0].<ItemData>k__BackingField
       value: 
-      objectReference: {fileID: 11400000, guid: a4812abcae2217b41b1758a8df081f64,
+      objectReference: {fileID: 11400000, guid: 91752df81a8e3e147a40ec2656b85504,
         type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

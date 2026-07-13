@@ -3,7 +3,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-public static class AIMove
+public static class AIActions
 {
     public static async UniTask MoveTowardsAsync(Vector3 destination, CancellationToken ct, AsyncStateMachine fsm)
     {
@@ -42,5 +42,28 @@ public static class AIMove
         }
 
         input.MoveInput = Vector2.zero;
+    }
+    
+    public static async UniTask AttackAsync(CancellationToken ct, AsyncStateMachine fsm, bool useSecondary = false)
+    {
+        var input = fsm.Ctx.Input;
+        var transform = fsm.Ctx.Transform;
+
+        ct.ThrowIfCancellationRequested();
+
+        if (transform == null)
+            throw new OperationCanceledException();
+
+        if (useSecondary)
+            input.Attack2 = true;
+        else
+            input.Attack1 = true;
+
+        await UniTask.Delay(5, cancellationToken: ct);
+
+        if (useSecondary)
+            input.Attack2 = false;
+        else
+            input.Attack1 = false;
     }
 }

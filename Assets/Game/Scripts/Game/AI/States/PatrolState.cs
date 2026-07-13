@@ -5,8 +5,6 @@ using Random = UnityEngine.Random;
 
 public class PatrolState : AsyncState
 {
-    
-
     public PatrolState(AsyncStateMachine stateMachine) : base(stateMachine)
     {
     }
@@ -41,7 +39,7 @@ public class PatrolState : AsyncState
 
                 var corner = corners[i];
 
-                moveResult = await AIMove.MoveTowardsAsync(corner, CancellationTokenSource.Token, StateMachine)
+                moveResult = await AIActions.MoveTowardsAsync(corner, CancellationTokenSource.Token, StateMachine)
                     .SuppressCancellationThrow();
 
                 if (moveResult) break;
@@ -76,14 +74,14 @@ public class PatrolState : AsyncState
     }
 
     protected override bool ShouldInterrupt() =>
-        !StateMachine.Ctx.IsStarted ||
+        StateMachine.Ctx.Target ||
         StateMachine.Ctx.IsHitReaction;
 
     protected override async UniTask HandleTransition()
     {
-        if (!StateMachine.Ctx.IsStarted)
+        if (StateMachine.Ctx.Target)
         {
-            await StateMachine.TransitionTo(StateMachine.WaitForOrdersState);
+            await StateMachine.TransitionTo(StateMachine.ChaseState);
             return;
         }
 

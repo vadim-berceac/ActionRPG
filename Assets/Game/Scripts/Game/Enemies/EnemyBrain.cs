@@ -26,7 +26,6 @@ public class EnemyBrain : MonoBehaviour, IInput
     {
         await InitializeFsm();
         await Fsm.TransitionTo(Fsm.PatrolState);
-        Fsm.Ctx.Activate(true);
     }
 
     private void OnDisable()

@@ -25,6 +25,7 @@ namespace Game
 
         public bool isInvulnerable { get; set; }
         public int currentHitPoints { get; private set; }
+        public Transform Transform  { get; private set; }
 
         public UnityEvent OnDeath, OnReceiveDamage, OnHitWhileInvulnerable, OnBecomeVulnerable, OnResetDamage;
 
@@ -40,6 +41,7 @@ namespace Game
         void Start()
         {
             ResetDamage();
+            Transform = transform;
             m_Collider = GetComponent<Collider>();
         }
 
