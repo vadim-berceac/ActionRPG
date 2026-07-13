@@ -20,18 +20,25 @@ public class ChaseState : AsyncState
     {
         await base.OnUpdate(ct);
 
-        while (!CancellationTokenSource.IsCancellationRequested
+        while (!IsCancelled
                && StateMachine.Ctx.TryGetLastKnownTargetPosition(out var destination)
                && !IsWithinStopDistance(destination))
         {
             var corners = StateMachine.Ctx.Transform.position.GetPathTo(destination, StateMachine.Ctx.WalkableAreaMask);
+
+            if (corners == null || corners.Length <= 1)
+            {
+                StopInput();
+                StateMachine.Ctx.ClearLastKnownTargetPosition();
+                break;
+            }
 
             var moveResult = false;
             var needsRepath = false;
 
             for (var i = 1; i < corners.Length; i++)
             {
-                if (CancellationTokenSource.IsCancellationRequested) break;
+                if (IsCancelled) break;
 
                 if (!StateMachine.Ctx.TryGetLastKnownTargetPosition(out var currentDestination))
                 {

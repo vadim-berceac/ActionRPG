@@ -31,7 +31,8 @@ public class EnemyBrain : MonoBehaviour, IInput
 
     private void OnDisable()
     {
-        Fsm.Dispose();
+        Fsm?.Dispose();
+        Fsm = null;
     }
     
     private UniTask InitializeFsm()

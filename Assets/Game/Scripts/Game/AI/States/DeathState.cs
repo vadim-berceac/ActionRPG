@@ -13,4 +13,9 @@ public class DeathState : AsyncState
         await base.OnEnter(ct);
         Debug.Log($"{StateMachine.Ctx.Transform.gameObject.name} is dead");
     }
+
+    public override async UniTask OnUpdate(CancellationToken ct)
+    {
+        await UniTask.WaitUntilCanceled(ct);
+    }
 }

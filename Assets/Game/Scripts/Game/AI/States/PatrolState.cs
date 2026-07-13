@@ -27,7 +27,7 @@ public class PatrolState : AsyncState
 
         foreach (var point in StateMachine.Ctx.PatrolWaypoints)
         {
-            if (CancellationTokenSource.IsCancellationRequested) break;
+            if (IsCancelled) break;
 
             var corners = StateMachine.Ctx.Transform.position.GetPathTo(point, StateMachine.Ctx.WalkableAreaMask);
 
@@ -35,7 +35,7 @@ public class PatrolState : AsyncState
 
             for (var i = 1; i < corners.Length; i++)
             {
-                if (CancellationTokenSource.IsCancellationRequested) break;
+                if (IsCancelled) break;
 
                 var corner = corners[i];
 
@@ -48,7 +48,7 @@ public class PatrolState : AsyncState
             StopInput();
 
             if (moveResult) break;
-            if (CancellationTokenSource.IsCancellationRequested) break;
+            if (IsCancelled) break;
 
             Debug.Log("Scanning surroundings...");
             var delayResult = await UniTask.Delay(1000, cancellationToken: CancellationTokenSource.Token)

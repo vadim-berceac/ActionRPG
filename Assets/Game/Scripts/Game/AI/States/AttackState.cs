@@ -21,7 +21,7 @@ public class AttackState : AsyncState
     {
         await base.OnUpdate(ct);
 
-        while (!CancellationTokenSource.IsCancellationRequested
+        while (!IsCancelled
                && StateMachine.Ctx.Target
                && !IsOutOfRange() && !StateMachine.Ctx.IsDead)
         {
@@ -32,7 +32,7 @@ public class AttackState : AsyncState
 
             if (attackResult) break;
 
-            if (CancellationTokenSource.IsCancellationRequested) break;
+            if (IsCancelled) break;
             if (!StateMachine.Ctx.Target) break;
             if (IsOutOfRange()) break;
 

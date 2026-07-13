@@ -15,6 +15,7 @@ public abstract class AsyncState : IAsyncState
 {
     protected AsyncStateMachine StateMachine { get; set; }
     protected CancellationTokenSource CancellationTokenSource { get; set; }
+    protected bool IsCancelled => CancellationTokenSource == null || CancellationTokenSource.Token.IsCancellationRequested;
 
     protected AsyncState(AsyncStateMachine stateMachine)
     {
@@ -24,19 +25,19 @@ public abstract class AsyncState : IAsyncState
     public virtual async UniTask OnEnter(CancellationToken ct)
     {
         CancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        _ = WatchAndCancelAsync(ShouldInterrupt, CancellationTokenSource, ct)
+            .SuppressCancellationThrow();
         await UniTask.Yield(); 
     }
 
     public virtual async UniTask OnUpdate(CancellationToken ct)
     {
-        _ = WatchAndCancelAsync(ShouldInterrupt, CancellationTokenSource, ct)
-            .SuppressCancellationThrow();
-
         await UniTask.Yield();
     }
 
     public virtual async UniTask OnExit(CancellationToken ct)
     {
+        CancellationTokenSource?.Cancel();
         CancellationTokenSource?.Dispose();
         CancellationTokenSource = null;
         await UniTask.Yield(); 
@@ -57,7 +58,11 @@ public abstract class AsyncState : IAsyncState
         await UniTask.WaitUntil(shouldCancel, cancellationToken: ct)
             .SuppressCancellationThrow();
 
-        if (!linkedCts.IsCancellationRequested)
-            linkedCts.Cancel();
+        try
+        {
+            if (!linkedCts.Token.IsCancellationRequested)
+                linkedCts.Cancel();
+        }
+        catch (ObjectDisposedException) { }
     }
 }

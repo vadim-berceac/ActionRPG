@@ -88,6 +88,7 @@ public class AsyncStateMachine : IDisposable
             while (!_isDisposed && !token.IsCancellationRequested && CurrentState == state)
             {
                 await state.OnUpdate(token);
+                await UniTask.Yield(PlayerLoopTiming.Update, token);
             }
         }
         catch (OperationCanceledException) { /* Handled silently */ }
