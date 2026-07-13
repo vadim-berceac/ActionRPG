@@ -57,7 +57,7 @@ namespace Game
         private Material _currentWalkingSurface;
         private Quaternion _targetRotation;
         private float _angleDiff;
-        private Collider[] _overlapResult = new Collider[8];
+        private readonly Collider[] _overlapResult = new Collider[8];
         private bool _inAttack;
         private Damageable _damageable;
         private Renderer[] _renderers;

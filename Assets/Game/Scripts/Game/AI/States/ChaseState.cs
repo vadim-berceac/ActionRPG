@@ -5,6 +5,7 @@ using UnityEngine;
 public class ChaseState : AsyncState
 {
     private const float RepathDistance = 1.5f;
+    private const float ArrivalTolerance = 0.5f;
 
     public ChaseState(AsyncStateMachine stateMachine) : base(stateMachine)
     {
@@ -21,11 +22,10 @@ public class ChaseState : AsyncState
         await base.OnUpdate(ct);
 
         while (!CancellationTokenSource.IsCancellationRequested
-               && StateMachine.Ctx.Target
-               && !IsWithinStopDistance())
+               && StateMachine.Ctx.TryGetLastKnownTargetPosition(out var destination)
+               && !IsWithinStopDistance(destination))
         {
-            var targetPosAtPathStart = StateMachine.Ctx.Target.Transform.position;
-            var corners = StateMachine.Ctx.Transform.position.GetPathTo(targetPosAtPathStart, StateMachine.Ctx.WalkableAreaMask);
+            var corners = StateMachine.Ctx.Transform.position.GetPathTo(destination, StateMachine.Ctx.WalkableAreaMask);
 
             var moveResult = false;
             var needsRepath = false;
@@ -33,10 +33,18 @@ public class ChaseState : AsyncState
             for (var i = 1; i < corners.Length; i++)
             {
                 if (CancellationTokenSource.IsCancellationRequested) break;
-                if (!StateMachine.Ctx.Target) break;
-                if (IsWithinStopDistance()) break;
 
-                if (Vector3.Distance(StateMachine.Ctx.Target.Transform.position, targetPosAtPathStart) > RepathDistance)
+                if (!StateMachine.Ctx.TryGetLastKnownTargetPosition(out var currentDestination))
+                {
+                    // цель никогда не была видна / позицию уже сбросили извне
+                    needsRepath = false;
+                    moveResult = false;
+                    break;
+                }
+
+                if (IsWithinStopDistance(currentDestination)) break;
+
+                if (Vector3.Distance(currentDestination, destination) > RepathDistance)
                 {
                     needsRepath = true;
                     break;
@@ -54,9 +62,19 @@ public class ChaseState : AsyncState
 
             if (moveResult) break;
             if (needsRepath) continue;
+
+            // Достигли последней известной точки, но условие выхода из while ещё не перепроверилось —
+            // цикл сам корректно завершится на следующей итерации проверки.
         }
-        
+
         StopInput();
+
+        // Если добрались до последней известной точки и цели там нет — считаем поиск оконченным.
+        if (!StateMachine.Ctx.Target && StateMachine.Ctx.TryGetLastKnownTargetPosition(out var reachedPos)
+            && IsWithinStopDistance(reachedPos))
+        {
+            StateMachine.Ctx.ClearLastKnownTargetPosition();
+        }
 
         await HandleTransition();
     }
@@ -69,11 +87,9 @@ public class ChaseState : AsyncState
         await UniTask.CompletedTask;
     }
 
-    private bool IsWithinStopDistance()
+    private bool IsWithinStopDistance(Vector3 point)
     {
-        if (!StateMachine.Ctx.Target) return false;
-
-        var distance = Vector3.Distance(StateMachine.Ctx.Transform.position, StateMachine.Ctx.Target.Transform.position);
+        var distance = Vector3.Distance(StateMachine.Ctx.Transform.position, point);
         return distance <= Constants.StopDistance;
     }
 
@@ -83,26 +99,31 @@ public class ChaseState : AsyncState
     }
 
     protected override bool ShouldInterrupt() =>
-        !StateMachine.Ctx.Target ||
         StateMachine.Ctx.IsHitReaction;
 
     protected override async UniTask HandleTransition()
     {
+        if (StateMachine.Ctx.IsDead)
+        {
+            await StateMachine.TransitionTo(StateMachine.DeathState);
+            return;
+        }
+
         if (StateMachine.Ctx.IsHitReaction)
         {
             await StateMachine.TransitionTo(StateMachine.HitReactionState);
             return;
         }
 
-        if (!StateMachine.Ctx.Target)
+        if (StateMachine.Ctx.Target && IsWithinStopDistance(StateMachine.Ctx.Target.Transform.position))
         {
-            await StateMachine.TransitionTo(StateMachine.PatrolState);
+            await StateMachine.TransitionTo(StateMachine.AttackState);
             return;
         }
 
-        if (IsWithinStopDistance())
+        if (!StateMachine.Ctx.TryGetLastKnownTargetPosition(out _))
         {
-            await StateMachine.TransitionTo(StateMachine.AttackState);
+            await StateMachine.TransitionTo(StateMachine.PatrolState);
         }
     }
 }

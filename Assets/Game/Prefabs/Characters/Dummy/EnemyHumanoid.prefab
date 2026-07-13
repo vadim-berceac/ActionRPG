@@ -97,6 +97,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBrain
   visionSystem: {fileID: 2717845300838748205}
   humanoidController: {fileID: 3129279076112330710}
+  characterController: {fileID: 1221178880529204029}
+  damageable: {fileID: 8221082309353826462}
   rotationSpeed: 5
   patrolPoints: []
 --- !u!95 &3589592028908676066

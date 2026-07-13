@@ -79,6 +79,12 @@ public class PatrolState : AsyncState
 
     protected override async UniTask HandleTransition()
     {
+        if (StateMachine.Ctx.IsDead)
+        {
+            await StateMachine.TransitionTo(StateMachine.DeathState);
+            return;
+        }
+        
         if (StateMachine.Ctx.Target)
         {
             await StateMachine.TransitionTo(StateMachine.ChaseState);

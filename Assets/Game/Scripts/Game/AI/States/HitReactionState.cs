@@ -37,6 +37,12 @@ public class HitReactionState : AsyncState
 
     protected override async UniTask HandleTransition()
     {
+        if (StateMachine.Ctx.IsDead)
+        {
+            await StateMachine.TransitionTo(StateMachine.DeathState);
+            return;
+        }
+        
         if (!StateMachine.Ctx.IsHitReaction)
         {
             await StateMachine.TransitionTo(StateMachine.PatrolState);

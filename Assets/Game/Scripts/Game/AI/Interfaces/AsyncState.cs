@@ -29,12 +29,10 @@ public abstract class AsyncState : IAsyncState
 
     public virtual async UniTask OnUpdate(CancellationToken ct)
     {
-        _ = UniTask.RunOnThreadPool(
-                () => WatchAndCancelAsync(ShouldInterrupt, CancellationTokenSource, ct),
-                cancellationToken: ct)
+        _ = WatchAndCancelAsync(ShouldInterrupt, CancellationTokenSource, ct)
             .SuppressCancellationThrow();
-        
-        await UniTask.Yield(); 
+
+        await UniTask.Yield();
     }
 
     public virtual async UniTask OnExit(CancellationToken ct)
@@ -62,5 +60,4 @@ public abstract class AsyncState : IAsyncState
         if (!linkedCts.IsCancellationRequested)
             linkedCts.Cancel();
     }
-
 }

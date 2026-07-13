@@ -23,6 +23,7 @@ public class VisionSystem : MonoBehaviour
     private readonly HashSet<Damageable> _visibleTargets = new();
     private readonly Dictionary<Damageable, int> _visibleStreak = new();
     private readonly Dictionary<Damageable, int> _hiddenStreak = new();
+    private readonly Dictionary<Damageable, Vector3> _lastKnownPositions = new();
 
     private CancellationTokenSource _cts;
 
@@ -42,6 +43,7 @@ public class VisionSystem : MonoBehaviour
         _visibleTargets.Clear();
         _visibleStreak.Clear();
         _hiddenStreak.Clear();
+        _lastKnownPositions.Clear();
     }
 
     private void OnTriggerEnter(Collider other) => TryRegister(other);
@@ -90,6 +92,8 @@ public class VisionSystem : MonoBehaviour
 
             if (isVisibleNow)
             {
+                _lastKnownPositions[damageable] = targetPoint;
+
                 _hiddenStreak[damageable] = 0;
                 _visibleStreak.TryGetValue(damageable, out var streak);
                 streak++;
@@ -115,5 +119,20 @@ public class VisionSystem : MonoBehaviour
                 }
             }
         }
+    }
+
+    public bool TryGetLastKnownPosition(Damageable target, out Vector3 position)
+    {
+        return _lastKnownPositions.TryGetValue(target, out position);
+    }
+
+    public void ClearLastKnownPosition(Damageable target)
+    {
+        _lastKnownPositions.Remove(target);
+    }
+
+    public void ClearAllLastKnownPositions()
+    {
+        _lastKnownPositions.Clear();
     }
 }

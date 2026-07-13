@@ -120,26 +120,5 @@ namespace Game
                 schedule = null;
             }
         }
-
-#if UNITY_EDITOR
-        private void OnDrawGizmosSelected()
-        {
-            Vector3 forward = transform.forward;
-            forward = Quaternion.AngleAxis(hitForwardRotation, transform.up) * forward;
-
-            if (Event.current.type == EventType.Repaint)
-            {
-                UnityEditor.Handles.color = Color.blue;
-                UnityEditor.Handles.ArrowHandleCap(0, transform.position, Quaternion.LookRotation(forward), 1.0f,
-                    EventType.Repaint);
-            }
-
-
-            UnityEditor.Handles.color = new Color(1.0f, 0.0f, 0.0f, 0.5f);
-            forward = Quaternion.AngleAxis(-hitAngle * 0.5f, transform.up) * forward;
-            UnityEditor.Handles.DrawSolidArc(transform.position, transform.up, forward, hitAngle, 1.0f);
-        }
-#endif
     }
-
 }

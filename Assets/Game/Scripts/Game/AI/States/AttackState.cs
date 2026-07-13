@@ -23,9 +23,8 @@ public class AttackState : AsyncState
 
         while (!CancellationTokenSource.IsCancellationRequested
                && StateMachine.Ctx.Target
-               && !IsOutOfRange())
+               && !IsOutOfRange() && !StateMachine.Ctx.IsDead)
         {
-           
             FaceTarget();
 
             var attackResult = await TryExecuteAttack(CancellationTokenSource.Token)
@@ -50,7 +49,6 @@ public class AttackState : AsyncState
     {
         await base.OnExit(ct);
         StopInput();
-        Debug.Log("Interrupted attack routine.");
         await UniTask.CompletedTask;
     }
 
@@ -90,6 +88,12 @@ public class AttackState : AsyncState
 
     protected override async UniTask HandleTransition()
     {
+        if (StateMachine.Ctx.IsDead)
+        {
+            await StateMachine.TransitionTo(StateMachine.DeathState);
+            return;
+        }
+        
         if (StateMachine.Ctx.IsHitReaction)
         {
             await StateMachine.TransitionTo(StateMachine.HitReactionState);

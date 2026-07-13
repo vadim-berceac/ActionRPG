@@ -6,6 +6,7 @@ public class EnemyBrain : MonoBehaviour, IInput
 {
     [SerializeField] private VisionSystem visionSystem;
     [SerializeField] private HumanoidController humanoidController;
+    [SerializeField] private Damageable damageable;
     [SerializeField] private float rotationSpeed;
     [SerializeField] private Transform[] patrolPoints;
     
@@ -35,7 +36,8 @@ public class EnemyBrain : MonoBehaviour, IInput
     
     private UniTask InitializeFsm()
     {
-        Fsm = new AsyncStateMachine(new StateMachineContext(this, visionSystem, transform, rotationSpeed, patrolPoints));
+        Fsm = new AsyncStateMachine(new StateMachineContext(this, visionSystem, damageable,
+            transform, humanoidController, rotationSpeed, patrolPoints));
         return UniTask.CompletedTask;
     }
 }
