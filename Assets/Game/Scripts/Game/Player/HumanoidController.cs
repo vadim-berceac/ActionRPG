@@ -23,6 +23,8 @@ namespace Game
         public float idleTimeout = 5f;
         public bool canAttack;
 
+        public bool IsGrounded => _charCtrl != null && _charCtrl.isGrounded;
+
         public PropBones propBones;
         public RandomAudioPlayer footstepPlayer;
         public RandomAudioPlayer hurtAudioPlayer;

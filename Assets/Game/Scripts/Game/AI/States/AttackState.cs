@@ -80,6 +80,7 @@ public class AttackState : AsyncState
         StateMachine.Ctx.Input.MoveInput = Vector2.zero;
         StateMachine.Ctx.Input.Attack1 = false;
         StateMachine.Ctx.Input.Attack2 = false;
+        StateMachine.Ctx.Input.JumpInput = false;
     }
 
     protected override bool ShouldInterrupt() =>

@@ -71,6 +71,7 @@ public class PatrolState : AsyncState
     private void StopInput()
     {
         StateMachine.Ctx.Input.MoveInput = Vector2.zero;
+        StateMachine.Ctx.Input.JumpInput = false;
     }
 
     protected override bool ShouldInterrupt() =>

@@ -313,7 +313,7 @@ MonoBehaviour:
     invertY: 0
   controllerSmoothing:
     smoothTimeX: 0.25
-    smoothTimeY: 1
+    smoothTimeY: 0.3
   controllerRecentering:
     enabled: 0
     wait: 0

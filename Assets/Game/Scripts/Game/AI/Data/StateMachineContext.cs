@@ -12,6 +12,7 @@ public class StateMachineContext : IDisposable
     public Vector3[] PatrolWaypoints { get; private set; }
     public bool IsHitReaction { get; private set; }
     public bool IsDead { get; private set; }
+    public bool IsGrounded => _humanoidController.IsGrounded;
 
     public readonly int WalkableAreaMask = NavMesh.GetAreaFromName("Walkable") != -1
         ? 1 << NavMesh.GetAreaFromName("Walkable")
