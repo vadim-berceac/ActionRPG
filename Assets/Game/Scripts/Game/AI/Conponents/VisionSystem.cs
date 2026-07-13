@@ -17,13 +17,22 @@ public class VisionSystem : MonoBehaviour
     [SerializeField] private float visionCheckInterval = 0.15f;
     [SerializeField] private int hysteresisChecks = 2;
 
+    [Header("Close-Range Failsafe")]
+    [SerializeField] private float closeRangeRadius = 2f;
+
     public event Action<Damageable> OnTargetReached;
 
     private readonly Dictionary<Collider, Damageable> _candidates = new();
+    private readonly HashSet<Collider> _inTriggerZone = new();
+    private readonly HashSet<Collider> _closeRangeThisTick = new();
+
     private readonly HashSet<Damageable> _visibleTargets = new();
     private readonly Dictionary<Damageable, int> _visibleStreak = new();
     private readonly Dictionary<Damageable, int> _hiddenStreak = new();
     private readonly Dictionary<Damageable, Vector3> _lastKnownPositions = new();
+
+    private readonly Collider[] _closeRangeBuffer = new Collider[8];
+    private readonly List<Collider> _pendingRemoval = new();
 
     private CancellationTokenSource _cts;
 
@@ -40,43 +49,88 @@ public class VisionSystem : MonoBehaviour
         _cts = null;
 
         _candidates.Clear();
+        _inTriggerZone.Clear();
         _visibleTargets.Clear();
         _visibleStreak.Clear();
         _hiddenStreak.Clear();
         _lastKnownPositions.Clear();
     }
 
-    private void OnTriggerEnter(Collider other) => TryRegister(other);
-
-    private void OnTriggerExit(Collider other) => TryUnregister(other);
-
-    private void TryRegister(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
-        if (other.transform == owner) return;
-        if (((1 << other.gameObject.layer) & humanoidController.TargetLayer.value) == 0) return;
+        if (!IsValidTarget(other, out var damageable)) return;
 
-        if (!other.TryGetComponent<Damageable>(out var damageable)) return;
-
+        _inTriggerZone.Add(other);
         _candidates[other] = damageable;
     }
 
-    private void TryUnregister(Collider other)
+    private void OnTriggerExit(Collider other)
     {
-        if (!_candidates.Remove(other, out var damageable)) return;
+        _inTriggerZone.Remove(other);
+    }
 
-        _visibleStreak.Remove(damageable);
-        _hiddenStreak.Remove(damageable);
+    private bool IsValidTarget(Collider other, out Damageable damageable)
+    {
+        damageable = null;
 
-        if (_visibleTargets.Remove(damageable))
-            OnTargetReached?.Invoke(null);
+        if (other.transform == owner) return false;
+        if (((1 << other.gameObject.layer) & humanoidController.TargetLayer.value) == 0) return false;
+
+        return other.TryGetComponent(out damageable);
     }
 
     private async UniTaskVoid VisionLoop(CancellationToken token)
     {
         while (!token.IsCancellationRequested)
         {
+            UpdateCloseRangeCandidates();
             CheckVisibility();
+            RemoveStaleCandidates();
             await UniTask.Delay(TimeSpan.FromSeconds(visionCheckInterval), cancellationToken: token);
+        }
+    }
+
+    private void UpdateCloseRangeCandidates()
+    {
+        _closeRangeThisTick.Clear();
+
+        var count = Physics.OverlapSphereNonAlloc(owner.position, closeRangeRadius, _closeRangeBuffer,
+            humanoidController.TargetLayer, QueryTriggerInteraction.Ignore);
+
+        for (var i = 0; i < count; i++)
+        {
+            var col = _closeRangeBuffer[i];
+            if (col == null) continue;
+            if (!IsValidTarget(col, out var damageable)) continue;
+
+            _closeRangeThisTick.Add(col);
+
+            if (!_candidates.ContainsKey(col))
+                _candidates[col] = damageable;
+        }
+    }
+
+    private void RemoveStaleCandidates()
+    {
+        _pendingRemoval.Clear();
+
+        foreach (var col in _candidates.Keys)
+        {
+            if (col != null && (_inTriggerZone.Contains(col) || _closeRangeThisTick.Contains(col)))
+                continue;
+
+            _pendingRemoval.Add(col);
+        }
+
+        foreach (var col in _pendingRemoval)
+        {
+            _candidates.Remove(col, out var damageable);
+
+            _visibleStreak.Remove(damageable);
+            _hiddenStreak.Remove(damageable);
+
+            if (_visibleTargets.Remove(damageable))
+                OnTargetReached?.Invoke(null);
         }
     }
 
@@ -87,7 +141,7 @@ public class VisionSystem : MonoBehaviour
             if (col == null) continue;
 
             var targetPoint = col.bounds.center;
-            var isVisibleNow = !Physics.Linecast(eyePoint.position, targetPoint, obstacleMask);
+            var isVisibleNow = !Physics.Linecast(eyePoint.position, targetPoint, obstacleMask, QueryTriggerInteraction.Ignore);
             var wasVisible = _visibleTargets.Contains(damageable);
 
             if (isVisibleNow)

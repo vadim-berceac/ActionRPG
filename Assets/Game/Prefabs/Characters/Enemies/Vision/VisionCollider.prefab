@@ -120,7 +120,7 @@ Rigidbody:
   m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 2
 --- !u!135 &3488235155188638708
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -159,8 +159,8 @@ MonoBehaviour:
   eyePoint: {fileID: 3216455139773303069}
   obstacleMask:
     serializedVersion: 2
-    m_Bits: 2147549201
-  visionCheckInterval: 0.15
+    m_Bits: 2147549200
+  visionCheckInterval: 0.1
   hysteresisChecks: 2
 --- !u!1 &5271335527276126248
 GameObject:

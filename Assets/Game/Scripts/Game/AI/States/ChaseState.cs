@@ -36,9 +36,6 @@ public class ChaseState : AsyncState
 
                 if (!StateMachine.Ctx.TryGetLastKnownTargetPosition(out var currentDestination))
                 {
-                    // цель никогда не была видна / позицию уже сбросили извне
-                    needsRepath = false;
-                    moveResult = false;
                     break;
                 }
 
@@ -62,14 +59,10 @@ public class ChaseState : AsyncState
 
             if (moveResult) break;
             if (needsRepath) continue;
-
-            // Достигли последней известной точки, но условие выхода из while ещё не перепроверилось —
-            // цикл сам корректно завершится на следующей итерации проверки.
         }
 
         StopInput();
-
-        // Если добрались до последней известной точки и цели там нет — считаем поиск оконченным.
+        
         if (!StateMachine.Ctx.Target && StateMachine.Ctx.TryGetLastKnownTargetPosition(out var reachedPos)
             && IsWithinStopDistance(reachedPos))
         {
