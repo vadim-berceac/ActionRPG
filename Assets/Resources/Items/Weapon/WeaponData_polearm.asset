@@ -38,3 +38,5 @@ MonoBehaviour:
   - PolearmCombo4
   <AnimationSetIndex>k__BackingField: 1
   <Wear>k__BackingField: 1
+  <StaticParts>k__BackingField: []
+  knockbackForce: 10

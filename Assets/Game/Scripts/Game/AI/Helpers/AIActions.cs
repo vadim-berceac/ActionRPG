@@ -272,7 +272,7 @@ public static class AIActions
         return vector;
     }
 
-    public static async UniTask AttackAsync(CancellationToken ct, AsyncStateMachine fsm, bool useSecondary = false)
+    public static async UniTask AttackAsync(CancellationToken ct, AsyncStateMachine fsm)
     {
         var input = fsm.Ctx.Input;
         var transform = fsm.Ctx.Transform;
@@ -281,6 +281,8 @@ public static class AIActions
 
         if (transform == null)
             throw new OperationCanceledException();
+
+        var useSecondary = fsm.Ctx.HasAdditionalWeapon && UnityEngine.Random.value < 0.33f;
 
         if (useSecondary)
             input.Attack2 = true;

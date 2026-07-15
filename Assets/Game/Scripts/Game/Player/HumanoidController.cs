@@ -24,6 +24,7 @@ namespace Game
         public bool canAttack;
 
         public bool IsGrounded => _charCtrl != null && _charCtrl.isGrounded;
+        public bool HasAdditionalWeapon => _additionalWeaponInstanceInstance != null;
 
         public PropBones propBones;
         public RandomAudioPlayer footstepPlayer;

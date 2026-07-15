@@ -13,6 +13,7 @@ public class StateMachineContext : IDisposable
     public bool IsHitReaction { get; private set; }
     public bool IsDead { get; private set; }
     public bool IsGrounded => _humanoidController.IsGrounded;
+    public bool HasAdditionalWeapon => _humanoidController.HasAdditionalWeapon;
 
     public readonly int WalkableAreaMask = NavMesh.GetAreaFromName("Walkable") != -1
         ? 1 << NavMesh.GetAreaFromName("Walkable")

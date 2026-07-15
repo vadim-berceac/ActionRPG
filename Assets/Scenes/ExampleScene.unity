@@ -149704,6 +149704,17 @@ PrefabInstance:
       propertyPath: m_Name
       value: EnemyHumanoid
       objectReference: {fileID: 0}
+    - target: {fileID: 3077285747228589714, guid: 188b330c5a675ec4a8017205775a47fc,
+        type: 3}
+      propertyPath: <InventoryItemSlots>k__BackingField.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3077285747228589714, guid: 188b330c5a675ec4a8017205775a47fc,
+        type: 3}
+      propertyPath: <InventoryItemSlots>k__BackingField.Array.data[1].<ItemData>k__BackingField
+      value: 
+      objectReference: {fileID: 11400000, guid: a4812abcae2217b41b1758a8df081f64,
+        type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

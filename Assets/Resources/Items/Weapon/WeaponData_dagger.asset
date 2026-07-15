@@ -38,3 +38,5 @@ MonoBehaviour:
   - 1HSwordCombo4
   <AnimationSetIndex>k__BackingField: 2
   <Wear>k__BackingField: 0
+  <StaticParts>k__BackingField: []
+  knockbackForce: 2.5
