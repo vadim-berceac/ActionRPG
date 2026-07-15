@@ -254,20 +254,14 @@ MonoBehaviour:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
       m_SelectedIDs:
-      - m_Data: 62880
+      - m_Data: 63132
       m_LastClickedID:
         m_Data: 0
       m_ExpandedIDs:
-      - m_Data: -71218
-      - m_Data: -67428
-      - m_Data: -67050
-      - m_Data: -51480
-      - m_Data: -43104
-      - m_Data: -42726
-      - m_Data: -27188
+      - m_Data: -103062
+      - m_Data: -8140
       - m_Data: -1352
       - m_Data: 54672
-      - m_Data: 132696
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -527,7 +521,7 @@ MonoBehaviour:
     m_CachedPref: 275
     m_ControlHash: 1412526313
     m_PrefName: Preview_InspectorPreview
-  m_LastInspectedObjectInstanceID: 62880
+  m_LastInspectedObjectInstanceID: 63132
   m_LastVerticalScrollValue: 0
   m_GlobalObjectId: 
   m_InspectorMode: 0
@@ -1426,9 +1420,9 @@ MonoBehaviour:
   m_AudioPlay: 0
   m_DebugDrawModesUseInteractiveLightBakingData: 0
   m_Position:
-    m_Target: {x: 2.3721163, y: -7.049562, z: 34.005108}
+    m_Target: {x: -8.252837, y: -4.561757, z: 27.192762}
     speed: 2
-    m_Value: {x: 2.3721163, y: -7.049562, z: 34.005108}
+    m_Value: {x: -8.252837, y: -4.561757, z: 27.192762}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -1474,9 +1468,9 @@ MonoBehaviour:
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
-    m_Target: {x: -0.3679124, y: -0.13567312, z: 0.054420255, w: -0.9184692}
+    m_Target: {x: -0.28449124, y: 0.17341943, z: -0.052325226, w: -0.94157875}
     speed: 2
-    m_Value: {x: -0.36785465, y: -0.13565183, z: 0.054411713, w: -0.918325}
+    m_Value: {x: -0.284446, y: 0.17339186, z: -0.052316908, w: -0.941429}
   m_Size:
     m_Target: 9.42774
     speed: 2
@@ -1524,7 +1518,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 1
   m_Script: {fileID: 12006, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: ProfilerWindow
+  m_Name: ProjectBrowser
   m_EditorClassIdentifier: 
   m_Children: []
   m_Position:
@@ -1533,17 +1527,17 @@ MonoBehaviour:
     y: 609.6
     width: 1317.6
     height: 413.59998
-  m_MinSize: {x: 901, y: 242}
-  m_MaxSize: {x: 4001, y: 4026}
-  m_ActualView: {fileID: 18}
+  m_MinSize: {x: 231, y: 276}
+  m_MaxSize: {x: 10001, y: 10026}
+  m_ActualView: {fileID: 14}
   m_Panes:
   - {fileID: 14}
   - {fileID: 15}
   - {fileID: 16}
   - {fileID: 17}
   - {fileID: 18}
-  m_Selected: 4
-  m_LastSelected: 0
+  m_Selected: 0
+  m_LastSelected: 1
 --- !u!114 &14
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -1594,7 +1588,7 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Game/Scripts/Game
+    - Assets/Resources/Camera
     m_Globs: []
     m_ProductIds: 
     m_AnyWithAssetOrigin: 0
@@ -1604,18 +1598,18 @@ MonoBehaviour:
   m_ViewMode: 1
   m_StartGridSize: 16
   m_LastFolders:
-  - Assets/Game/Scripts/Game
+  - Assets/Resources/Camera
   m_LastFoldersGridSize: 16
   m_LastProjectPath: D:\GitHub\ActionRPG
   m_LockTracker:
     m_IsLocked: 0
   m_LastLocalAssetsSearchArea: 1
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 320.40002}
+    scrollPos: {x: 0, y: 928.4}
     m_SelectedIDs:
-    - m_Data: 62878
+    - m_Data: 63324
     m_LastClickedID:
-      m_Data: 62878
+      m_Data: 63324
     m_ExpandedIDs:
     - m_Data: 0
     - m_Data: 62870
@@ -1629,6 +1623,11 @@ MonoBehaviour:
     - m_Data: 62886
     - m_Data: 62888
     - m_Data: 62890
+    - m_Data: 63266
+    - m_Data: 63296
+    - m_Data: 63328
+    - m_Data: 139248
+    - m_Data: 139266
     - m_Data: 1000000000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -1700,8 +1699,8 @@ MonoBehaviour:
       m_ResourceFile: 
   m_ListAreaState:
     m_SelectedInstanceIDs:
-    - m_Data: 62880
-    m_LastClickedInstanceID: 62880
+    - m_Data: 63132
+    m_LastClickedInstanceID: 63132
     m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs:
     - m_Data: 107562
@@ -1825,8 +1824,8 @@ MonoBehaviour:
     - m_Data: 56118
     m_RenameOverlay:
       m_UserAcceptedRename: 0
-      m_Name: 
-      m_OriginalName: 
+      m_Name: VisionCollider
+      m_OriginalName: VisionCollider
       m_EditFieldRect:
         serializedVersion: 2
         x: 0
@@ -1834,10 +1833,10 @@ MonoBehaviour:
         width: 0
         height: 0
       m_UserData:
-        m_Data: 0
+        m_Data: 59696
       m_IsWaitingForDelay: 0
       m_IsRenaming: 0
-      m_OriginalEventType: 11
+      m_OriginalEventType: 0
       m_IsRenamingFilename: 1
       m_TrimLeadingAndTrailingWhitespace: 0
       m_ClientGUIView: {fileID: 13}
@@ -2437,7 +2436,7 @@ MonoBehaviour:
         m_PaneScroll: {x: 0, y: 0}
         m_ViewType: 0
         updateViewLive: 0
-        m_CurrentFrameIndex: 21701
+        m_CurrentFrameIndex: -1
         m_HierarchyOverruledThreadFromSelection: 0
         m_ProfilerViewFilteringOptions: 1
         m_FrameDataHierarchyView:

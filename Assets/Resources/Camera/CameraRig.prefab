@@ -320,6 +320,8 @@ MonoBehaviour:
     time: 0
   xFactor: 50
   yFactor: 7.5
+  pitchMin: 15
+  pitchMax: 40
 --- !u!114 &9212265191224836182
 MonoBehaviour:
   m_ObjectHideFlags: 0
