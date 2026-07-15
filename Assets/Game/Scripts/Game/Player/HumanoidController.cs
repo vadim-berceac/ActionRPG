@@ -89,6 +89,9 @@ namespace Game
             => this.canAttack = canAttack;
 
         public int PrimaryWeaponIndex => _primaryWeaponData ? _primaryWeaponData.AnimationSetIndex : 0;
+        public WeaponData PrimaryWeaponData => _primaryWeaponData;
+        public WeaponData AdditionalWeaponData => _additionalWeaponData;
+        public WeaponData RangedWeaponData => _rangedWeaponData;
 
         [Inject]
         private void Construct(DiContainer container, CameraSettings cameraSettings, HealthUI healthUI, PlayerInputHandlerService playerInputHandlerService)

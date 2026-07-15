@@ -44,7 +44,7 @@ public class IdleWaitState : AsyncState
         }
 
         if (StateMachine.Ctx.Target && StateMachine.Ctx.TryGetLastKnownTargetPosition(out var destPos)
-            && Vector3.Distance(StateMachine.Ctx.Transform.position, destPos) <= Constants.StopDistance)
+            && Vector3.Distance(StateMachine.Ctx.Transform.position, destPos) <= StateMachine.Ctx.PreferredAttackDistance)
         {
             await StateMachine.TransitionTo(StateMachine.AttackState);
             return;

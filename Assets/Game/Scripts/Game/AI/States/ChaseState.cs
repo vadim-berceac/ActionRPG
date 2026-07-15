@@ -89,7 +89,7 @@ public class ChaseState : AsyncState
     private bool IsWithinStopDistance(Vector3 point)
     {
         var distance = Vector3.Distance(StateMachine.Ctx.Transform.position, point);
-        return distance <= Constants.StopDistance;
+        return distance <= StateMachine.Ctx.PreferredAttackDistance;
     }
 
     private void StopInput()
