@@ -28,6 +28,7 @@ namespace Game
                 amount = damageAmount,
                 damager = this,
                 direction = Vector3.up,
+                damageSource = transform.position,
                 stopCamera = stopCamera
             };
 

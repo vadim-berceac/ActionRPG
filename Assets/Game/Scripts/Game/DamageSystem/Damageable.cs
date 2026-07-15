@@ -29,6 +29,8 @@ namespace Game
 
         public UnityEvent OnDeath, OnReceiveDamage, OnHitWhileInvulnerable, OnBecomeVulnerable, OnResetDamage;
 
+        public System.Action<DamageMessage> OnDamageAttempted;
+
         [Tooltip("When this gameObject is damaged, these other gameObjects are notified.")]
         [EnforceType(typeof(Message.IMessageReceiver))]
         public List<MonoBehaviour> onDamageMessageReceivers;
@@ -76,6 +78,8 @@ namespace Game
 
         public void ApplyDamage(DamageMessage data)
         {
+            OnDamageAttempted?.Invoke(data);
+
             if (currentHitPoints <= 0)
             {//ignore damage if already dead. TODO : may have to change that if we want to detect hit on death...
                 return;

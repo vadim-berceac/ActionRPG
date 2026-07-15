@@ -11,7 +11,6 @@ public class AsyncStateMachine : IDisposable
     public PatrolState PatrolState { get; private set; }
     public ChaseState ChaseState { get; private set; }
     public AttackState AttackState { get; private set; }
-    public HitReactionState HitReactionState { get; private set; }
     public DeathState DeathState { get; private set; }
 
     private CancellationTokenSource _stateTokenSource;
@@ -25,7 +24,6 @@ public class AsyncStateMachine : IDisposable
         PatrolState = new PatrolState(this);
         ChaseState = new ChaseState(this);
         AttackState = new AttackState(this);
-        HitReactionState = new HitReactionState(this);
         DeathState = new DeathState(this);
     }
 

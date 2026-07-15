@@ -75,8 +75,7 @@ public class PatrolState : AsyncState
     }
 
     protected override bool ShouldInterrupt() =>
-        StateMachine.Ctx.Target ||
-        StateMachine.Ctx.IsHitReaction;
+        StateMachine.Ctx.Target;
 
     protected override async UniTask HandleTransition()
     {
@@ -90,11 +89,6 @@ public class PatrolState : AsyncState
         {
             await StateMachine.TransitionTo(StateMachine.ChaseState);
             return;
-        }
-
-        if (StateMachine.Ctx.IsHitReaction)
-        {
-            await StateMachine.TransitionTo(StateMachine.HitReactionState);
         }
     }
 }

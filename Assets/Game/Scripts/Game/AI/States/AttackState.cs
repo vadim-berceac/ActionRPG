@@ -84,20 +84,13 @@ public class AttackState : AsyncState
     }
 
     protected override bool ShouldInterrupt() =>
-        !StateMachine.Ctx.Target ||
-        StateMachine.Ctx.IsHitReaction;
+        !StateMachine.Ctx.Target;
 
     protected override async UniTask HandleTransition()
     {
         if (StateMachine.Ctx.IsDead)
         {
             await StateMachine.TransitionTo(StateMachine.DeathState);
-            return;
-        }
-        
-        if (StateMachine.Ctx.IsHitReaction)
-        {
-            await StateMachine.TransitionTo(StateMachine.HitReactionState);
             return;
         }
 

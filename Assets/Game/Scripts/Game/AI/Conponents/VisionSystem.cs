@@ -180,6 +180,11 @@ public class VisionSystem : MonoBehaviour
         return _lastKnownPositions.TryGetValue(target, out position);
     }
 
+    public void SetLastKnownPosition(Damageable target, Vector3 position)
+    {
+        _lastKnownPositions[target] = position;
+    }
+
     public void ClearLastKnownPosition(Damageable target)
     {
         _lastKnownPositions.Remove(target);

@@ -98,20 +98,13 @@ public class ChaseState : AsyncState
         StateMachine.Ctx.Input.JumpInput = false;
     }
 
-    protected override bool ShouldInterrupt() =>
-        StateMachine.Ctx.IsHitReaction;
+    protected override bool ShouldInterrupt() => false;
 
     protected override async UniTask HandleTransition()
     {
         if (StateMachine.Ctx.IsDead)
         {
             await StateMachine.TransitionTo(StateMachine.DeathState);
-            return;
-        }
-
-        if (StateMachine.Ctx.IsHitReaction)
-        {
-            await StateMachine.TransitionTo(StateMachine.HitReactionState);
             return;
         }
 
