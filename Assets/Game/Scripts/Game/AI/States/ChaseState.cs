@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class ChaseState : AsyncState
 {
-    private const float RepathDistance = 1.5f;
-
     public ChaseState(AsyncStateMachine stateMachine) : base(stateMachine)
     {
     }
@@ -24,13 +22,14 @@ public class ChaseState : AsyncState
                && StateMachine.Ctx.TryGetLastKnownTargetPosition(out var destination)
                && !IsWithinStopDistance(destination))
         {
-            var corners = StateMachine.Ctx.Transform.position.GetPathTo(destination, StateMachine.Ctx.WalkableAreaMask);
-
-            if (corners == null || corners.Length <= 1)
+            if (!StateMachine.Ctx.Transform.position.TryGetPathTo(
+                    destination, StateMachine.Ctx.WalkableAreaMask, out var corners))
             {
                 StopInput();
-                StateMachine.Ctx.ClearLastKnownTargetPosition();
-                break;
+                
+                await UniTask.Delay(250, cancellationToken: CancellationTokenSource.Token)
+                    .SuppressCancellationThrow();
+                continue;
             }
 
             var moveResult = false;
@@ -47,13 +46,15 @@ public class ChaseState : AsyncState
 
                 if (IsWithinStopDistance(currentDestination)) break;
 
-                if (Vector3.Distance(currentDestination, destination) > RepathDistance)
+                if (Vector3.Distance(currentDestination, destination) > Constants.PathTargetMoveThreshold)
                 {
                     needsRepath = true;
                     break;
                 }
 
-                var corner = corners[i];
+                var cornerIndex = FindFurthestVisibleCorner(corners, i);
+                var corner = corners[cornerIndex];
+                i = cornerIndex;
 
                 moveResult = await AIActions.MoveTowardsAsync(corner, CancellationTokenSource.Token, StateMachine)
                     .SuppressCancellationThrow();
@@ -98,6 +99,57 @@ public class ChaseState : AsyncState
         StateMachine.Ctx.Input.JumpInput = false;
     }
 
+    private int FindFurthestVisibleCorner(Vector3[] corners, int firstIndex)
+    {
+        var position = StateMachine.Ctx.Transform.position;
+        if (!UnityEngine.AI.NavMesh.SamplePosition(position, out var hit,
+                Constants.NavMeshSampleRadius, StateMachine.Ctx.WalkableAreaMask))
+            return firstIndex;
+
+        var isNarrowPassage = IsNarrowPassage(hit.position, corners, firstIndex,
+            StateMachine.Ctx.WalkableAreaMask);
+
+        for (var i = corners.Length - 1; i > firstIndex; i--)
+        {
+            if (Mathf.Abs(corners[i].y - position.y) > Constants.CornerVisibilityHeightTolerance)
+                continue;
+
+            if (isNarrowPassage && i > firstIndex + 1)
+                continue;
+
+            if (!UnityEngine.AI.NavMesh.Raycast(hit.position, corners[i], out _,
+                    StateMachine.Ctx.WalkableAreaMask))
+                return i;
+        }
+
+        return firstIndex;
+    }
+
+    
+    private bool IsNarrowPassage(Vector3 navPosition, Vector3[] corners, int firstIndex, int areaMask)
+    {
+        if (firstIndex + 1 >= corners.Length)
+            return false;
+
+        var from = corners[firstIndex];
+        var to = corners[Mathf.Min(firstIndex + 2, corners.Length - 1)];
+        var dir = to - from;
+        dir.y = 0f;
+        if (dir.sqrMagnitude < 0.001f)
+            return false;
+
+        dir.Normalize();
+        var right = Vector3.Cross(Vector3.up, dir);
+
+        var probeDist = Constants.NarrowPassageProbeDistance;
+        var leftClear = !UnityEngine.AI.NavMesh.Raycast(navPosition,
+            navPosition - right * probeDist, out _, areaMask);
+        var rightClear = !UnityEngine.AI.NavMesh.Raycast(navPosition,
+            navPosition + right * probeDist, out _, areaMask);
+
+        return !leftClear || !rightClear;
+    }
+
     protected override bool ShouldInterrupt() => false;
 
     protected override async UniTask HandleTransition()
@@ -108,10 +160,18 @@ public class ChaseState : AsyncState
             return;
         }
 
-        if (StateMachine.Ctx.Target && IsWithinStopDistance(StateMachine.Ctx.Target.Transform.position))
+        var target = StateMachine.Ctx.Target;
+        if (target != null
+            && target.currentHitPoints > 0
+            && IsWithinStopDistance(target.Transform.position))
         {
             await StateMachine.TransitionTo(StateMachine.AttackState);
             return;
+        }
+
+        if (target != null && target.currentHitPoints <= 0)
+        {
+            StateMachine.Ctx.ClearLastKnownTargetPosition();
         }
 
         if (!StateMachine.Ctx.TryGetLastKnownTargetPosition(out _))

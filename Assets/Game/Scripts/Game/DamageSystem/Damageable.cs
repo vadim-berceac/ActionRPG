@@ -97,7 +97,6 @@ namespace Game
             Vector3 forward = transform.forward;
             forward = Quaternion.AngleAxis(hitForwardRotation, transform.up) * forward;
 
-            //we project the direction to damager to the plane formed by the direction of damage
             Vector3 positionToDamager = data.damageSource - transform.position;
             positionToDamager -= transform.up * Vector3.Dot(transform.up, positionToDamager);
 
@@ -108,7 +107,7 @@ namespace Game
             currentHitPoints -= data.amount;
 
             if (currentHitPoints <= 0)
-                schedule += OnDeath.Invoke; //This avoid race condition when objects kill each other.
+                schedule += OnDeath.Invoke; 
             else
                 OnReceiveDamage.Invoke();
 

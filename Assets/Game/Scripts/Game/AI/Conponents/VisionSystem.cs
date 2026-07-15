@@ -175,6 +175,20 @@ public class VisionSystem : MonoBehaviour
         }
     }
 
+    public bool HasCandidate(Collider col)
+    {
+        return _candidates.ContainsKey(col);
+    }
+
+    public void AddCandidate(Collider col, Damageable damageable)
+    {
+        if (col == null || damageable == null) return;
+        if (_candidates.ContainsKey(col)) return;
+
+        _candidates[col] = damageable;
+        _inTriggerZone.Add(col);
+    }
+
     public bool TryGetLastKnownPosition(Damageable target, out Vector3 position)
     {
         return _lastKnownPositions.TryGetValue(target, out position);

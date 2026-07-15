@@ -29,7 +29,12 @@ public class PatrolState : AsyncState
         {
             if (IsCancelled) break;
 
-            var corners = StateMachine.Ctx.Transform.position.GetPathTo(point, StateMachine.Ctx.WalkableAreaMask);
+            if (!StateMachine.Ctx.Transform.position.TryGetPathTo(
+                    point, StateMachine.Ctx.WalkableAreaMask, out var corners))
+            {
+                StopInput();
+                continue;
+            }
 
             var moveResult = false;
 

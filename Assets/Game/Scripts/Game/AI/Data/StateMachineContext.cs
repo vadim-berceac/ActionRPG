@@ -61,7 +61,9 @@ public class StateMachineContext : IDisposable
         Target = damageable;
 
         if (damageable != null)
+        {
             _lastSeenTarget = damageable;
+        }
     }
 
     private async void OnDamageAttempted(Damageable.DamageMessage message)
@@ -74,9 +76,18 @@ public class StateMachineContext : IDisposable
         var damagerDamageable = damager.GetComponentInParent<Damageable>();
         if (damagerDamageable == null) return;
 
+        if (damagerDamageable.currentHitPoints <= 0)
+            return;
+
         _lastSeenTarget = damagerDamageable;
         _visionSystem.SetLastKnownPosition(damagerDamageable, message.damageSource);
         Target = damagerDamageable;
+
+        var damagerCollider = damagerDamageable.GetComponent<Collider>();
+        if (damagerCollider != null && !_visionSystem.HasCandidate(damagerCollider))
+        {
+            _visionSystem.AddCandidate(damagerCollider, damagerDamageable);
+        }
 
         if (_fsm != null)
         {
@@ -114,6 +125,13 @@ public class StateMachineContext : IDisposable
     {
         if (_lastSeenTarget == null)
         {
+            position = default;
+            return false;
+        }
+
+        if (_lastSeenTarget.currentHitPoints <= 0)
+        {
+            ClearLastKnownTargetPosition();
             position = default;
             return false;
         }
