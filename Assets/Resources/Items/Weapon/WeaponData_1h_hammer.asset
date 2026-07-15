@@ -40,3 +40,4 @@ MonoBehaviour:
   <Wear>k__BackingField: 0
   <StaticParts>k__BackingField: []
   knockbackForce: 15
+  blockSound: {fileID: 8300000, guid: 8157ab1a852d12e48931c26264e30a2b, type: 3}

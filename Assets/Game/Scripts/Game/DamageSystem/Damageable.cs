@@ -33,6 +33,8 @@ namespace Game
         [EnforceType(typeof(Message.IMessageReceiver))]
         public List<MonoBehaviour> onDamageMessageReceivers;
 
+        public System.Func<DamageMessage, bool> onDamageBlocked;
+
         protected float m_timeSinceLastHit = 0.0f;
         protected Collider m_Collider;
 
@@ -84,6 +86,9 @@ namespace Game
                 OnHitWhileInvulnerable.Invoke();
                 return;
             }
+
+            if (onDamageBlocked != null && onDamageBlocked.Invoke(data))
+                return;
 
             Vector3 forward = transform.forward;
             forward = Quaternion.AngleAxis(hitForwardRotation, transform.up) * forward;

@@ -44,3 +44,5 @@ MonoBehaviour:
       <Position>k__BackingField: {x: -0.034, y: -0.293, z: -0.16}
       <Rotation>k__BackingField: {x: -0.0000010455805, y: 0.0000007696823, z: 306.2089}
       <Scale>k__BackingField: 1
+  knockbackForce: 5
+  blockSound: {fileID: 8300000, guid: 8157ab1a852d12e48931c26264e30a2b, type: 3}

@@ -28,6 +28,7 @@ public class WeaponData : ItemData
     [field: SerializeField] public WearType Wear { get; private set; }
     [field: SerializeField] public StaticPartSettings[] StaticParts { get; private set; }
     [field: SerializeField] public float knockbackForce = 5f;
+    [field: SerializeField] public AudioClip blockSound;
 
     public GameObject GetViewInstance(Transform parent, DiContainer container)
     {

@@ -38,3 +38,6 @@ MonoBehaviour:
   - 2HSwordCombo4
   <AnimationSetIndex>k__BackingField: 1
   <Wear>k__BackingField: 3
+  <StaticParts>k__BackingField: []
+  knockbackForce: 5
+  blockSound: {fileID: 8300000, guid: 8157ab1a852d12e48931c26264e30a2b, type: 3}

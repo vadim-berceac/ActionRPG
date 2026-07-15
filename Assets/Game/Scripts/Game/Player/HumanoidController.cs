@@ -34,6 +34,7 @@ namespace Game
         public RandomAudioPlayer emoteDeathPlayer;
         public RandomAudioPlayer emoteAttackPlayer;
         public RandomAudioPlayer emoteJumpPlayer;
+        public AudioSource blockAudioSource;
 
         private CameraSettings _cameraSettings;
         private DiContainer _diContainer;
@@ -62,6 +63,7 @@ namespace Game
         private float _angleDiff;
         private readonly Collider[] _overlapResult = new Collider[8];
         private bool _inAttack;
+        private bool _isBlocking;
         private Damageable _damageable;
         private Renderer[] _renderers;
         private Checkpoint _currentCheckpoint;
@@ -118,12 +120,14 @@ namespace Game
             _damageable = GetComponent<Damageable>();
             _damageable.onDamageMessageReceivers.Add(this);
             _damageable.isInvulnerable = true;
+            _damageable.onDamageBlocked = OnDamageBlocked;
             _renderers = GetComponentsInChildren<Renderer>();
         }
 
         private void OnDisable()
         {
             _damageable.onDamageMessageReceivers.Remove(this);
+            _damageable.onDamageBlocked = null;
 
             for (var i = 0; i < _renderers.Length; ++i)
             {
@@ -143,11 +147,12 @@ namespace Game
 
             _animCache.SetStateTime();
             ProcessAttack();
+            UpdateBlocking();
             CalculateForwardMovement();
             CalculateVerticalMovement();
             SetTargetRotation();
 
-            if (IsOrientationUpdated() && IsMoveInput)
+            if (IsOrientationUpdated() && (IsMoveInput || _isBlocking))
             {
                 UpdateOrientation();
             }
@@ -241,8 +246,11 @@ namespace Game
             _animCache.ResetAttack1();
             _animCache.ResetAttack2();
 
-            if (_input.Attack1 && canAttack) _animCache.TriggerAttack1();
-            if (_input.Attack2 && canAttack) _animCache.TriggerAttack2();
+            if (!_isBlocking)
+            {
+                if (_input.Attack1 && canAttack) _animCache.TriggerAttack1();
+                if (_input.Attack2 && canAttack) _animCache.TriggerAttack2();
+            }
         }
 
         private void ConnectWeaponToHands(bool equip, WeaponData data, WeaponInstance weaponInstanceInstance, int trigger)
@@ -264,7 +272,7 @@ namespace Game
 
         private void CalculateForwardMovement()
         {
-            var moveInput = _input.MoveInput;
+            var moveInput = _isBlocking ? Vector2.zero : _input.MoveInput;
             if (moveInput.sqrMagnitude > 1f)
                 moveInput.Normalize();
 
@@ -284,7 +292,7 @@ namespace Game
             {
                 _verticalSpeed = -gravity * StickingGravityProportion;
 
-                if (_input.JumpInput && _readyToJump && !CheckCombo())
+                if (_input.JumpInput && _readyToJump && !CheckCombo() && !_isBlocking)
                 {
                     _verticalSpeed = jumpSpeed;
                     _isGrounded    = false;
@@ -433,9 +441,44 @@ namespace Game
             }
         }
 
+        private void UpdateBlocking()
+        {
+            _isBlocking = _input.Block;
+        }
+
+        public bool IsBlocking => _isBlocking;
+
+        private bool IsFacingDamageSource(Vector3 damageSource)
+        {
+            var toSource = (damageSource - transform.position).normalized;
+            toSource.y = 0f;
+            return Vector3.Dot(transform.forward, toSource) > 0f;
+        }
+
+        private void PlayBlockSound()
+        {
+            AudioClip clip = null;
+            Vector3 playPosition = transform.position;
+
+            if (_additionalWeaponData != null)
+                clip = _additionalWeaponData.blockSound;
+
+            if (clip == null && _primaryWeaponData != null)
+                clip = _primaryWeaponData.blockSound;
+
+            if (clip == null) return;
+
+            if (_additionalWeaponInstanceInstance != null)
+                playPosition = _additionalWeaponInstanceInstance.transform.position;
+            else if (_primaryWeaponInstanceInstance != null)
+                playPosition = _primaryWeaponInstanceInstance.transform.position;
+
+            AudioSource.PlayClipAtPoint(clip, playPosition);
+        }
+
         private void TimeoutToIdle()
         {
-            var inputDetected = IsMoveInput || _input.Attack1 || _input.Attack2 || _input.JumpInput;
+            var inputDetected = IsMoveInput || _isBlocking || _input.Attack1 || _input.Attack2 || _input.JumpInput;
 
             if (_isGrounded && !inputDetected)
             {
@@ -585,6 +628,17 @@ namespace Game
                 case MessageType.DAMAGED: Damaged((Damageable.DamageMessage)data); break;
                 case MessageType.DEAD:    Die((Damageable.DamageMessage)data);     break;
             }
+        }
+
+        private bool OnDamageBlocked(Damageable.DamageMessage damageMessage)
+        {
+            if (_isBlocking && IsFacingDamageSource(damageMessage.damageSource))
+            {
+                PlayBlockSound();
+                return true;
+            }
+
+            return false;
         }
 
         private void Damaged(Damageable.DamageMessage damageMessage)

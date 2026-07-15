@@ -17,6 +17,7 @@ public class PlayerNewInput : ICharacterInput, IDisposable
     public bool Jump { get; set; }
     public bool Attack1 { get; set; }
     public bool Attack2 { get; set; }
+    public bool Block { get; set; }
 
     public event Action Interact;
     public event Action Pause;
@@ -27,6 +28,7 @@ public class PlayerNewInput : ICharacterInput, IDisposable
     private readonly InputAction _jumpAction;
     private readonly InputAction _attack1Action;
     private readonly InputAction _attack2Action;
+    private readonly InputAction _blockAction;
     private readonly InputAction _interactAction;
     private readonly InputAction _pauseAction;
     private readonly InputAction _inventoryAction;
@@ -38,6 +40,7 @@ public class PlayerNewInput : ICharacterInput, IDisposable
         _jumpAction = actionAsset.FindAction("Jump");
         _attack1Action = actionAsset.FindAction("Attack1");
         _attack2Action = actionAsset.FindAction("Attack2");
+        _blockAction = actionAsset.FindAction("Block");
         _interactAction = actionAsset.FindAction("Interact");
         _pauseAction = actionAsset.FindAction("Pause");
         _inventoryAction = actionAsset.FindAction("Inventory");
@@ -64,6 +67,9 @@ public class PlayerNewInput : ICharacterInput, IDisposable
         _attack2Action.started += OnAttack2;
         _attack2Action.canceled += OnAttack2Canceled;
         
+        _blockAction.started += OnBlock;
+        _blockAction.canceled += OnBlockCanceled;
+        
         _interactAction.started += OnInteract;
         _pauseAction.performed += OnPause;
         _inventoryAction.started += OnInventory;
@@ -85,6 +91,9 @@ public class PlayerNewInput : ICharacterInput, IDisposable
         
         _attack2Action.started -= OnAttack2;
         _attack2Action.canceled -= OnAttack2Canceled;
+        
+        _blockAction.started -= OnBlock;
+        _blockAction.canceled -= OnBlockCanceled;
         
         _interactAction.started -= OnInteract;
         _pauseAction.performed -= OnPause;
@@ -139,6 +148,16 @@ public class PlayerNewInput : ICharacterInput, IDisposable
     private void OnAttack2Canceled(InputAction.CallbackContext context)
     {
         Attack2 = false;
+    }
+
+    private void OnBlock(InputAction.CallbackContext context)
+    {
+        Block = true;
+    }
+    
+    private void OnBlockCanceled(InputAction.CallbackContext context)
+    {
+        Block = false;
     }
 
     private void OnInteract(InputAction.CallbackContext context)

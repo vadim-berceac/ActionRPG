@@ -158,8 +158,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0149b5ab8f608c943b260125ac76d875, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHitPoints: 5
-  invulnerabiltyTime: 5
+  maxHitPoints: 10
+  invulnerabiltyTime: 0.3
   hitAngle: 360
   hitForwardRotation: 360
   OnDeath:
@@ -209,6 +209,7 @@ MonoBehaviour:
   emoteDeathPlayer: {fileID: 5190351740215603410}
   emoteAttackPlayer: {fileID: 922335842245678068}
   emoteJumpPlayer: {fileID: 515608808743569430}
+  blockAudioSource: {fileID: 6234870807135251278}
 --- !u!114 &5555669641611656938
 MonoBehaviour:
   m_ObjectHideFlags: 0
