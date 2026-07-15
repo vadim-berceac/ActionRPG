@@ -66,6 +66,8 @@ namespace Game
         private Checkpoint _currentCheckpoint;
         private bool _respawning;
         private float _idleTimer;
+        private Vector3 _knockbackVelocity;
+        private float _knockbackDeceleration = 15f;
 
         private const float AirborneTurnSpeedProportion = 5.4f;
         private const float GroundedRayDistance = 1f;
@@ -199,6 +201,7 @@ namespace Game
             var weaponObj = prevData.GetViewInstance(transform, _diContainer);
             weaponInstanceInstance = weaponObj.GetComponent<WeaponInstance>();
             weaponInstanceInstance.Initialize(gameObject, TargetLayer);
+            weaponInstanceInstance.SetKnockbackForce(prevData.knockbackForce);
             weaponInstanceInstance.SetStaticParts(prevData.GetStaticParts(propBones, _diContainer));
             ConnectWeaponToHands(false, prevData, weaponInstanceInstance, trigger);
             ConnectCombo(prevData);
@@ -480,6 +483,17 @@ namespace Game
             movement += _verticalSpeed * Vector3.up * Time.deltaTime;
             _charCtrl.Move(movement);
 
+            if (_knockbackVelocity.sqrMagnitude > 0.01f)
+            {
+                var knockbackMovement = _knockbackVelocity * Time.deltaTime;
+                _charCtrl.Move(knockbackMovement);
+                _knockbackVelocity = Vector3.Lerp(_knockbackVelocity, Vector3.zero, _knockbackDeceleration * Time.deltaTime);
+            }
+            else
+            {
+                _knockbackVelocity = Vector3.zero;
+            }
+
             _isGrounded = _charCtrl.isGrounded;
 
             if (!_isGrounded)
@@ -588,6 +602,17 @@ namespace Game
             {
                 _cameraSettings.Shake(2f, 0.5f, CinemachineImpulseDefinition.ImpulseShapes.Rumble, Vector3.one);
             }
+
+            if (damageMessage.knockbackForce > 0f)
+            {
+                var knockbackDir = (transform.position - damageMessage.damageSource).normalized;
+                knockbackDir.y = 0f;
+                if (knockbackDir.sqrMagnitude > 0.001f)
+                {
+                    _knockbackVelocity = knockbackDir * damageMessage.knockbackForce;
+                    _isGrounded = false;
+                }
+            }
         }
 
         public void Die(Damageable.DamageMessage damageMessage)
@@ -595,6 +620,7 @@ namespace Game
             _animCache.TriggerDeath();
             _forwardSpeed              = 0f;
             _verticalSpeed             = 0f;
+            _knockbackVelocity         = Vector3.zero;
             _respawning                = true;
             _damageable.isInvulnerable = true;
         }

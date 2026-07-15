@@ -27,6 +27,7 @@ public class WeaponData : ItemData
     [field: SerializeField, Range(0, 10)] public int AnimationSetIndex { get; private set; }
     [field: SerializeField] public WearType Wear { get; private set; }
     [field: SerializeField] public StaticPartSettings[] StaticParts { get; private set; }
+    [field: SerializeField] public float knockbackForce = 5f;
 
     public GameObject GetViewInstance(Transform parent, DiContainer container)
     {
