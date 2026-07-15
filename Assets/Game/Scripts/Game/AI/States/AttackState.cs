@@ -72,7 +72,7 @@ public class AttackState : AsyncState
         if (!StateMachine.Ctx.Target) return false;
 
         var distance = Vector3.Distance(StateMachine.Ctx.Transform.position, StateMachine.Ctx.Target.Transform.position);
-        return distance > StateMachine.Ctx.PreferredAttackDistance + Constants.ExitDistanceBuffer;
+        return distance > StateMachine.Ctx.PreferredAttackDistance;
     }
 
     private void StopInput()
