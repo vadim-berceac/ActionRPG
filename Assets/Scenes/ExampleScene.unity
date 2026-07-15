@@ -17747,7 +17747,7 @@ PrefabInstance:
         type: 3}
       propertyPath: <InventoryItemSlots>k__BackingField.Array.data[0].<ItemData>k__BackingField
       value: 
-      objectReference: {fileID: 11400000, guid: 91752df81a8e3e147a40ec2656b85504,
+      objectReference: {fileID: 11400000, guid: dc77a825655c3f440a0b3d4cc9929be1,
         type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -145931,7 +145931,17 @@ PrefabInstance:
     - target: {fileID: 65741358438396238, guid: 6bd94cdd1484b2841a02028ad605dfda,
         type: 3}
       propertyPath: m_Size.z
-      value: 4.19
+      value: 24.66984
+      objectReference: {fileID: 0}
+    - target: {fileID: 65741358438396238, guid: 6bd94cdd1484b2841a02028ad605dfda,
+        type: 3}
+      propertyPath: m_Center.x
+      value: -1.0462165e-14
+      objectReference: {fileID: 0}
+    - target: {fileID: 65741358438396238, guid: 6bd94cdd1484b2841a02028ad605dfda,
+        type: 3}
+      propertyPath: m_Center.z
+      value: -5.472413
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -149713,7 +149723,7 @@ PrefabInstance:
         type: 3}
       propertyPath: <InventoryItemSlots>k__BackingField.Array.data[1].<ItemData>k__BackingField
       value: 
-      objectReference: {fileID: 11400000, guid: a4812abcae2217b41b1758a8df081f64,
+      objectReference: {fileID: 11400000, guid: 262ff168e318c464aad0108114a3aac8,
         type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -163996,7 +164006,7 @@ PrefabInstance:
     - target: {fileID: 919562152349746805, guid: f9915f7d87239a24291440ebca401a1b,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 6
+      value: 3.65
       objectReference: {fileID: 0}
     - target: {fileID: 919562152349746805, guid: f9915f7d87239a24291440ebca401a1b,
         type: 3}
@@ -164006,7 +164016,7 @@ PrefabInstance:
     - target: {fileID: 919562152349746805, guid: f9915f7d87239a24291440ebca401a1b,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -35
+      value: -38.58
       objectReference: {fileID: 0}
     - target: {fileID: 919562152349746805, guid: f9915f7d87239a24291440ebca401a1b,
         type: 3}
