@@ -12,6 +12,7 @@ public class AsyncStateMachine : IDisposable
     public ChaseState ChaseState { get; private set; }
     public AttackState AttackState { get; private set; }
     public DeathState DeathState { get; private set; }
+    public IdleWaitState IdleWaitState { get; private set; }
 
     private CancellationTokenSource _stateTokenSource;
     private bool _isTransitioning;
@@ -25,6 +26,7 @@ public class AsyncStateMachine : IDisposable
         ChaseState = new ChaseState(this);
         AttackState = new AttackState(this);
         DeathState = new DeathState(this);
+        IdleWaitState = new IdleWaitState(this);
     }
 
     public async UniTask TransitionTo(IAsyncState newState)

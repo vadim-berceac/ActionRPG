@@ -116,7 +116,7 @@ public class ChaseState : AsyncState
 
         if (!StateMachine.Ctx.TryGetLastKnownTargetPosition(out _))
         {
-            await StateMachine.TransitionTo(StateMachine.PatrolState);
+            await StateMachine.TransitionTo(StateMachine.IdleWaitState);
         }
     }
 }

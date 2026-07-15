@@ -96,7 +96,7 @@ public class AttackState : AsyncState
 
         if (!StateMachine.Ctx.Target)
         {
-            await StateMachine.TransitionTo(StateMachine.PatrolState);
+            await StateMachine.TransitionTo(StateMachine.IdleWaitState);
             return;
         }
 

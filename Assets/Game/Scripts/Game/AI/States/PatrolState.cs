@@ -90,5 +90,7 @@ public class PatrolState : AsyncState
             await StateMachine.TransitionTo(StateMachine.ChaseState);
             return;
         }
+
+        await StateMachine.TransitionTo(StateMachine.IdleWaitState);
     }
 }
