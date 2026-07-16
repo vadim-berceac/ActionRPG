@@ -20,8 +20,22 @@ public class IdleWaitState : AsyncState
         await base.OnUpdate(ct);        
         
         var waitDuration = Random.Range(3f, 15f);
+        var elapsed = 0f;
         Debug.Log($"Idle waiting for {waitDuration:F1} seconds...");
-        await UniTask.Delay((int)(waitDuration * 1000), cancellationToken: ct);
+        
+        // Ждем с проверкой появления цели каждый фрейм, а не разовым Delay.
+        // Это нужно чтобы ShouldInterrupt() сработал мгновенно, когда
+        // VisionSystem обнаружит новую цель и вызовет OnTargetReached.
+        while (elapsed < waitDuration && !IsCancelled)
+        {
+            // Если цель появилась — прерываем ожидание немедленно
+            if (StateMachine.Ctx.Target) break;
+            
+            var step = Mathf.Min(0.1f, waitDuration - elapsed);
+            await UniTask.Delay((int)(step * 1000), cancellationToken: CancellationTokenSource.Token)
+                .SuppressCancellationThrow();
+            elapsed += step;
+        }
         
         await HandleTransition();
     }

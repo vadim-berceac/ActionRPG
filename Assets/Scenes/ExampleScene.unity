@@ -149636,11 +149636,6 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 916299398146845268, guid: 188b330c5a675ec4a8017205775a47fc,
         type: 3}
-      propertyPath: patrolPoints.Array.size
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 916299398146845268, guid: 188b330c5a675ec4a8017205775a47fc,
-        type: 3}
       propertyPath: 'patrolPoints.Array.data[0]'
       value: 
       objectReference: {fileID: 920166811}
@@ -149714,17 +149709,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: EnemyHumanoid
       objectReference: {fileID: 0}
-    - target: {fileID: 3077285747228589714, guid: 188b330c5a675ec4a8017205775a47fc,
-        type: 3}
-      propertyPath: <InventoryItemSlots>k__BackingField.Array.size
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 3077285747228589714, guid: 188b330c5a675ec4a8017205775a47fc,
-        type: 3}
-      propertyPath: <InventoryItemSlots>k__BackingField.Array.data[1].<ItemData>k__BackingField
-      value: 
-      objectReference: {fileID: 11400000, guid: 262ff168e318c464aad0108114a3aac8,
-        type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

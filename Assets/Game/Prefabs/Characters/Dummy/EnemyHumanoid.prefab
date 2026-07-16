@@ -6181,7 +6181,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   randomizePitch: 0
   pitchRandomRange: 0.2
-  playDelay: 0
+  playDelay: 0.2
   defaultBank:
     name: 
     clips:
