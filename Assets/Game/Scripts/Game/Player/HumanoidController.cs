@@ -72,6 +72,8 @@ namespace Game
         private Vector3 _knockbackVelocity;
         private float _knockbackDeceleration = 15f;
 
+        [SerializeField] private TargetFacingController _targetFacing;
+
         private const float AirborneTurnSpeedProportion = 5.4f;
         private const float GroundedRayDistance = 1f;
         private const float JumpAbortSpeed = 10f;
@@ -337,34 +339,47 @@ namespace Game
 
             var resultingForward = targetRotation * Vector3.forward;
 
-            if (_inAttack)
+            if (_inAttack || _isBlocking)
             {
-                var centre      = transform.position + transform.forward * 2.0f + transform.up;
-                var halfExtents = new Vector3(3.0f, 1.0f, 2.0f);
-                var count = Physics.OverlapBoxNonAlloc(centre, halfExtents, _overlapResult, targetRotation, TargetLayer);
+                var targetDirection = Vector3.zero;
 
-                var closestDot = 0.0f;
-                var closestForward = Vector3.zero;
-                var closest= -1;
-
-                for (var i = 0; i < count; ++i)
+                if (_targetFacing != null)
                 {
-                    var playerToEnemy = _overlapResult[i].transform.position - transform.position;
-                    playerToEnemy.y = 0;
-                    playerToEnemy.Normalize();
+                    targetDirection = _targetFacing.GetDirectionToNearestTarget();
+                }
+                else
+                {
+                    // Fallback: старый OverlapBox если TargetFacingController не назначен
+                    var centre      = transform.position + transform.forward * 2.0f + transform.up;
+                    var halfExtents = new Vector3(3.0f, 1.0f, 2.0f);
+                    var count = Physics.OverlapBoxNonAlloc(centre, halfExtents, _overlapResult, targetRotation, TargetLayer);
 
-                    var d = Vector3.Dot(resultingForward, playerToEnemy);
-                    if (d > MinEnemyDotCoeff && d > closestDot)
+                    var closestDot = 0.0f;
+                    var closestForward = Vector3.zero;
+
+                    for (var i = 0; i < count; ++i)
                     {
-                        closestForward = playerToEnemy;
-                        closestDot     = d;
-                        closest        = i;
+                        var playerToEnemy = _overlapResult[i].transform.position - transform.position;
+                        playerToEnemy.y = 0;
+                        playerToEnemy.Normalize();
+
+                        var d = Vector3.Dot(resultingForward, playerToEnemy);
+                        if (d > MinEnemyDotCoeff && d > closestDot)
+                        {
+                            closestForward = playerToEnemy;
+                            closestDot     = d;
+                        }
+                    }
+
+                    if (closestDot > 0f)
+                    {
+                        targetDirection = closestForward;
                     }
                 }
 
-                if (closest != -1)
+                if (targetDirection != Vector3.zero)
                 {
-                    resultingForward   = closestForward;
+                    resultingForward   = targetDirection;
                     transform.rotation = Quaternion.LookRotation(resultingForward);
                 }
             }
@@ -381,12 +396,20 @@ namespace Game
             return _animCache.IsActiveOrEntering(_animCache.HashLocomotion)
                 || _animCache.IsActiveOrEntering(_animCache.HashAirborne)
                 || _animCache.IsActiveOrEntering(_animCache.HashLanding)
-                || CheckCombo() && !_inAttack;
+                || CheckCombo() && !_inAttack
+                || _isBlocking;
         }
 
         private void UpdateOrientation()
         {
             _animCache.SetAngleDeltaRad(_angleDiff * Mathf.Deg2Rad);
+
+            // При блоке — мгновенный разворот к цели
+            if (_isBlocking)
+            {
+                transform.rotation = _targetRotation;
+                return;
+            }
 
             var localInput      = new Vector3(_input.MoveInput.x, 0f, _input.MoveInput.y);
             var groundedTurnSpeed = Mathf.Lerp(maxTurnSpeed, minTurnSpeed, _forwardSpeed / _desiredForwardSpeed);
