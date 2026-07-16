@@ -77,7 +77,7 @@ public class StateMachineContext : IDisposable
         if (damager == null) return;
 
         var damagerDamageable = damager.GetComponentInParent<Damageable>();
-        if (damagerDamageable == null) return;
+        if (!damagerDamageable) return;
 
         if (damagerDamageable.currentHitPoints <= 0)
             return;
@@ -87,13 +87,21 @@ public class StateMachineContext : IDisposable
         Target = damagerDamageable;
 
         var damagerCollider = damagerDamageable.GetComponent<Collider>();
-        if (damagerCollider != null && !_visionSystem.HasCandidate(damagerCollider))
+        if (damagerCollider&& !_visionSystem.HasCandidate(damagerCollider))
         {
             _visionSystem.AddCandidate(damagerCollider, damagerDamageable);
         }
 
+        // Если мы в состоянии атаки и цель видна - уведомляем о обнаруженной атаке
+        if (_fsm != null && _fsm.CurrentState == _fsm.AttackState && _fsm.AttackState is AttackState attackState)
+        {
+            if (IsTargetVisible(damagerDamageable))
+            {
+                attackState.OnAttackDetected();
+            }
+        }
         // Не дёргаемся, если уже в бою — не сбрасываем текущую атаку/преследование
-        if (_fsm != null
+        else if (_fsm != null
             && _fsm.CurrentState != _fsm.AttackState
             && _fsm.CurrentState != _fsm.ChaseState)
         {
@@ -134,7 +142,7 @@ public class StateMachineContext : IDisposable
 
     public bool TryGetLastKnownTargetPosition(out Vector3 position)
     {
-        if (_lastSeenTarget == null)
+        if (!_lastSeenTarget)
         {
             position = default;
             return false;
@@ -152,7 +160,7 @@ public class StateMachineContext : IDisposable
 
     public void ClearLastKnownTargetPosition()
     {
-        if (_lastSeenTarget == null) return;
+        if (!_lastSeenTarget) return;
 
         _visionSystem.ClearLastKnownPosition(_lastSeenTarget);
         _lastSeenTarget = null;

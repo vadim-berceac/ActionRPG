@@ -11,6 +11,7 @@ public class AsyncStateMachine : IDisposable
     public PatrolState PatrolState { get; private set; }
     public ChaseState ChaseState { get; private set; }
     public AttackState AttackState { get; private set; }
+    public BlockState BlockState { get; private set; }
     public DeathState DeathState { get; private set; }
     public IdleWaitState IdleWaitState { get; private set; }
 
@@ -25,6 +26,7 @@ public class AsyncStateMachine : IDisposable
         PatrolState = new PatrolState(this);
         ChaseState = new ChaseState(this);
         AttackState = new AttackState(this);
+        BlockState = new BlockState(this);
         DeathState = new DeathState(this);
         IdleWaitState = new IdleWaitState(this);
     }

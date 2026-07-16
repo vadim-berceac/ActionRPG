@@ -58,6 +58,14 @@ public class AttackState : AsyncState
         await AIActions.AttackAsync(ct, StateMachine);
     }
 
+    public void OnAttackDetected()
+    {
+        if (Random.value <= 0.7f && StateMachine.Ctx.IsTargetVisible(StateMachine.Ctx.Target))
+        {
+            StateMachine.TransitionTo(StateMachine.BlockState).Forget();
+        }
+    }
+
     private float _approachThrottle;
 
     private void AdjustApproach()
@@ -119,6 +127,7 @@ public class AttackState : AsyncState
         var distance = Vector3.Distance(StateMachine.Ctx.Transform.position, StateMachine.Ctx.Target.Transform.position);
         return distance > StateMachine.Ctx.PreferredAttackDistance * 1.5f;
     }
+
 
     private void StopInput()
     {
