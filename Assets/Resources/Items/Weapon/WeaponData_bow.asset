@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: WeaponData_bow
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   <Name>k__BackingField: Bow
-  <Icon>k__BackingField: {fileID: -1306092830, guid: bd3f511481dc55845823dc12621ccd29,
+  <Icon>k__BackingField: {fileID: -1252311630, guid: ecb4b62c2a2d7374a80c91032215c34e,
     type: 3}
   <GroundPrefab>k__BackingField: {fileID: 8401756962499706326, guid: 1bfcdc19087d0964fa382a94c3a504fa,
     type: 3}

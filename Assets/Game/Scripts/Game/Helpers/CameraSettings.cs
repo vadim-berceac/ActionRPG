@@ -76,6 +76,11 @@ namespace Game
             }
             impulseSource.GenerateImpulseWithForce(amplitude);
         }
+
+        public void Shake()
+        {
+            impulseSource.GenerateImpulse();
+        }
         
         private void Awake()
         {

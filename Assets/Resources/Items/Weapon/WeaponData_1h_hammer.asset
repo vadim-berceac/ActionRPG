@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: WeaponData_1h_hammer
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   <Name>k__BackingField: Hammer 1H
-  <Icon>k__BackingField: {fileID: 1626706997, guid: bd3f511481dc55845823dc12621ccd29,
+  <Icon>k__BackingField: {fileID: 472023136, guid: ecb4b62c2a2d7374a80c91032215c34e,
     type: 3}
   <GroundPrefab>k__BackingField: {fileID: 8401756962499706326, guid: cd26d06993f178849a153e35c010b3b6,
     type: 3}

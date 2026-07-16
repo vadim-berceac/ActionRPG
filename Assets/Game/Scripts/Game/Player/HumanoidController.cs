@@ -687,10 +687,9 @@ namespace Game
                 }
             }
 
-            // Тряска камеры только для игрока — 1/4
             if (IsPlayer)
             {
-                _cameraSettings.Shake(0.5f, 0.125f, CinemachineImpulseDefinition.ImpulseShapes.Rumble, Vector3.one);
+                _cameraSettings.Shake(0.5f, 0.2f, CinemachineImpulseDefinition.ImpulseShapes.Rumble, new Vector3(0.2f, 0, 0.5f));
             }
 
             return true;
@@ -709,12 +708,12 @@ namespace Game
             var localHurt = transform.InverseTransformDirection(forward);
             _animCache.SetHurtDirection(localHurt.x, localHurt.z);
 
-            if (hurtAudioPlayer != null)
+            if (hurtAudioPlayer)
                 hurtAudioPlayer.PlayRandomClipOneShot();
 
             if (IsPlayer)
             {
-                _cameraSettings.Shake(2f, 0.5f, CinemachineImpulseDefinition.ImpulseShapes.Rumble, Vector3.one);
+                _cameraSettings.Shake();
             }
 
             if (damageMessage.knockbackForce > 0f)

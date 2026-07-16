@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: WeaponData_shield
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   <Name>k__BackingField: Shield
-  <Icon>k__BackingField: {fileID: 1826257978, guid: bd3f511481dc55845823dc12621ccd29,
+  <Icon>k__BackingField: {fileID: 285687455, guid: ecb4b62c2a2d7374a80c91032215c34e,
     type: 3}
   <GroundPrefab>k__BackingField: {fileID: 8401756962499706326, guid: 657c74dbc1ca7454b80de675efa78d05,
     type: 3}
@@ -38,4 +38,5 @@ MonoBehaviour:
   <Wear>k__BackingField: 2
   <StaticParts>k__BackingField: []
   knockbackForce: 20
+  preferredDistance: 2
   blockSound: {fileID: 8300000, guid: 8157ab1a852d12e48931c26264e30a2b, type: 3}
