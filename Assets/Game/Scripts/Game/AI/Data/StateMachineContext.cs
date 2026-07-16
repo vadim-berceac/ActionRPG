@@ -70,6 +70,9 @@ public class StateMachineContext : IDisposable
     {
         if (IsDead) return;
 
+        // Игнорируем, если AI сам блокирует этот удар — не сбрасываем атаку
+        if (_humanoidController.IsBlocking) return;
+
         var damager = message.damager;
         if (damager == null) return;
 
@@ -89,7 +92,10 @@ public class StateMachineContext : IDisposable
             _visionSystem.AddCandidate(damagerCollider, damagerDamageable);
         }
 
-        if (_fsm != null)
+        // Не дёргаемся, если уже в бою — не сбрасываем текущую атаку/преследование
+        if (_fsm != null
+            && _fsm.CurrentState != _fsm.AttackState
+            && _fsm.CurrentState != _fsm.ChaseState)
         {
             await _fsm.TransitionTo(_fsm.ChaseState);
         }

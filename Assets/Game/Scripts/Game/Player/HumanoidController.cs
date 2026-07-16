@@ -64,6 +64,8 @@ namespace Game
         private readonly Collider[] _overlapResult = new Collider[8];
         private bool _inAttack;
         private bool _isBlocking;
+        private bool _blockTriggeredThisFixedUpdate;
+        private bool _damageTriggeredThisFixedUpdate;
         private Damageable _damageable;
         private Renderer[] _renderers;
         private Checkpoint _currentCheckpoint;
@@ -144,6 +146,9 @@ namespace Game
         private void FixedUpdate()
         {
             _animCache.OnUpdate();
+
+            _blockTriggeredThisFixedUpdate = false;
+            _damageTriggeredThisFixedUpdate = false;
 
             UpdateInputBlocking();
 
@@ -659,18 +664,25 @@ namespace Game
 
         private bool OnDamageBlocked(Damageable.DamageMessage damageMessage)
         {
-            if (_isBlocking && IsFacingDamageSource(damageMessage.damageSource))
-            {
-                PlayBlockSound();
-                _animCache.TriggerBlock();
-                return true;
-            }
+            if (!_isBlocking || !IsFacingDamageSource(damageMessage.damageSource))
+                return false;
 
-            return false;
+            // Защита от многократного срабатывания за один FixedUpdate
+            if (_blockTriggeredThisFixedUpdate)
+                return true; // всё ещё блокируем урон, но не спамим звук/анимацию
+
+            _blockTriggeredThisFixedUpdate = true;
+            PlayBlockSound();
+            _animCache.TriggerBlock();
+            return true;
         }
 
         private void Damaged(Damageable.DamageMessage damageMessage)
         {
+            // Защита от многократного срабатывания за один FixedUpdate
+            if (_damageTriggeredThisFixedUpdate) return;
+
+            _damageTriggeredThisFixedUpdate = true;
             _animCache.TriggerHurt();
 
             var forward   = damageMessage.damageSource - transform.position;
