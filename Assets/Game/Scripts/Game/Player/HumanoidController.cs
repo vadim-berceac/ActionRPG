@@ -447,6 +447,7 @@ namespace Game
         private void UpdateBlocking()
         {
             _isBlocking = _input.Block;
+            _animCache.SetBlock(_input.Block);
         }
 
         public bool IsBlocking => _isBlocking;
@@ -638,6 +639,7 @@ namespace Game
             if (_isBlocking && IsFacingDamageSource(damageMessage.damageSource))
             {
                 PlayBlockSound();
+                _animCache.TriggerBlock();
                 return true;
             }
 
