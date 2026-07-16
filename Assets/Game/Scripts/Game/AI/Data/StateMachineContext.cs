@@ -121,6 +121,11 @@ public class StateMachineContext : IDisposable
         PatrolWaypoints = waypoints;
     }
 
+    public bool IsTargetVisible(Damageable target)
+    {
+        return _visionSystem.IsTargetVisible(target);
+    }
+
     public bool TryGetLastKnownTargetPosition(out Vector3 position)
     {
         if (_lastSeenTarget == null)

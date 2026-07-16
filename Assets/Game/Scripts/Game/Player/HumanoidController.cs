@@ -419,15 +419,15 @@ namespace Game
 
             if (_isGrounded && !_previouslyGrounded)
             {
-                landingPlayer.PlayRandomClip(_currentWalkingSurface, bankId: _forwardSpeed < 4 ? 0 : 1);
-                emoteLandingPlayer.PlayRandomClip();
+                landingPlayer.PlayRandomClipOneShot(_currentWalkingSurface, bankId: _forwardSpeed < 4 ? 0 : 1);
+                emoteLandingPlayer.PlayRandomClipOneShot();
             }
 
             if (!_isGrounded && _previouslyGrounded && _verticalSpeed > 0f)
-                emoteJumpPlayer.PlayRandomClip();
+                emoteJumpPlayer.PlayRandomClipOneShot();
 
             if (_animCache.JustEntered(_animCache.HashHurt))
-                hurtAudioPlayer.PlayRandomClip();
+                hurtAudioPlayer.PlayRandomClipOneShot();
 
             if (_animCache.JustEntered(_animCache.HashDeath))
                 emoteDeathPlayer.PlayRandomClip();
@@ -438,7 +438,7 @@ namespace Game
             {
                 if (_animCache.JustEntered(hash))
                 {
-                    emoteAttackPlayer.PlayRandomClip();
+                    emoteAttackPlayer.PlayRandomClipOneShot();
                     break;
                 }
             }
@@ -654,7 +654,7 @@ namespace Game
             _animCache.SetHurtDirection(localHurt.x, localHurt.z);
 
             if (hurtAudioPlayer != null)
-                hurtAudioPlayer.PlayRandomClip();
+                hurtAudioPlayer.PlayRandomClipOneShot();
 
             if (IsPlayer)
             {

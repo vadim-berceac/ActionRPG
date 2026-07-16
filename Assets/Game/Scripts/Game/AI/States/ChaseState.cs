@@ -18,6 +18,13 @@ public class ChaseState : AsyncState
     {
         await base.OnUpdate(ct);
 
+        if (StateMachine.Ctx.Target != null && StateMachine.Ctx.IsTargetVisible(StateMachine.Ctx.Target))
+        {
+            await DirectChase(ct);
+            await HandleTransition();
+            return;
+        }
+
         while (!IsCancelled
                && StateMachine.Ctx.TryGetLastKnownTargetPosition(out var destination)
                && !IsWithinStopDistance(destination))
@@ -77,6 +84,40 @@ public class ChaseState : AsyncState
         }
 
         await HandleTransition();
+    }
+
+    private async UniTask DirectChase(CancellationToken ct)
+    {
+        while (!IsCancelled)
+        {
+            var target = StateMachine.Ctx.Target;
+            if (target == null || target.currentHitPoints <= 0) break;
+
+            var targetPosition = target.Transform.position;
+            var stopDistance = StateMachine.Ctx.PreferredAttackDistance;
+
+            if (IsWithinStopDistance(targetPosition)) break;
+
+            var toTarget = targetPosition - StateMachine.Ctx.Transform.position;
+            toTarget.y = 0f;
+            var distance = toTarget.magnitude;
+            if (distance <= 0.01f) break;
+
+            var moveTarget = targetPosition - toTarget.normalized * stopDistance;
+            var toMove = moveTarget - StateMachine.Ctx.Transform.position;
+            toMove.y = 0f;
+
+            if (toMove.sqrMagnitude <= Constants.ArriveThreshold * Constants.ArriveThreshold)
+                break;
+
+            var yaw = Mathf.Atan2(toMove.x, toMove.z) * Mathf.Rad2Deg;
+            StateMachine.Ctx.Input.RotationYaw = yaw;
+            StateMachine.Ctx.Input.MoveInput = new Vector2(0f, 1f);
+
+            await UniTask.Yield(PlayerLoopTiming.Update, ct);
+        }
+
+        StopInput();
     }
 
     public override async UniTask OnExit(CancellationToken ct)

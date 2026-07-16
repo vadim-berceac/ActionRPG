@@ -175,6 +175,11 @@ public class VisionSystem : MonoBehaviour
         }
     }
 
+    public bool IsTargetVisible(Damageable target)
+    {
+        return target != null && _visibleTargets.Contains(target);
+    }
+
     public bool HasCandidate(Collider col)
     {
         return _candidates.ContainsKey(col);
