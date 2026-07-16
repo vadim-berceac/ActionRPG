@@ -674,6 +674,25 @@ namespace Game
             _blockTriggeredThisFixedUpdate = true;
             PlayBlockSound();
             _animCache.TriggerBlock();
+
+            // Отталкивание при блоке — 1/4 от силы удара
+            if (damageMessage.knockbackForce > 0f)
+            {
+                var knockbackDir = (transform.position - damageMessage.damageSource).normalized;
+                knockbackDir.y = 0f;
+                if (knockbackDir.sqrMagnitude > 0.001f)
+                {
+                    _knockbackVelocity = knockbackDir * (damageMessage.knockbackForce * 0.25f);
+                    _isGrounded = false;
+                }
+            }
+
+            // Тряска камеры только для игрока — 1/4
+            if (IsPlayer)
+            {
+                _cameraSettings.Shake(0.5f, 0.125f, CinemachineImpulseDefinition.ImpulseShapes.Rumble, Vector3.one);
+            }
+
             return true;
         }
 
