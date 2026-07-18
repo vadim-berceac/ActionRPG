@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: WeaponData_1h_hammer
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   <Name>k__BackingField: Hammer 1H
-  <Icon>k__BackingField: {fileID: 1626706997, guid: bd3f511481dc55845823dc12621ccd29,
+  <Icon>k__BackingField: {fileID: 472023136, guid: ecb4b62c2a2d7374a80c91032215c34e,
     type: 3}
   <GroundPrefab>k__BackingField: {fileID: 8401756962499706326, guid: cd26d06993f178849a153e35c010b3b6,
     type: 3}
@@ -38,3 +38,7 @@ MonoBehaviour:
   - 1HSwordCombo4
   <AnimationSetIndex>k__BackingField: 2
   <Wear>k__BackingField: 0
+  <StaticParts>k__BackingField: []
+  knockbackForce: 15
+  preferredDistance: 1.8
+  blockSound: {fileID: 8300000, guid: 8157ab1a852d12e48931c26264e30a2b, type: 3}

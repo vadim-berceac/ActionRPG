@@ -25,12 +25,17 @@ namespace Game
 
         public bool isInvulnerable { get; set; }
         public int currentHitPoints { get; private set; }
+        public Transform Transform  { get; private set; }
 
         public UnityEvent OnDeath, OnReceiveDamage, OnHitWhileInvulnerable, OnBecomeVulnerable, OnResetDamage;
+
+        public System.Action<DamageMessage> OnDamageAttempted;
 
         [Tooltip("When this gameObject is damaged, these other gameObjects are notified.")]
         [EnforceType(typeof(Message.IMessageReceiver))]
         public List<MonoBehaviour> onDamageMessageReceivers;
+
+        public System.Func<DamageMessage, bool> onDamageBlocked;
 
         protected float m_timeSinceLastHit = 0.0f;
         protected Collider m_Collider;
@@ -40,6 +45,7 @@ namespace Game
         void Start()
         {
             ResetDamage();
+            Transform = transform;
             m_Collider = GetComponent<Collider>();
         }
 
@@ -72,6 +78,8 @@ namespace Game
 
         public void ApplyDamage(DamageMessage data)
         {
+            OnDamageAttempted?.Invoke(data);
+
             if (currentHitPoints <= 0)
             {//ignore damage if already dead. TODO : may have to change that if we want to detect hit on death...
                 return;
@@ -83,10 +91,12 @@ namespace Game
                 return;
             }
 
+            if (onDamageBlocked != null && onDamageBlocked.Invoke(data))
+                return;
+
             Vector3 forward = transform.forward;
             forward = Quaternion.AngleAxis(hitForwardRotation, transform.up) * forward;
 
-            //we project the direction to damager to the plane formed by the direction of damage
             Vector3 positionToDamager = data.damageSource - transform.position;
             positionToDamager -= transform.up * Vector3.Dot(transform.up, positionToDamager);
 
@@ -97,7 +107,7 @@ namespace Game
             currentHitPoints -= data.amount;
 
             if (currentHitPoints <= 0)
-                schedule += OnDeath.Invoke; //This avoid race condition when objects kill each other.
+                schedule += OnDeath.Invoke; 
             else
                 OnReceiveDamage.Invoke();
 
@@ -118,26 +128,5 @@ namespace Game
                 schedule = null;
             }
         }
-
-#if UNITY_EDITOR
-        private void OnDrawGizmosSelected()
-        {
-            Vector3 forward = transform.forward;
-            forward = Quaternion.AngleAxis(hitForwardRotation, transform.up) * forward;
-
-            if (Event.current.type == EventType.Repaint)
-            {
-                UnityEditor.Handles.color = Color.blue;
-                UnityEditor.Handles.ArrowHandleCap(0, transform.position, Quaternion.LookRotation(forward), 1.0f,
-                    EventType.Repaint);
-            }
-
-
-            UnityEditor.Handles.color = new Color(1.0f, 0.0f, 0.0f, 0.5f);
-            forward = Quaternion.AngleAxis(-hitAngle * 0.5f, transform.up) * forward;
-            UnityEditor.Handles.DrawSolidArc(transform.position, transform.up, forward, hitAngle, 1.0f);
-        }
-#endif
     }
-
 }

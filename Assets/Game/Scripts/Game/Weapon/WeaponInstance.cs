@@ -44,6 +44,7 @@ namespace Game
 
         protected bool m_IsThrowingHit = false;
         protected bool m_InAttack = false;
+        protected float m_KnockbackForce;
 
         const int PARTICLE_COUNT = 10;
         protected ParticleSystem[] m_ParticlesPool = new ParticleSystem[PARTICLE_COUNT];
@@ -58,6 +59,11 @@ namespace Game
         {
             m_Owner = owner;
             m_targetLayers = layers;
+        }
+
+        public void SetKnockbackForce(float force)
+        {
+            m_KnockbackForce = force;
         }
 
         public void SetViewParent(PropBones propBones, PropBoneSettings settings)
@@ -194,6 +200,7 @@ namespace Game
             data.damageSource = m_Owner.transform.position;
             data.throwing = m_IsThrowingHit;
             data.stopCamera = false;
+            data.knockbackForce = m_KnockbackForce;
 
             d.ApplyDamage(data);
 

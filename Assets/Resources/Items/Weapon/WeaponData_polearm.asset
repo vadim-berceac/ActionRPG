@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: WeaponData_polearm
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   <Name>k__BackingField: Polearm
-  <Icon>k__BackingField: {fileID: -1357097517, guid: bd3f511481dc55845823dc12621ccd29,
+  <Icon>k__BackingField: {fileID: -1469948932, guid: ecb4b62c2a2d7374a80c91032215c34e,
     type: 3}
   <GroundPrefab>k__BackingField: {fileID: 8401756962499706326, guid: a44286e9d900d6741bbd13c6c59144b9,
     type: 3}
@@ -38,3 +38,7 @@ MonoBehaviour:
   - PolearmCombo4
   <AnimationSetIndex>k__BackingField: 1
   <Wear>k__BackingField: 1
+  <StaticParts>k__BackingField: []
+  knockbackForce: 10
+  preferredDistance: 2.7
+  blockSound: {fileID: 8300000, guid: 8157ab1a852d12e48931c26264e30a2b, type: 3}

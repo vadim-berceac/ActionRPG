@@ -45,6 +45,11 @@ namespace Game
         public float xFactor;
         public float yFactor;
 
+        [Tooltip("Минимальный угол Pitch (в градусах). Отрицательное значение — камера выше персонажа")]
+        public float pitchMin = -30f;
+        [Tooltip("Максимальный угол Pitch (в градусах). Ограничивает, чтобы камера не смотрела снизу")]
+        public float pitchMax = 70f;
+
         public CinemachineCamera Current => controllerCamera;
 
         private float m_CurrentX;
@@ -71,6 +76,11 @@ namespace Game
             }
             impulseSource.GenerateImpulseWithForce(amplitude);
         }
+
+        public void Shake()
+        {
+            impulseSource.GenerateImpulse();
+        }
         
         private void Awake()
         {
@@ -93,6 +103,8 @@ namespace Game
         private void UpdateClampSettings()
         {
             var vertical = orbitalFollow.VerticalAxis;
+            vertical.Range = new Vector2(pitchMin, pitchMax);
+            vertical.Value = Mathf.Clamp(vertical.Value, pitchMin, pitchMax);
             orbitalFollow.VerticalAxis = vertical;
         }
 
@@ -124,7 +136,7 @@ namespace Game
             orbitalFollow.HorizontalAxis = horizontal;
 
             var vertical = orbitalFollow.VerticalAxis;
-            vertical.Value += m_CurrentY * Time.deltaTime;
+            vertical.Value = Mathf.Clamp(vertical.Value + m_CurrentY * Time.deltaTime, pitchMin, pitchMax);
             orbitalFollow.VerticalAxis = vertical;
         }
     }

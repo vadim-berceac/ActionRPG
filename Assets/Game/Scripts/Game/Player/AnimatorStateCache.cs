@@ -35,6 +35,7 @@ namespace Game
         private readonly int _hashWeaponIndex           = Animator.StringToHash("WeaponIndex");
         private readonly int _hashHasAdditionalWeapon   = Animator.StringToHash("HasAdditionalWeapon");
         private readonly int _hashRespawn               = Animator.StringToHash("Respawn");
+        private readonly int _blockHitTrigger          = Animator.StringToHash("BlockHitTrigger");
         
         private const string BlockInput = "BlockInput";
 
@@ -101,6 +102,7 @@ namespace Game
                 Mathf.Repeat(_animator.GetCurrentAnimatorStateInfo(0).normalizedTime, 1f));
 
         public void SetGrounded(bool value) => _animator.SetBool(_hashGrounded, value);
+        public void SetBlock(bool value) => _animator.SetBool(Block, value);
 
         public void SetInputDetected(bool value) => _animator.SetBool(_hashInputDetected, value);
 
@@ -125,6 +127,7 @@ namespace Game
         public void TriggerHurt()      => _animator.SetTrigger(HashHurt);
         public void TriggerDeath()     => _animator.SetTrigger(HashDeath);
         public void TriggerRespawn()   => _animator.SetTrigger(_hashRespawn);
+        public void TriggerBlock() => _animator.SetTrigger(_blockHitTrigger);
 
         public void TriggerAttack1()   => _animator.SetTrigger(HashAttack1);
         public void TriggerAttack2()

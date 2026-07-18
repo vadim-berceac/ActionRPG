@@ -12,8 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b0dc2dd87660fe4085006830a7b173e, type: 3}
   m_Name: WeaponData_staff
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
-  <ViewPrefab>k__BackingField: {fileID: 0}
+  <Name>k__BackingField: 
+  <Icon>k__BackingField: {fileID: 0}
   <GroundPrefab>k__BackingField: {fileID: 0}
+  <Description>k__BackingField: 
+  <CanBeEquipped>k__BackingField: 0
+  <ViewPrefab>k__BackingField: {fileID: 0}
   <ActiveProp>k__BackingField:
     <PropType>k__BackingField: 0
     <Position>k__BackingField: {x: 0, y: 0, z: 0}
@@ -31,3 +35,6 @@ MonoBehaviour:
   - EllenCombo4
   <AnimationSetIndex>k__BackingField: 0
   <Wear>k__BackingField: 1
+  <StaticParts>k__BackingField: []
+  knockbackForce: 5
+  blockSound: {fileID: 8300000, guid: 8157ab1a852d12e48931c26264e30a2b, type: 3}

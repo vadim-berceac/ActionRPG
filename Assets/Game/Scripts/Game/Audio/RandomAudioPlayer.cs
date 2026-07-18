@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -42,6 +41,11 @@ namespace Game
 
         public AudioClip clip { get; private set; }
 
+        /// <summary>
+        /// True if the AudioSource is currently playing a clip.
+        /// </summary>
+        public bool IsPlaying => m_Audiosource != null && m_Audiosource.isPlaying;
+
         void Awake()
         {
             m_Audiosource = GetComponent<AudioSource>();
@@ -52,27 +56,23 @@ namespace Game
             }
         }
 
-        /// <summary>
-        /// Will pick a random clip to play in the assigned list. If you pass a material, it will try to find an
-        /// override for that materials or play the default clip if none can ben found.
-        /// </summary>
-        /// <param name="overrideMaterial"></param>
-        /// <returns> Return the choosen audio clip, null if none </returns>
         public AudioClip PlayRandomClip(Material overrideMaterial, int bankId = 0)
         {
 #if UNITY_EDITOR
-            //UnityEditor.EditorGUIUtility.PingObject(overrideMaterial);
 #endif
             if (overrideMaterial == null) return null;
             return InternalPlayRandomClip(overrideMaterial, bankId);
         }
 
-        /// <summary>
-        /// Will pick a random clip to play in the assigned list.
-        /// </summary>
         public void PlayRandomClip()
         {
             clip = InternalPlayRandomClip(null, bankId: 0);
+        }
+
+        public void PlayRandomClipOneShot(Material overrideMaterial = null, int bankId = 0)
+        {
+            if (IsPlaying) return;
+            clip = InternalPlayRandomClip(overrideMaterial, bankId);
         }
 
         AudioClip InternalPlayRandomClip(Material overrideMaterial, int bankId)

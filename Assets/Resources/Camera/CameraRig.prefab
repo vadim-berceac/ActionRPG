@@ -312,14 +312,16 @@ MonoBehaviour:
     invertX: 0
     invertY: 0
   controllerSmoothing:
-    smoothTimeX: 0.1
-    smoothTimeY: 0.1
+    smoothTimeX: 0.25
+    smoothTimeY: 0.3
   controllerRecentering:
     enabled: 0
     wait: 0
     time: 0
   xFactor: 50
   yFactor: 7.5
+  pitchMin: 15
+  pitchMax: 40
 --- !u!114 &9212265191224836182
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -334,7 +336,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineImpulseSource
   ImpulseDefinition:
     ImpulseChannel: 1
-    ImpulseShape: 4
+    ImpulseShape: 1
     CustomImpulseShape:
       serializedVersion: 2
       m_Curve: []
@@ -372,7 +374,7 @@ MonoBehaviour:
     DissipationMode: 2
     DissipationDistance: 100
     PropagationSpeed: 343
-  DefaultVelocity: {x: 0, y: 0.2, z: 0.5}
+  DefaultVelocity: {x: 0.3, y: 0.3, z: 0.3}
 --- !u!1 &6852124260157090460
 GameObject:
   m_ObjectHideFlags: 0

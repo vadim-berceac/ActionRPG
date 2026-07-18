@@ -1,7 +1,7 @@
 fileFormatVersion: 2
-guid: 648a1a7d29738df4f9f3149bda205fac
+guid: b01cf7e6997b6494ca01351183f7fecd
 ModelImporter:
-  serializedVersion: 22200
+  serializedVersion: 24200
   internalIDToNameTable: []
   externalObjects: {}
   materials:
@@ -16,8 +16,6 @@ ModelImporter:
     optimizeGameObjects: 0
     removeConstantScaleCurves: 0
     motionNodeName: 
-    rigImportErrors: 
-    rigImportWarnings: 
     animationImportErrors: 
     animationImportWarnings: 
     animationRetargetingWarnings: 
@@ -33,7 +31,7 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: HumanM@Parry2H01 - Loop
+      name: HumanM@BlockPolearm01 - Loop
       takeName: Untitled
       internalID: 3094330708855449807
       firstFrame: 0
@@ -50,9 +48,9 @@ ModelImporter:
       loopBlendPositionY: 1
       loopBlendPositionXZ: 1
       keepOriginalOrientation: 1
-      keepOriginalPositionY: 1
+      keepOriginalPositionY: 0
       keepOriginalPositionXZ: 1
-      heightFromFeet: 0
+      heightFromFeet: 1
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
@@ -205,6 +203,9 @@ ModelImporter:
     maxBonesPerVertex: 4
     minBoneWeight: 0.001
     optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
     meshOptimizationFlags: -1
     indexFormat: 0
     secondaryUVAngleDistortion: 8
@@ -646,18 +647,18 @@ ModelImporter:
         length: 0
         modified: 0
     skeleton:
-    - name: Human_DummyModel_M(Clone)
+    - name: HumanM_Model(Clone)
       parentName: 
       position: {x: -0, y: 0, z: 0}
       rotation: {x: 0, y: -0, z: -0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: HumanM_BodyMesh
-      parentName: Human_DummyModel_M(Clone)
+      parentName: HumanM_Model(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: 0, y: -0, z: -0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: Rig
-      parentName: Human_DummyModel_M(Clone)
+      parentName: HumanM_Model(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: 0, y: -0, z: -0, w: 1}
       scale: {x: 1, y: 1, z: 1}

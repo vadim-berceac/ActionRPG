@@ -13,6 +13,7 @@ namespace Game
             public bool throwing;
 
             public bool stopCamera;
+            public float knockbackForce;
         }
     } 
 }

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: WeaponData_1h_sword
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   <Name>k__BackingField: Sword 1H
-  <Icon>k__BackingField: {fileID: 1946456253, guid: bd3f511481dc55845823dc12621ccd29,
+  <Icon>k__BackingField: {fileID: 756467936, guid: ecb4b62c2a2d7374a80c91032215c34e,
     type: 3}
   <GroundPrefab>k__BackingField: {fileID: 8401756962499706326, guid: 30201ffa63fd9fb4e98c2cfdf0008e5f,
     type: 3}
@@ -38,3 +38,7 @@ MonoBehaviour:
   - 1HSwordCombo4
   <AnimationSetIndex>k__BackingField: 2
   <Wear>k__BackingField: 0
+  <StaticParts>k__BackingField: []
+  knockbackForce: 5
+  preferredDistance: 2
+  blockSound: {fileID: 8300000, guid: 8157ab1a852d12e48931c26264e30a2b, type: 3}
