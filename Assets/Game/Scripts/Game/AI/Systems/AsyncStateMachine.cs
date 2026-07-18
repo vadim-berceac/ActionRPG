@@ -67,7 +67,7 @@ public class AsyncStateMachine : IDisposable
 
             if (_isDisposed) return;
 
-            _ = RunUpdateLoop(CurrentState, token);
+            RunUpdateLoop(CurrentState, token).Forget();
         }
         catch (OperationCanceledException)
         {

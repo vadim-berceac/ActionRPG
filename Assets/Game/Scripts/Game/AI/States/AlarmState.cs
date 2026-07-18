@@ -44,10 +44,10 @@ public class AlarmState : AsyncState
                         {
                             otherCtx.SetAlarmTarget(targetToShare, alarmPosition);
 
-                             if (otherFsm.CurrentState != otherFsm.AlarmState && !otherFsm.IsTransitioning())
-                             {
-                                 TransitionWithErrorHandling(otherFsm, otherFsm.AlarmState);
-                             }
+                            if (otherFsm.CurrentState != otherFsm.AlarmState && !otherFsm.IsTransitioning())
+                            {
+                                await TransitionWithErrorHandling(otherFsm, otherFsm.AlarmState);
+                            }
                         }
                     }
                 }
@@ -102,15 +102,15 @@ public class AlarmState : AsyncState
         }
     }
 
-    private async void TransitionWithErrorHandling(AsyncStateMachine fsm, IAsyncState targetState)
-    {
-        try
-        {
-            await fsm.TransitionTo(targetState);
-        }
-        catch (Exception ex)
-        {
-            Debug.LogWarning($"Failed to transition enemy to alarm state: {ex.Message}");
-        }
-    }
+     private async UniTask TransitionWithErrorHandling(AsyncStateMachine fsm, IAsyncState targetState)
+     {
+         try
+         {
+             await fsm.TransitionTo(targetState);
+         }
+         catch (Exception ex)
+         {
+             Debug.LogWarning($"Failed to transition enemy to alarm state: {ex.Message}");
+         }
+     }
 }
