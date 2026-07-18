@@ -1,3 +1,4 @@
+using System;
 using Cysharp.Threading.Tasks;
 using Game;
 using UnityEngine;
@@ -44,16 +45,23 @@ public class EnemyBrain : MonoBehaviour, IInput
 
     private async void Start()
     {
-        await InitializeFsm();
-        Fsm.Ctx.SetFsm(Fsm);
-        
-        if (patrolMode == PatrolMode.Guard)
+        try
         {
-            await Fsm.TransitionTo(Fsm.GuardState);
+            await InitializeFsm();
+            Fsm.Ctx.SetFsm(Fsm);
+            
+            if (patrolMode == PatrolMode.Guard)
+            {
+                await Fsm.TransitionTo(Fsm.GuardState);
+            }
+            else
+            {
+                await Fsm.TransitionTo(Fsm.PatrolState);
+            }
         }
-        else
+        catch (Exception ex)
         {
-            await Fsm.TransitionTo(Fsm.PatrolState);
+            Debug.LogError($"Failed to initialize enemy brain: {ex}");
         }
     }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -30,9 +31,19 @@ public class BlockState : AsyncState
         // Случайное время блокирования
         var blockDuration = Random.Range(BLOCK_DURATION_MIN, BLOCK_DURATION_MAX);
         var blockEndTime = Time.time + blockDuration;
+        
+        var blockTimeout = TimeSpan.FromSeconds(8);
+        var blockStartTime = DateTime.UtcNow;
 
         while (!IsCancelled && Time.time < blockEndTime && !StateMachine.Ctx.IsDead)
         {
+            // Защита от зависания в блоке
+            if (DateTime.UtcNow - blockStartTime > blockTimeout)
+            {
+                Debug.LogWarning("BlockState timeout - forcing exit");
+                break;
+            }
+
             // Если цель потеряна или умерла - выходим из блокирования
             if (!StateMachine.Ctx.Target || StateMachine.Ctx.IsDead)
             {

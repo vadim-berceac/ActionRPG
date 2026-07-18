@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 public interface IAsyncState
 {
@@ -56,8 +57,19 @@ public abstract class AsyncState : IAsyncState
     
     private static async UniTask WatchAndCancelAsync(Func<bool> shouldCancel, CancellationTokenSource linkedCts, CancellationToken ct)
     {
-        await UniTask.WaitUntil(shouldCancel, cancellationToken: ct)
-            .SuppressCancellationThrow();
+        try
+        {
+            // Добавляем таймаут 30 секунд для предотвращения зависаний
+            await UniTask.WaitUntil(shouldCancel, cancellationToken: ct)
+                .Timeout(TimeSpan.FromSeconds(30))
+                .SuppressCancellationThrow();
+        }
+        catch (TimeoutException)
+        {
+            Debug.LogWarning("WatchAndCancelAsync timed out - ShouldInterrupt never returned true");
+        }
+        catch (OperationCanceledException) { }
+        catch (ObjectDisposedException) { }
 
         try
         {

@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -25,8 +26,18 @@ public class GuardState : AsyncState
     {
         await base.OnUpdate(ct);
 
+        var updateTimeout = TimeSpan.FromSeconds(15);
+        var startTime = DateTime.UtcNow;
+
         while (!IsCancelled)
         {
+            // Защита от зависания в общем цикле
+            if (DateTime.UtcNow - startTime > updateTimeout)
+            {
+                Debug.LogWarning("GuardState update timeout - forcing transition");
+                break;
+            }
+
             // Получаем актуальную позицию точки охраны каждый кадр
             var guardPosition = StateMachine.Ctx.GuardPosition;
             var targetPosition = ResolveTargetPosition(guardPosition);
@@ -63,8 +74,18 @@ public class GuardState : AsyncState
     /// </summary>
     private async UniTask WaitForTargetOrLeave(CancellationToken ct)
     {
+        var waitTimeout = TimeSpan.FromSeconds(10);
+        var waitStartTime = DateTime.UtcNow;
+        
         while (!IsCancelled)
         {
+            // Защита от зависания при ожидании
+            if (DateTime.UtcNow - waitStartTime > waitTimeout)
+            {
+                Debug.LogWarning("WaitForTargetOrLeave timeout");
+                break;
+            }
+
             if (StateMachine.Ctx.Target) break;
 
             // Получаем актуальную позицию точки охраны каждый кадр
@@ -80,8 +101,18 @@ public class GuardState : AsyncState
 
     private async UniTask MoveToTarget(CancellationToken ct, Vector3 target)
     {
+        var moveTimeout = TimeSpan.FromSeconds(20);
+        var moveStartTime = DateTime.UtcNow;
+        
         while (!IsCancelled && !IsWithinStopDistance(target))
         {
+            // Защита от зависания при движении к цели
+            if (DateTime.UtcNow - moveStartTime > moveTimeout)
+            {
+                Debug.LogWarning("MoveToTarget timeout - cannot reach target");
+                break;
+            }
+
             if (StateMachine.Ctx.Target) break;
 
             var currentPos = StateMachine.Ctx.Transform.position;
@@ -90,6 +121,7 @@ public class GuardState : AsyncState
             {
                 StopInput();
                 await UniTask.Delay(250, cancellationToken: CancellationTokenSource.Token)
+                    .Timeout(TimeSpan.FromSeconds(1))
                     .SuppressCancellationThrow();
                 return;
             }

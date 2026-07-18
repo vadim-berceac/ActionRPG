@@ -12,9 +12,11 @@ public class AttackState : AsyncState
     {
         await base.OnEnter(ct);
         StopInput();
-        await TryExecuteAttack(CancellationTokenSource.Token)
-            .SuppressCancellationThrow();
         Debug.Log("Entering Attack State...");
+        // Запускаем первую атаку асинхронно, не блокируя вход в состояние
+        TryExecuteAttack(CancellationTokenSource.Token)
+            .SuppressCancellationThrow()
+            .Forget();
     }
 
     public override async UniTask OnUpdate(CancellationToken ct)

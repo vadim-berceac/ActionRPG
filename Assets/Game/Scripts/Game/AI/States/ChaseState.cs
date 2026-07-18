@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -35,6 +36,7 @@ public class ChaseState : AsyncState
                 StopInput();
                 
                 await UniTask.Delay(250, cancellationToken: CancellationTokenSource.Token)
+                    .Timeout(TimeSpan.FromSeconds(1))
                     .SuppressCancellationThrow();
                 continue;
             }
@@ -88,8 +90,18 @@ public class ChaseState : AsyncState
 
     private async UniTask DirectChase(CancellationToken ct)
     {
+        var chaseTimeout = TimeSpan.FromSeconds(10);
+        var chaseStartTime = DateTime.UtcNow;
+        
         while (!IsCancelled)
         {
+            // Защита от зависания в прямом преследовании
+            if (DateTime.UtcNow - chaseStartTime > chaseTimeout)
+            {
+                Debug.LogWarning("DirectChase timeout - forcing exit");
+                break;
+            }
+
             var target = StateMachine.Ctx.Target;
             if (target == null || target.currentHitPoints <= 0) break;
 

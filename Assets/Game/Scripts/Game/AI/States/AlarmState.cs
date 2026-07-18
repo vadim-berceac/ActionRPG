@@ -46,7 +46,8 @@ public class AlarmState : AsyncState
 
                             if (otherFsm.CurrentState != otherFsm.AlarmState && !otherFsm.IsTransitioning())
                             {
-                                await TransitionWithErrorHandling(otherFsm, otherFsm.AlarmState);
+                                // Запускаем переход асинхронно, не блокируя текущий AlarmState
+                                TransitionWithErrorHandling(otherFsm, otherFsm.AlarmState).Forget();
                             }
                         }
                     }

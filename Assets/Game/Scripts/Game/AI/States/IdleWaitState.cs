@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -29,6 +30,7 @@ public class IdleWaitState : AsyncState
             
             var step = Mathf.Min(0.1f, waitDuration - elapsed);
             await UniTask.Delay((int)(step * 1000), cancellationToken: CancellationTokenSource.Token)
+                .Timeout(TimeSpan.FromSeconds(2))
                 .SuppressCancellationThrow();
             elapsed += step;
         }

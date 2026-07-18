@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -57,6 +58,7 @@ public class PatrolState : AsyncState
 
             Debug.Log("Scanning surroundings...");
             var delayResult = await UniTask.Delay(1000, cancellationToken: CancellationTokenSource.Token)
+                .Timeout(TimeSpan.FromSeconds(2))
                 .SuppressCancellationThrow();
 
             if (delayResult) break;
