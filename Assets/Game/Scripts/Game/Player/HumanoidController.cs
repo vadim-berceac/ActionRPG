@@ -384,8 +384,21 @@ namespace Game
 
                 if (targetDirection != Vector3.zero)
                 {
-                    resultingForward   = targetDirection;
-                    transform.rotation = Quaternion.LookRotation(resultingForward);
+                    resultingForward = targetDirection;
+                    // При наличии цели - вычисляем targetRotation только на основе камеры (без WASD)
+                    var cameraForward = Quaternion.Euler(0f, _input.RotationYaw, 0f) * Vector3.forward;
+                    cameraForward.y = 0f;
+                    cameraForward.Normalize();
+                    targetRotation = Quaternion.LookRotation(cameraForward);
+                }
+                else
+                {
+                    // Если цели нет, но мы в атаке/блоке - всё равно используем только камеру, игнорируя WASD
+                    var cameraForward = Quaternion.Euler(0f, _input.RotationYaw, 0f) * Vector3.forward;
+                    cameraForward.y = 0f;
+                    cameraForward.Normalize();
+                    targetRotation = Quaternion.LookRotation(cameraForward);
+                    resultingForward = cameraForward;
                 }
             }
 
