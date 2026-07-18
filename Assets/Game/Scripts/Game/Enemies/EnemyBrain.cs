@@ -2,6 +2,12 @@ using Cysharp.Threading.Tasks;
 using Game;
 using UnityEngine;
 
+public enum EnemyBehaviorMode
+{
+    Aggressive,
+    Neutral
+}
+
 public class EnemyBrain : MonoBehaviour, IInput
 {
     [SerializeField] private VisionSystem visionSystem;
@@ -9,8 +15,10 @@ public class EnemyBrain : MonoBehaviour, IInput
     [SerializeField] private Damageable damageable;
     [SerializeField] private float rotationSpeed;
     [SerializeField] private Transform[] patrolPoints;
-    
+    [SerializeField] private EnemyBehaviorMode behaviorMode = EnemyBehaviorMode.Aggressive;
+
     public AsyncStateMachine Fsm { get; private set; }
+    public EnemyBehaviorMode BehaviorMode => behaviorMode;
     
     public bool InputBlocked { get; set; }
     public Vector2 MoveInput { get; set; }
@@ -40,7 +48,7 @@ public class EnemyBrain : MonoBehaviour, IInput
     private UniTask InitializeFsm()
     {
         Fsm = new AsyncStateMachine(new StateMachineContext(this, visionSystem, damageable,
-            transform, humanoidController, rotationSpeed, patrolPoints));
+            transform, humanoidController, rotationSpeed, patrolPoints, behaviorMode));
         return UniTask.CompletedTask;
     }
 }

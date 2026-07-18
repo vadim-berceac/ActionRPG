@@ -13,6 +13,7 @@ public class StateMachineContext : IDisposable
     public bool IsDead { get; private set; }
     public bool IsGrounded => _humanoidController.IsGrounded;
     public bool HasAdditionalWeapon => _humanoidController.HasAdditionalWeapon;
+    public EnemyBehaviorMode BehaviorMode { get; private set; }
     public float PreferredAttackDistance
     {
         get
@@ -35,7 +36,7 @@ public class StateMachineContext : IDisposable
     private int _defaultLayer;
     
     public StateMachineContext(IInput input, VisionSystem visionSystem, Damageable self, Transform transform,
-        HumanoidController humanoidController, float rotationSpeed, Transform[] patrolWaypoints)
+        HumanoidController humanoidController, float rotationSpeed, Transform[] patrolWaypoints, EnemyBehaviorMode behaviorMode)
     {
         Input = input;
         _visionSystem = visionSystem;
@@ -43,8 +44,9 @@ public class StateMachineContext : IDisposable
         _humanoidController = humanoidController;
         Transform = transform;
         RotationSpeed = rotationSpeed;
+        BehaviorMode = behaviorMode;
         SetWaypoints(ConvertPath.ToVector(patrolWaypoints));
-        
+
         _visionSystem.OnTargetReached += OnTargetReached;
         _self.OnDeath.AddListener(OnDeath);
 
@@ -58,9 +60,16 @@ public class StateMachineContext : IDisposable
     
     private void OnTargetReached(Damageable damageable)
     {
+        // В Neutral режиме игнорируем обнаружение целей, пока не вступили в бой
+        if (BehaviorMode == EnemyBehaviorMode.Neutral
+            && (_fsm == null || (_fsm.CurrentState != _fsm.ChaseState && _fsm.CurrentState != _fsm.AttackState)))
+        {
+            return;
+        }
+
         Target = damageable;
 
-        if (damageable != null)
+        if (damageable)
         {
             _lastSeenTarget = damageable;
         }
@@ -70,11 +79,10 @@ public class StateMachineContext : IDisposable
     {
         if (IsDead) return;
 
-        // Игнорируем, если AI сам блокирует этот удар — не сбрасываем атаку
         if (_humanoidController.IsBlocking) return;
 
         var damager = message.damager;
-        if (damager == null) return;
+        if (!damager) return;
 
         var damagerDamageable = damager.GetComponentInParent<Damageable>();
         if (!damagerDamageable) return;
@@ -87,12 +95,20 @@ public class StateMachineContext : IDisposable
         Target = damagerDamageable;
 
         var damagerCollider = damagerDamageable.GetComponent<Collider>();
-        if (damagerCollider&& !_visionSystem.HasCandidate(damagerCollider))
+        if (damagerCollider && !_visionSystem.HasCandidate(damagerCollider))
         {
             _visionSystem.AddCandidate(damagerCollider, damagerDamageable);
         }
 
-        // Если мы в состоянии атаки и цель видна - уведомляем о обнаруженной атаке
+        if (BehaviorMode == EnemyBehaviorMode.Neutral
+            && _fsm != null
+            && _fsm.CurrentState != _fsm.ChaseState
+            && _fsm.CurrentState != _fsm.AttackState)
+        {
+            await _fsm.TransitionTo(_fsm.ChaseState);
+            return;
+        }
+
         if (_fsm != null && _fsm.CurrentState == _fsm.AttackState && _fsm.AttackState is AttackState attackState)
         {
             if (IsTargetVisible(damagerDamageable))
@@ -100,7 +116,7 @@ public class StateMachineContext : IDisposable
                 attackState.OnAttackDetected();
             }
         }
-        // Не дёргаемся, если уже в бою — не сбрасываем текущую атаку/преследование
+       
         else if (_fsm != null
             && _fsm.CurrentState != _fsm.AttackState
             && _fsm.CurrentState != _fsm.ChaseState)
