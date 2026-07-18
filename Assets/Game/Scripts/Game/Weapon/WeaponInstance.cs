@@ -25,7 +25,6 @@ namespace Game
         public GameObject view;
         public GameObject trail;
         public AttackPoint[] attackPoints = new AttackPoint[0];
-        public TimeEffect[] effects;
 
         [Header("Audio")] public RandomAudioPlayer hitAudio;
         public RandomAudioPlayer attackAudio;
@@ -38,6 +37,7 @@ namespace Game
 
         protected GameObject m_Owner;
         protected LayerMask m_targetLayers;
+        protected WeaponData m_WeaponData;
 
         protected Vector3[] m_PreviousPos = null;
         protected Vector3 m_Direction;
@@ -74,6 +74,11 @@ namespace Game
         public void SetStaticParts(GameObject[] parts)
         {
             staticParts = parts;
+        }
+
+        public void SetWeaponData(WeaponData weaponData)
+        {
+            m_WeaponData = weaponData;
         }
 
         public void BeginAttack(bool thowingAttack)
@@ -152,7 +157,7 @@ namespace Game
                         Collider col = s_RaycastHitCache[k].collider;
 
                         if (col != null)
-                            CheckDamage(col, pts);
+                            CheckDamage(col, pts, s_RaycastHitCache[k].point);
                     }
 
                     m_PreviousPos[i] = worldPos;
@@ -164,7 +169,7 @@ namespace Game
             }
         }
 
-        private bool CheckDamage(Collider other, AttackPoint pts)
+        private bool CheckDamage(Collider other, AttackPoint pts, Vector3 hitPoint)
         {
             Damageable d = other.GetComponent<Damageable>();
             if (d == null)
@@ -190,6 +195,19 @@ namespace Game
                     hitAudio.PlayRandomClip (renderer.sharedMaterial);
                 else
                     hitAudio.PlayRandomClip ();
+            }
+
+            // Trigger hit particle at collision point
+            if (m_WeaponData != null && m_WeaponData.hitParticlePrefab != null)
+            {
+                // Create a temporary particle system instance at the hit location
+                ParticleSystem hitEffect = Instantiate(m_WeaponData.hitParticlePrefab, hitPoint, Quaternion.identity);
+
+                // Play the particle system
+                hitEffect.Play();
+
+                // Optional: Destroy the particle system after it finishes playing
+                Destroy(hitEffect.gameObject, hitEffect.main.duration);
             }
 
             Damageable.DamageMessage data;

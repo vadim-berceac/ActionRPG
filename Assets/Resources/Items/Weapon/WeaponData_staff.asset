@@ -37,4 +37,7 @@ MonoBehaviour:
   <Wear>k__BackingField: 1
   <StaticParts>k__BackingField: []
   knockbackForce: 5
+  preferredDistance: 2
   blockSound: {fileID: 8300000, guid: 8157ab1a852d12e48931c26264e30a2b, type: 3}
+  hitParticlePrefab: {fileID: 198200190501009950, guid: 400e06051701a8c4998087ae421728e3,
+    type: 3}

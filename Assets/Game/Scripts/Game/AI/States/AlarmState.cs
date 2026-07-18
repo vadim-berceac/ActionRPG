@@ -1,11 +1,10 @@
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using Game;
 using UnityEngine;
 
 public class AlarmState : AsyncState
 {
-    // Буфер для OverlapSphereNonAlloc чтобы избежать выделения памяти
     private static readonly Collider[] _overlapBuffer = new Collider[32];
 
     public AlarmState(AsyncStateMachine stateMachine) : base(stateMachine)
@@ -17,12 +16,10 @@ public class AlarmState : AsyncState
         await base.OnEnter(ct);
         Debug.Log("Entering Alarm State...");
 
-        // Получаем последнюю известную позицию цели
         if (StateMachine.Ctx.TryGetLastKnownTargetPosition(out var alarmPosition))
         {
             var targetToShare = StateMachine.Ctx.GetLastSeenTarget();
 
-            // Выполняем OverlapSphereNonAlloc для поиска других врагов с той же фракцией
             var colliderCount = Physics.OverlapSphereNonAlloc(
                 StateMachine.Ctx.Transform.position,
                 20f,
@@ -39,28 +36,24 @@ public class AlarmState : AsyncState
                     otherEnemyBrain != StateMachine.Ctx.Input as EnemyBrain &&
                     otherEnemyBrain.Faction == StateMachine.Ctx.Faction)
                 {
-                    // Проверяем, что у другого врага нет текущей цели
                     var otherFsm = otherEnemyBrain.Fsm;
                     if (otherFsm != null)
                     {
                         var otherCtx = otherFsm.Ctx;
                         if (otherCtx.Target == null && !otherCtx.TryGetLastKnownTargetPosition(out _))
                         {
-                            // Устанавливаем цель и позицию для другого врага
                             otherCtx.SetAlarmTarget(targetToShare, alarmPosition);
 
-                            // Переводим другого врага в AlarmState (не ждем завершения, чтобы не блокировать цикл)
-                            if (otherFsm.CurrentState != otherFsm.AlarmState)
-                            {
-                                _ = otherFsm.TransitionTo(otherFsm.AlarmState);
-                            }
+                             if (otherFsm.CurrentState != otherFsm.AlarmState && !otherFsm.IsTransitioning())
+                             {
+                                 TransitionWithErrorHandling(otherFsm, otherFsm.AlarmState);
+                             }
                         }
                     }
                 }
             }
         }
 
-        // Переходим в ChaseState для преследования цели
         await StateMachine.TransitionTo(StateMachine.ChaseState);
     }
 
@@ -87,21 +80,18 @@ public class AlarmState : AsyncState
             return;
         }
 
-        // Если цель найдена и видна - переходим в ChaseState
         if (StateMachine.Ctx.Target != null)
         {
             await StateMachine.TransitionTo(StateMachine.ChaseState);
             return;
         }
 
-        // Если есть последняя известная позиция цели - переходим в ChaseState
         if (StateMachine.Ctx.TryGetLastKnownTargetPosition(out _))
         {
             await StateMachine.TransitionTo(StateMachine.ChaseState);
             return;
         }
 
-        // Если цели нет - возвращаемся в предыдущее состояние
         if (StateMachine.Ctx.PatrolMode == PatrolMode.Guard)
         {
             await StateMachine.TransitionTo(StateMachine.GuardState);
@@ -109,6 +99,18 @@ public class AlarmState : AsyncState
         else
         {
             await StateMachine.TransitionTo(StateMachine.PatrolState);
+        }
+    }
+
+    private async void TransitionWithErrorHandling(AsyncStateMachine fsm, IAsyncState targetState)
+    {
+        try
+        {
+            await fsm.TransitionTo(targetState);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"Failed to transition enemy to alarm state: {ex.Message}");
         }
     }
 }

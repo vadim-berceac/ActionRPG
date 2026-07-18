@@ -30,6 +30,7 @@ public class WeaponData : ItemData
     [field: SerializeField] public float knockbackForce = 5f;
     [field: SerializeField, Range(0.5f, 10f)] public float preferredDistance = 2f;
     [field: SerializeField] public AudioClip blockSound;
+    [field: SerializeField] public ParticleSystem hitParticlePrefab;
 
     public GameObject GetViewInstance(Transform parent, DiContainer container)
     {

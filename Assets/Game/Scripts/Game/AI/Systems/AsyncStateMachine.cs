@@ -101,14 +101,16 @@ public class AsyncStateMachine : IDisposable
         catch (ObjectDisposedException) { /* machine disposed mid-update, ignore */ }
     }
 
-    public void Dispose()
-    {
-        if (_isDisposed) return;
-        _isDisposed = true;
+        public bool IsTransitioning() => _isTransitioning;
 
-        Ctx.Dispose();
-        _stateTokenSource?.Cancel();
-        _stateTokenSource?.Dispose();
-        _stateTokenSource = null;
-    }
+        public void Dispose()
+        {
+            if (_isDisposed) return;
+            _isDisposed = true;
+
+            Ctx.Dispose();
+            _stateTokenSource?.Cancel();
+            _stateTokenSource?.Dispose();
+            _stateTokenSource = null;
+        }
 }

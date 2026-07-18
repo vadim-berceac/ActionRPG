@@ -217,6 +217,7 @@ namespace Game
             var weaponObj = prevData.GetViewInstance(transform, _diContainer);
             weaponInstanceInstance = weaponObj.GetComponent<WeaponInstance>();
             weaponInstanceInstance.Initialize(gameObject, TargetLayer);
+            weaponInstanceInstance.SetWeaponData(prevData);
             weaponInstanceInstance.SetKnockbackForce(prevData.knockbackForce);
             weaponInstanceInstance.SetStaticParts(prevData.GetStaticParts(propBones, _diContainer));
             ConnectWeaponToHands(false, prevData, weaponInstanceInstance, trigger);
@@ -695,6 +696,22 @@ namespace Game
                 }
             }
 
+            // Возврат четверти импульса атакующему в противоположную сторону
+            if (damageMessage.knockbackForce > 0f && damageMessage.damager != null)
+            {
+                var attackerController = damageMessage.damager.GetComponent<HumanoidController>();
+                if (attackerController != null)
+                {
+                    var knockbackDir = (damageMessage.damageSource - transform.position).normalized;
+                    knockbackDir.y = 0f;
+                    if (knockbackDir.sqrMagnitude > 0.001f)
+                    {
+                        var returnForce = damageMessage.knockbackForce * 0.25f;
+                        attackerController.ApplyKnockback(knockbackDir * returnForce);
+                    }
+                }
+            }
+
             if (IsPlayer)
             {
                 _cameraSettings.Shake(0.5f, 0.2f, CinemachineImpulseDefinition.ImpulseShapes.Rumble, new Vector3(0.2f, 0, 0.5f));
@@ -744,6 +761,12 @@ namespace Game
             _knockbackVelocity         = Vector3.zero;
             _respawning                = true;
             _damageable.isInvulnerable = true;
+        }
+
+        public void ApplyKnockback(Vector3 knockbackVelocity)
+        {
+            _knockbackVelocity = knockbackVelocity;
+            _isGrounded = false;
         }
     }
 }
