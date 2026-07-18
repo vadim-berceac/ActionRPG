@@ -92,7 +92,7 @@ public class PatrolState : AsyncState
         
         if (StateMachine.Ctx.Target)
         {
-            await StateMachine.TransitionTo(StateMachine.ChaseState);
+            await StateMachine.TransitionTo(StateMachine.AlarmState);
             return;
         }
 

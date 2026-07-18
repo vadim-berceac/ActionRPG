@@ -20,6 +20,7 @@ public class EnemyBrain : MonoBehaviour, IInput
     [SerializeField] private HumanoidController humanoidController;
     [SerializeField] private Damageable damageable;
     [SerializeField] private float rotationSpeed;
+    [SerializeField] private Factions faction;
     [SerializeField] private EnemyBehaviorMode behaviorMode = EnemyBehaviorMode.Aggressive;
     [SerializeField] private PatrolMode patrolMode = PatrolMode.Patrol;
     [SerializeField] private Transform[] patrolPoints;
@@ -27,6 +28,7 @@ public class EnemyBrain : MonoBehaviour, IInput
     public AsyncStateMachine Fsm { get; private set; }
     public EnemyBehaviorMode BehaviorMode => behaviorMode;
     public PatrolMode PatrolMode => patrolMode;
+    public Factions Faction => faction;
     
     public bool InputBlocked { get; set; }
     public Vector2 MoveInput { get; set; }
@@ -64,7 +66,7 @@ public class EnemyBrain : MonoBehaviour, IInput
     private UniTask InitializeFsm()
     {
         Fsm = new AsyncStateMachine(new StateMachineContext(this, visionSystem, damageable,
-            transform, humanoidController, rotationSpeed, patrolPoints, behaviorMode, patrolMode));
+            transform, humanoidController, rotationSpeed, patrolPoints, behaviorMode, patrolMode, faction));
         return UniTask.CompletedTask;
     }
 }

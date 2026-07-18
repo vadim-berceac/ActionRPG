@@ -33,6 +33,9 @@ public class StateMachineContext : IDisposable
         ? 1 << NavMesh.GetAreaFromName("Walkable")
         : NavMesh.AllAreas;
 
+    public VisionSystem VisionSystem => _visionSystem;
+    public Factions Faction { get; private set; }
+
     private readonly VisionSystem _visionSystem;
     private readonly Damageable _self;
     private readonly HumanoidController _humanoidController;
@@ -45,7 +48,7 @@ public class StateMachineContext : IDisposable
 
     public StateMachineContext(IInput input, VisionSystem visionSystem, Damageable self, Transform transform,
         HumanoidController humanoidController, float rotationSpeed, Transform[] patrolWaypoints,
-        EnemyBehaviorMode behaviorMode, PatrolMode patrolMode)
+        EnemyBehaviorMode behaviorMode, PatrolMode patrolMode, Factions faction)
     {
         Input = input;
         _visionSystem = visionSystem;
@@ -55,6 +58,7 @@ public class StateMachineContext : IDisposable
         RotationSpeed = rotationSpeed;
         BehaviorMode = behaviorMode;
         PatrolMode = patrolMode;
+        Faction = faction;
         SetWaypoints(ConvertPath.ToVector(patrolWaypoints));
 
         if (patrolWaypoints != null && patrolWaypoints.Length > 0 && patrolWaypoints[0] != null)
@@ -143,13 +147,14 @@ public class StateMachineContext : IDisposable
             _visionSystem.AddCandidate(damagerCollider, damagerDamageable);
         }
 
-        // Neutral режим: при получении удара переходим в ChaseState, если ещё не в бою
+        // Neutral режим: при получении удара переходим в AlarmState, если ещё не в бою
         if (BehaviorMode == EnemyBehaviorMode.Neutral
             && _fsm != null
+            && _fsm.CurrentState != _fsm.AlarmState
             && _fsm.CurrentState != _fsm.ChaseState
             && _fsm.CurrentState != _fsm.AttackState)
         {
-            await _fsm.TransitionTo(_fsm.ChaseState);
+            await _fsm.TransitionTo(_fsm.AlarmState);
             return;
         }
 
@@ -163,10 +168,11 @@ public class StateMachineContext : IDisposable
         }
         // Не дёргаемся, если уже в бою
         else if (_fsm != null
+            && _fsm.CurrentState != _fsm.AlarmState
             && _fsm.CurrentState != _fsm.AttackState
             && _fsm.CurrentState != _fsm.ChaseState)
         {
-            await _fsm.TransitionTo(_fsm.ChaseState);
+            await _fsm.TransitionTo(_fsm.AlarmState);
         }
     }
 
@@ -238,6 +244,28 @@ public class StateMachineContext : IDisposable
         if (!_lastSeenTarget) return;
 
         _visionSystem.ClearLastKnownPosition(_lastSeenTarget);
+    }
+
+    public Damageable GetLastSeenTarget()
+    {
+        return _lastSeenTarget;
+    }
+
+    /// <summary>
+    /// Устанавливает цель извне (например, при получении тревоги от другого врага)
+    /// </summary>
+    public void SetAlarmTarget(Damageable target, Vector3 lastKnownPosition)
+    {
+        if (target == null) return;
+
+        _lastSeenTarget = target;
+        _visionSystem.SetLastKnownPosition(target, lastKnownPosition);
+
+        // Устанавливаем цель, если её нет или если новая цель отличается
+        if (Target == null || Target != target)
+        {
+            SetTarget(target);
+        }
     }
 
     public void Dispose()

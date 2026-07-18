@@ -211,13 +211,13 @@ public class GuardState : AsyncState
 
         if (StateMachine.Ctx.Target)
         {
-            await StateMachine.TransitionTo(StateMachine.ChaseState);
+            await StateMachine.TransitionTo(StateMachine.AlarmState);
             return;
         }
 
         if (StateMachine.Ctx.TryGetLastKnownTargetPosition(out _))
         {
-            await StateMachine.TransitionTo(StateMachine.ChaseState);
+            await StateMachine.TransitionTo(StateMachine.AlarmState);
             return;
         }
 

@@ -15,6 +15,7 @@ public class AsyncStateMachine : IDisposable
     public BlockState BlockState { get; private set; }
     public DeathState DeathState { get; private set; }
     public IdleWaitState IdleWaitState { get; private set; }
+    public AlarmState AlarmState { get; private set; }
 
     private CancellationTokenSource _stateTokenSource;
     private bool _isTransitioning;
@@ -31,6 +32,7 @@ public class AsyncStateMachine : IDisposable
         BlockState = new BlockState(this);
         DeathState = new DeathState(this);
         IdleWaitState = new IdleWaitState(this);
+        AlarmState = new AlarmState(this);
     }
 
     public async UniTask TransitionTo(IAsyncState newState)

@@ -7748,6 +7748,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 916299398146845268, guid: 188b330c5a675ec4a8017205775a47fc,
         type: 3}
+      propertyPath: faction
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 916299398146845268, guid: 188b330c5a675ec4a8017205775a47fc,
+        type: 3}
       propertyPath: patrolMode
       value: 1
       objectReference: {fileID: 0}
@@ -10215,6 +10220,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 347118900}
     m_Modifications:
+    - target: {fileID: 916299398146845268, guid: 188b330c5a675ec4a8017205775a47fc,
+        type: 3}
+      propertyPath: faction
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 916299398146845268, guid: 188b330c5a675ec4a8017205775a47fc,
         type: 3}
       propertyPath: patrolMode
@@ -17889,6 +17899,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 347118900}
     m_Modifications:
+    - target: {fileID: 916299398146845268, guid: 188b330c5a675ec4a8017205775a47fc,
+        type: 3}
+      propertyPath: faction
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 916299398146845268, guid: 188b330c5a675ec4a8017205775a47fc,
         type: 3}
       propertyPath: patrolMode
@@ -150038,6 +150053,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 347118900}
     m_Modifications:
+    - target: {fileID: 916299398146845268, guid: 188b330c5a675ec4a8017205775a47fc,
+        type: 3}
+      propertyPath: faction
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 916299398146845268, guid: 188b330c5a675ec4a8017205775a47fc,
         type: 3}
       propertyPath: 'patrolPoints.Array.data[0]'
