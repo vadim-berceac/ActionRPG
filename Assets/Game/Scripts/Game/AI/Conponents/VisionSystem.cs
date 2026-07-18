@@ -141,8 +141,26 @@ public class VisionSystem : MonoBehaviour
             if (col == null) continue;
 
             var targetPoint = col.bounds.center;
-            var isVisibleNow = !Physics.Linecast(eyePoint.position, targetPoint, obstacleMask, QueryTriggerInteraction.Ignore);
             var wasVisible = _visibleTargets.Contains(damageable);
+
+            // Основная проверка видимости через eyePoint
+            var isVisibleNow = !Physics.Linecast(eyePoint.position, targetPoint, obstacleMask, QueryTriggerInteraction.Ignore);
+
+            // Fallback: если eyePoint не видит цель из-за смещения, но цель рядом с центром персонажа
+            // (в радиусе closeRangeRadius) — считаем её видимой.
+            // Это компенсирует смещение eyePoint относительно капсулы персонажа.
+            if (!isVisibleNow)
+            {
+                var distanceToOwner = Vector3.Distance(owner.position, targetPoint);
+                if (distanceToOwner <= closeRangeRadius)
+                {
+                    // Дополнительно проверяем, что нет препятствий от центра персонажа до цели
+                    if (!Physics.Linecast(owner.position, targetPoint, obstacleMask, QueryTriggerInteraction.Ignore))
+                    {
+                        isVisibleNow = true;
+                    }
+                }
+            }
 
             if (isVisibleNow)
             {

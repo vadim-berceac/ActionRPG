@@ -6,7 +6,7 @@ using UnityEngine.AI;
 public class StateMachineContext : IDisposable
 {
     public IInput Input { get; private set; }
-    public Transform Transform  { get; private set; }
+    public Transform Transform { get; private set; }
     public Damageable Target { get; private set; }
     public float RotationSpeed { get; private set; }
     public Vector3[] PatrolWaypoints { get; private set; }
@@ -14,6 +14,12 @@ public class StateMachineContext : IDisposable
     public bool IsGrounded => _humanoidController.IsGrounded;
     public bool HasAdditionalWeapon => _humanoidController.HasAdditionalWeapon;
     public EnemyBehaviorMode BehaviorMode { get; private set; }
+    public PatrolMode PatrolMode { get; private set; }
+
+    public Vector3 GuardPosition => _guardPointTransform != null
+        ? _guardPointTransform.position
+        : _fixedGuardPosition;
+
     public float PreferredAttackDistance
     {
         get
@@ -26,7 +32,7 @@ public class StateMachineContext : IDisposable
     public readonly int WalkableAreaMask = NavMesh.GetAreaFromName("Walkable") != -1
         ? 1 << NavMesh.GetAreaFromName("Walkable")
         : NavMesh.AllAreas;
-    
+
     private readonly VisionSystem _visionSystem;
     private readonly Damageable _self;
     private readonly HumanoidController _humanoidController;
@@ -34,9 +40,12 @@ public class StateMachineContext : IDisposable
 
     private Damageable _lastSeenTarget;
     private int _defaultLayer;
-    
+    private Vector3 _fixedGuardPosition;
+    private Transform _guardPointTransform;
+
     public StateMachineContext(IInput input, VisionSystem visionSystem, Damageable self, Transform transform,
-        HumanoidController humanoidController, float rotationSpeed, Transform[] patrolWaypoints, EnemyBehaviorMode behaviorMode)
+        HumanoidController humanoidController, float rotationSpeed, Transform[] patrolWaypoints,
+        EnemyBehaviorMode behaviorMode, PatrolMode patrolMode)
     {
         Input = input;
         _visionSystem = visionSystem;
@@ -45,11 +54,22 @@ public class StateMachineContext : IDisposable
         Transform = transform;
         RotationSpeed = rotationSpeed;
         BehaviorMode = behaviorMode;
+        PatrolMode = patrolMode;
         SetWaypoints(ConvertPath.ToVector(patrolWaypoints));
+
+        if (patrolWaypoints != null && patrolWaypoints.Length > 0 && patrolWaypoints[0] != null)
+        {
+            _guardPointTransform = patrolWaypoints[0];
+            _fixedGuardPosition = transform.position;
+        }
+        else
+        {
+            _guardPointTransform = null;
+            _fixedGuardPosition = transform.position;
+        }
 
         _visionSystem.OnTargetReached += OnTargetReached;
         _self.OnDeath.AddListener(OnDeath);
-
         _self.OnDamageAttempted += OnDamageAttempted;
     }
 
@@ -57,7 +77,33 @@ public class StateMachineContext : IDisposable
     {
         _fsm = fsm;
     }
-    
+
+    public void SetGuardPosition(Vector3 position)
+    {
+        _guardPointTransform = null;
+        _fixedGuardPosition = position;
+    }
+
+    /// <summary>
+    /// Устанавливает цель. Не позволяет сбросить живую цель в null.
+    /// Мёртвая цель сбрасывается.
+    /// </summary>
+    private void SetTarget(Damageable newTarget)
+    {
+        // Никогда не сбрасываем живую цель
+        if (newTarget == null && Target != null && Target.currentHitPoints > 0)
+            return;
+
+        // Если цель умерла — сбрасываем и lastKnown позицию
+        if (newTarget == null && Target != null && Target.currentHitPoints <= 0)
+        {
+            ClearLastKnownTargetPosition();
+            _lastSeenTarget = null;
+        }
+
+        Target = newTarget;
+    }
+
     private void OnTargetReached(Damageable damageable)
     {
         // В Neutral режиме игнорируем обнаружение целей, пока не вступили в бой
@@ -67,7 +113,7 @@ public class StateMachineContext : IDisposable
             return;
         }
 
-        Target = damageable;
+        SetTarget(damageable);
 
         if (damageable)
         {
@@ -78,7 +124,6 @@ public class StateMachineContext : IDisposable
     private async void OnDamageAttempted(Damageable.DamageMessage message)
     {
         if (IsDead) return;
-
         if (_humanoidController.IsBlocking) return;
 
         var damager = message.damager;
@@ -86,13 +131,11 @@ public class StateMachineContext : IDisposable
 
         var damagerDamageable = damager.GetComponentInParent<Damageable>();
         if (!damagerDamageable) return;
-
-        if (damagerDamageable.currentHitPoints <= 0)
-            return;
+        if (damagerDamageable.currentHitPoints <= 0) return;
 
         _lastSeenTarget = damagerDamageable;
         _visionSystem.SetLastKnownPosition(damagerDamageable, message.damageSource);
-        Target = damagerDamageable;
+        SetTarget(damagerDamageable);
 
         var damagerCollider = damagerDamageable.GetComponent<Collider>();
         if (damagerCollider && !_visionSystem.HasCandidate(damagerCollider))
@@ -100,6 +143,7 @@ public class StateMachineContext : IDisposable
             _visionSystem.AddCandidate(damagerCollider, damagerDamageable);
         }
 
+        // Neutral режим: при получении удара переходим в ChaseState, если ещё не в бою
         if (BehaviorMode == EnemyBehaviorMode.Neutral
             && _fsm != null
             && _fsm.CurrentState != _fsm.ChaseState
@@ -109,6 +153,7 @@ public class StateMachineContext : IDisposable
             return;
         }
 
+        // Если мы в состоянии атаки и цель видна — уведомляем о контр-атаке
         if (_fsm != null && _fsm.CurrentState == _fsm.AttackState && _fsm.AttackState is AttackState attackState)
         {
             if (IsTargetVisible(damagerDamageable))
@@ -116,7 +161,7 @@ public class StateMachineContext : IDisposable
                 attackState.OnAttackDetected();
             }
         }
-       
+        // Не дёргаемся, если уже в бою
         else if (_fsm != null
             && _fsm.CurrentState != _fsm.AttackState
             && _fsm.CurrentState != _fsm.ChaseState)
@@ -128,10 +173,12 @@ public class StateMachineContext : IDisposable
     private void OnDeath()
     {
         _defaultLayer = _humanoidController.gameObject.layer;
-        
+
         IsDead = true;
 
         _visionSystem.ClearAllLastKnownPositions();
+        _lastSeenTarget = null;
+        SetTarget(null);
         _visionSystem.enabled = false;
         _humanoidController.gameObject.layer = 20;
         _humanoidController.AdditionalAttackEnd();
@@ -141,7 +188,7 @@ public class StateMachineContext : IDisposable
     private void OnRevive()
     {
         IsDead = false;
-        
+
         _visionSystem.enabled = true;
         _humanoidController.gameObject.layer = _defaultLayer;
     }
@@ -171,7 +218,19 @@ public class StateMachineContext : IDisposable
             return false;
         }
 
-        return _visionSystem.TryGetLastKnownPosition(_lastSeenTarget, out position);
+        if (_visionSystem.TryGetLastKnownPosition(_lastSeenTarget, out position))
+        {
+            return true;
+        }
+
+        if (_lastSeenTarget.Transform != null)
+        {
+            position = _lastSeenTarget.Transform.position;
+            return true;
+        }
+
+        position = default;
+        return false;
     }
 
     public void ClearLastKnownTargetPosition()
@@ -179,7 +238,6 @@ public class StateMachineContext : IDisposable
         if (!_lastSeenTarget) return;
 
         _visionSystem.ClearLastKnownPosition(_lastSeenTarget);
-        _lastSeenTarget = null;
     }
 
     public void Dispose()

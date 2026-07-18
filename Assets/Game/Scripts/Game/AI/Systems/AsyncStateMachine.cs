@@ -9,6 +9,7 @@ public class AsyncStateMachine : IDisposable
     public StateMachineContext Ctx { get; private set; }
 
     public PatrolState PatrolState { get; private set; }
+    public GuardState GuardState { get; private set; }
     public ChaseState ChaseState { get; private set; }
     public AttackState AttackState { get; private set; }
     public BlockState BlockState { get; private set; }
@@ -24,6 +25,7 @@ public class AsyncStateMachine : IDisposable
         Ctx = ctx;
 
         PatrolState = new PatrolState(this);
+        GuardState = new GuardState(this);
         ChaseState = new ChaseState(this);
         AttackState = new AttackState(this);
         BlockState = new BlockState(this);

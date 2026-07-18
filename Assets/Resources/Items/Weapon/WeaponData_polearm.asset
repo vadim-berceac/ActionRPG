@@ -41,4 +41,4 @@ MonoBehaviour:
   <StaticParts>k__BackingField: []
   knockbackForce: 10
   preferredDistance: 2.7
-  blockSound: {fileID: 8300000, guid: 0fcf9924f0a4b4d4fa08969181f04328, type: 3}
+  blockSound: {fileID: 8300000, guid: 8157ab1a852d12e48931c26264e30a2b, type: 3}

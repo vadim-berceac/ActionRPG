@@ -21,25 +21,27 @@ public class AttackState : AsyncState
     {
         await base.OnUpdate(ct);
 
-        while (!IsCancelled
-               && StateMachine.Ctx.Target
-               && !IsOutOfRange() && !StateMachine.Ctx.IsDead)
+        while (!IsCancelled && !StateMachine.Ctx.IsDead)
         {
+            // Если цель мертва или отсутствует — выходим
+            if (!StateMachine.Ctx.Target || StateMachine.Ctx.Target.currentHitPoints <= 0)
+                break;
+
+            // Если цель вышла за радиус атаки — переходим в ChaseState
+            if (IsOutOfRange())
+                break;
+
             AdjustApproach();
 
             var attackResult = await TryExecuteAttack(CancellationTokenSource.Token)
                 .SuppressCancellationThrow();
 
             if (attackResult) break;
-
             if (IsCancelled) break;
-            if (!StateMachine.Ctx.Target) break;
-            if (IsOutOfRange()) break;
 
-            var delayResult = await UniTask.Delay(200, cancellationToken: CancellationTokenSource.Token)
+            // Небольшая задержка между атаками, но с ранним выходом по условиям
+            await UniTask.Delay(200, cancellationToken: CancellationTokenSource.Token)
                 .SuppressCancellationThrow();
-
-            if (delayResult) break;
         }
 
         StopInput();
@@ -148,8 +150,10 @@ public class AttackState : AsyncState
             return;
         }
 
-        if (!StateMachine.Ctx.Target)
+        // Если цель мертва — сбрасываем и переходим в ожидание
+        if (!StateMachine.Ctx.Target || StateMachine.Ctx.Target.currentHitPoints <= 0)
         {
+            StateMachine.Ctx.ClearLastKnownTargetPosition();
             await StateMachine.TransitionTo(StateMachine.IdleWaitState);
             return;
         }

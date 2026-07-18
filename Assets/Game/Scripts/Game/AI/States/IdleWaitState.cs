@@ -19,16 +19,12 @@ public class IdleWaitState : AsyncState
     {
         await base.OnUpdate(ct);        
         
-        var waitDuration = Random.Range(3f, 15f);
+        var waitDuration = Random.Range(5f, 15f);
         var elapsed = 0f;
         Debug.Log($"Idle waiting for {waitDuration:F1} seconds...");
-        
-        // Ждем с проверкой появления цели каждый фрейм, а не разовым Delay.
-        // Это нужно чтобы ShouldInterrupt() сработал мгновенно, когда
-        // VisionSystem обнаружит новую цель и вызовет OnTargetReached.
+      
         while (elapsed < waitDuration && !IsCancelled)
         {
-            // Если цель появилась — прерываем ожидание немедленно
             if (StateMachine.Ctx.Target) break;
             
             var step = Mathf.Min(0.1f, waitDuration - elapsed);
@@ -76,6 +72,13 @@ public class IdleWaitState : AsyncState
             return;
         }
 
-        await StateMachine.TransitionTo(StateMachine.PatrolState);
+        if (StateMachine.Ctx.PatrolMode == PatrolMode.Guard)
+        {
+            await StateMachine.TransitionTo(StateMachine.GuardState);
+        }
+        else
+        {
+            await StateMachine.TransitionTo(StateMachine.PatrolState);
+        }
     }
 }

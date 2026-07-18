@@ -490,22 +490,17 @@ namespace Game
         private void PlayBlockSound()
         {
             AudioClip clip = null;
-            Vector3 playPosition = transform.position;
 
-            if (_additionalWeaponData != null)
+            if (_additionalWeaponData)
                 clip = _additionalWeaponData.blockSound;
 
-            if (clip == null && _primaryWeaponData != null)
+            if (!clip && _primaryWeaponData)
                 clip = _primaryWeaponData.blockSound;
 
-            if (clip == null) return;
+            if (!clip) return;
 
-            if (_additionalWeaponInstanceInstance != null)
-                playPosition = _additionalWeaponInstanceInstance.transform.position;
-            else if (_primaryWeaponInstanceInstance != null)
-                playPosition = _primaryWeaponInstanceInstance.transform.position;
-
-            AudioSource.PlayClipAtPoint(clip, playPosition);
+            blockAudioSource.clip = clip;
+            blockAudioSource.Play();
         }
 
         private void TimeoutToIdle()
