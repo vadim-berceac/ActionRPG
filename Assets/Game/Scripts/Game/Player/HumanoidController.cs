@@ -2,7 +2,6 @@ using UnityEngine;
 using System.Collections;
 using Game.Message;
 using Unity.Cinemachine;
-using UnityEngine.Serialization;
 using Zenject;
 
 namespace Game
@@ -60,7 +59,7 @@ namespace Game
         private float _verticalSpeed;
        
         private RangedAttackHandler _rangedAttackHandler;
-        private bool _previousShoot;
+        private bool _shootPressed;
 
         private IInput _input;
         private CharacterController _charCtrl;
@@ -507,40 +506,20 @@ namespace Game
 
         private void UpdateShoot()
         {
-            bool shootPressed = _input.Shoot;
-            _isShoot = shootPressed;
-            _animCache.SetShoot(shootPressed);
-
-            // стрельба по rising edge (по нажатию, а не каждый кадр удержания)
-            if (shootPressed && !_previousShoot)
-            {
-                PerformRangedAttack();
-            }
-
-            _previousShoot = shootPressed;
+            _shootPressed = _input.Shoot;
+            _isShoot = _shootPressed;
+            _animCache.SetShoot(_shootPressed);
         }
 
-        private void PerformRangedAttack()
+        /// <summary>
+        /// Вызывается через анимационное событие в момент выстрела.
+        /// </summary>
+        public void Shoot()
         {
             if (_rangedAttackHandler == null || !_rangedAttackHandler.IsValid)
                 return;
 
-            Vector3 targetPosition;
-
-            if (_targetFacing != null && _targetFacing.HasTargetInRange())
-            {
-                // стреляем в направлении ближайшей цели
-                Vector3 direction = _targetFacing.GetDirectionToNearestTarget();
-                if (direction != Vector3.zero)
-                {
-                    targetPosition = transform.position + direction * 20f;
-                    _rangedAttackHandler.Shoot(targetPosition);
-                    return;
-                }
-            }
-
-            // стреляем прямо перед собой
-            targetPosition = transform.position + transform.forward * 20f;
+            var targetPosition = transform.position + transform.forward * 20f;
             _rangedAttackHandler.Shoot(targetPosition);
         }
 
@@ -728,15 +707,13 @@ namespace Game
             if (!_isBlocking || !IsFacingDamageSource(damageMessage.damageSource))
                 return false;
 
-            // Защита от многократного срабатывания за один FixedUpdate
             if (_blockTriggeredThisFixedUpdate)
-                return true; // всё ещё блокируем урон, но не спамим звук/анимацию
+                return true; 
 
             _blockTriggeredThisFixedUpdate = true;
             PlayBlockSound();
             _animCache.TriggerBlock();
 
-            // Отталкивание при блоке — 1/4 от силы удара
             if (damageMessage.knockbackForce > 0f)
             {
                 var knockbackDir = (transform.position - damageMessage.damageSource).normalized;
@@ -748,7 +725,6 @@ namespace Game
                 }
             }
 
-            // Возврат четверти импульса атакующему в противоположную сторону
             if (damageMessage.knockbackForce > 0f && damageMessage.damager != null)
             {
                 var attackerController = damageMessage.damager.GetComponent<HumanoidController>();
@@ -774,7 +750,6 @@ namespace Game
 
         private void Damaged(Damageable.DamageMessage damageMessage)
         {
-            // Защита от многократного срабатывания за один FixedUpdate
             if (_damageTriggeredThisFixedUpdate) return;
 
             _damageTriggeredThisFixedUpdate = true;
