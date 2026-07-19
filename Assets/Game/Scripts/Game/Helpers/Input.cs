@@ -10,6 +10,7 @@ public interface IInput
     public bool Attack1 { get; set; }
     public bool Attack2 { get; set; }
     public bool Block { get; set; }
+    public bool Shoot { get; set; }
     
     public bool HaveControl() => !InputBlocked;
     public void ReleaseControl() => InputBlocked = true;

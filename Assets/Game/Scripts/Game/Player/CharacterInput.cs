@@ -8,6 +8,9 @@ public interface ICharacterInput
     public Vector2 Look { get; set; }
     public bool Jump { get; set; }
     public bool Attack1 { get; set; }
+    public bool Attack2 { get; set; }
+    public bool Block { get; set; }
+    public bool Shoot { get; set; }
 }
 
 public class PlayerNewInput : ICharacterInput, IDisposable
@@ -18,6 +21,7 @@ public class PlayerNewInput : ICharacterInput, IDisposable
     public bool Attack1 { get; set; }
     public bool Attack2 { get; set; }
     public bool Block { get; set; }
+    public bool Shoot { get; set; }
 
     public event Action Interact;
     public event Action Pause;
@@ -32,6 +36,7 @@ public class PlayerNewInput : ICharacterInput, IDisposable
     private readonly InputAction _interactAction;
     private readonly InputAction _pauseAction;
     private readonly InputAction _inventoryAction;
+    private readonly InputAction _shootAction;
 
     private PlayerNewInput(InputActionAsset actionAsset)
     {
@@ -44,6 +49,7 @@ public class PlayerNewInput : ICharacterInput, IDisposable
         _interactAction = actionAsset.FindAction("Interact");
         _pauseAction = actionAsset.FindAction("Pause");
         _inventoryAction = actionAsset.FindAction("Inventory");
+        _shootAction = actionAsset.FindAction("Shoot");
         
         Subscribe();
         
@@ -69,6 +75,9 @@ public class PlayerNewInput : ICharacterInput, IDisposable
         
         _blockAction.started += OnBlock;
         _blockAction.canceled += OnBlockCanceled;
+
+        _shootAction.started += OnShoot;
+        _shootAction.canceled += OnShootCanceled;
         
         _interactAction.started += OnInteract;
         _pauseAction.performed += OnPause;
@@ -94,6 +103,9 @@ public class PlayerNewInput : ICharacterInput, IDisposable
         
         _blockAction.started -= OnBlock;
         _blockAction.canceled -= OnBlockCanceled;
+        
+        _shootAction.started -= OnShoot;
+        _shootAction.canceled -= OnShootCanceled;
         
         _interactAction.started -= OnInteract;
         _pauseAction.performed -= OnPause;
@@ -158,6 +170,16 @@ public class PlayerNewInput : ICharacterInput, IDisposable
     private void OnBlockCanceled(InputAction.CallbackContext context)
     {
         Block = false;
+    }
+
+    private void OnShoot(InputAction.CallbackContext context)
+    {
+        Shoot = true;
+    }
+    
+    private void OnShootCanceled(InputAction.CallbackContext context)
+    {
+        Shoot = false;
     }
 
     private void OnInteract(InputAction.CallbackContext context)

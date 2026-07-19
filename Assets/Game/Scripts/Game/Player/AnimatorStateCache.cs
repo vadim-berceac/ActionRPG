@@ -103,6 +103,7 @@ namespace Game
 
         public void SetGrounded(bool value) => _animator.SetBool(_hashGrounded, value);
         public void SetBlock(bool value) => _animator.SetBool(Block, value);
+        public void SetShoot(bool value) => _animator.SetBool(Shoot, value);
 
         public void SetInputDetected(bool value) => _animator.SetBool(_hashInputDetected, value);
 

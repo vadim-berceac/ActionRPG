@@ -36,7 +36,7 @@ MonoBehaviour:
   - 2HSwordCombo2
   - 2HSwordCombo3
   - 2HSwordCombo4
-  <AnimationSetIndex>k__BackingField: 1
+  <AnimationSetIndex>k__BackingField: 8
   <Wear>k__BackingField: 3
   <StaticParts>k__BackingField: []
   knockbackForce: 5

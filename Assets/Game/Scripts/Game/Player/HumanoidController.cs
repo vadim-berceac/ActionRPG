@@ -64,6 +64,7 @@ namespace Game
         private readonly Collider[] _overlapResult = new Collider[8];
         private bool _inAttack;
         private bool _isBlocking;
+        private bool _isShoot;
         private bool _blockTriggeredThisFixedUpdate;
         private bool _damageTriggeredThisFixedUpdate;
         private Damageable _damageable;
@@ -158,6 +159,7 @@ namespace Game
             _animCache.SetStateTime();
             ProcessAttack();
             UpdateBlocking();
+            UpdateShoot();
             CalculateForwardMovement();
             CalculateVerticalMovement();
             SetTargetRotation();
@@ -490,6 +492,12 @@ namespace Game
         {
             _isBlocking = _input.Block;
             _animCache.SetBlock(_input.Block);
+        }
+
+        private void UpdateShoot()
+        {
+            _isShoot = _input.Shoot;
+            _animCache.SetShoot(_input.Shoot);
         }
 
         public bool IsBlocking => _isBlocking;

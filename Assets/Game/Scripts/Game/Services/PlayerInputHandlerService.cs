@@ -47,6 +47,12 @@ public class PlayerInputHandlerService : IInput
         get => !InputBlocked && _input.Block;
         set {}
     }
+
+    public bool Shoot
+    {
+        get => !InputBlocked && _input.Shoot;
+        set {}
+    }
     
     public bool HaveControl() => !InputBlocked;
     public void ReleaseControl() => InputBlocked = true;
