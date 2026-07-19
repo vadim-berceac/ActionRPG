@@ -9,6 +9,7 @@ public class GuardState : AsyncState
     private const float GuardExtraStopDistance = 0.5f;
     private Vector3? _fallbackGuardPosition;
     private bool _hasFallbackPosition;
+    private Vector3 _lastGuardPosition;
 
     public GuardState(AsyncStateMachine stateMachine) : base(stateMachine)
     {
@@ -19,6 +20,7 @@ public class GuardState : AsyncState
         await base.OnEnter(ct);
         _fallbackGuardPosition = null;
         _hasFallbackPosition = false;
+        _lastGuardPosition = StateMachine.Ctx.GuardPosition;
         Debug.Log("Entering Guard State...");
     }
 
@@ -26,132 +28,80 @@ public class GuardState : AsyncState
     {
         await base.OnUpdate(ct);
 
-        var updateTimeout = TimeSpan.FromSeconds(15);
-        var startTime = DateTime.UtcNow;
-
-        while (!IsCancelled)
+        // Если появился враг — выходим, HandleTransition решит куда переключиться
+        if (StateMachine.Ctx.Target)
         {
-            // Защита от зависания в общем цикле
-            if (DateTime.UtcNow - startTime > updateTimeout)
-            {
-                Debug.LogWarning("GuardState update timeout - forcing transition");
-                break;
-            }
-
-            // Получаем актуальную позицию точки охраны каждый кадр
-            var guardPosition = StateMachine.Ctx.GuardPosition;
-            var targetPosition = ResolveTargetPosition(guardPosition);
-
-            // Если не можем идти к цели — стоим и ждём
-            if (targetPosition == null)
-            {
-                StopInput();
-                await WaitForTargetOrLeave(ct);
-                continue;
-            }
-
-            // Если мы уже на комфортном расстоянии от точки — ждём, но следим за её движением
-            if (IsWithinStopDistance(targetPosition.Value))
-            {
-                StopInput();
-                await WaitForTargetOrLeave(ct);
-                // После ожидания — возвращаемся в начало цикла и перепроверяем позицию
-                continue;
-            }
-
-            // Идём к точке
-            await MoveToTarget(ct, targetPosition.Value);
-
             StopInput();
+            await HandleTransition();
+            return;
         }
 
-        await HandleTransition();
-    }
+        // Получаем актуальную позицию точки охраны каждый кадр
+        var guardPosition = StateMachine.Ctx.GuardPosition;
+        var targetPosition = ResolveTargetPosition(guardPosition);
 
-    /// <summary>
-    /// Ожидание цели, с постоянной проверкой актуальной позиции точки охраны.
-    /// Если точка ушла за пределы stopDistance — выходим.
-    /// </summary>
-    private async UniTask WaitForTargetOrLeave(CancellationToken ct)
-    {
-        var waitTimeout = TimeSpan.FromSeconds(10);
-        var waitStartTime = DateTime.UtcNow;
-        
-        while (!IsCancelled)
+        // Если не можем идти к цели или уже на месте — стоим
+        if (targetPosition == null || IsWithinStopDistance(targetPosition.Value))
         {
-            // Защита от зависания при ожидании
-            if (DateTime.UtcNow - waitStartTime > waitTimeout)
-            {
-                Debug.LogWarning("WaitForTargetOrLeave timeout");
-                break;
-            }
-
-            if (StateMachine.Ctx.Target) break;
-
-            // Получаем актуальную позицию точки охраны каждый кадр
-            var currentGuardPos = StateMachine.Ctx.GuardPosition;
-
-            // Проверяем, не ушла ли точка охраны слишком далеко
-            if (!IsWithinStopDistance(currentGuardPos))
-                break;
-
-            await UniTask.Yield(PlayerLoopTiming.Update, ct);
-        }
-    }
-
-    private async UniTask MoveToTarget(CancellationToken ct, Vector3 target)
-    {
-        var moveTimeout = TimeSpan.FromSeconds(20);
-        var moveStartTime = DateTime.UtcNow;
-        
-        while (!IsCancelled && !IsWithinStopDistance(target))
-        {
-            // Защита от зависания при движении к цели
-            if (DateTime.UtcNow - moveStartTime > moveTimeout)
-            {
-                Debug.LogWarning("MoveToTarget timeout - cannot reach target");
-                break;
-            }
-
-            if (StateMachine.Ctx.Target) break;
-
-            var currentPos = StateMachine.Ctx.Transform.position;
-
-            if (!currentPos.TryGetPathTo(target, StateMachine.Ctx.WalkableAreaMask, out var corners))
-            {
-                StopInput();
-                await UniTask.Delay(250, cancellationToken: CancellationTokenSource.Token)
-                    .Timeout(TimeSpan.FromSeconds(1))
-                    .SuppressCancellationThrow();
-                return;
-            }
-
-            var moveResult = false;
-            for (var i = 1; i < corners.Length; i++)
-            {
-                if (IsCancelled) break;
-                if (StateMachine.Ctx.Target) break;
-                if (IsWithinStopDistance(target)) break;
-
-                var corner = corners[i];
-                moveResult = await AIActions.MoveTowardsAsync(
-                    corner, CancellationTokenSource.Token, StateMachine)
-                    .SuppressCancellationThrow();
-
-                if (moveResult) break;
-            }
-
             StopInput();
-            if (moveResult) break;
+            return;
         }
+
+        // Прямое движение к цели — без блокирующих вызовов MoveTowardsAsync
+        // Каждый кадр пересчитываем направление
+        var targetPos = targetPosition.Value;
+        var currentPos = StateMachine.Ctx.Transform.position;
+        var toTarget = targetPos - currentPos;
+        toTarget.y = 0f;
+        var distance = toTarget.magnitude;
+
+        if (distance <= 0.01f)
+        {
+            StopInput();
+            return;
+        }
+
+        // Пытаемся построить путь NavMesh, чтобы не упереться в стены
+        if (currentPos.TryGetPathTo(targetPos, StateMachine.Ctx.WalkableAreaMask, out var corners) && corners.Length > 1)
+        {
+            // Идём к самому дальнему видимому углу
+            var targetCorner = corners[corners.Length - 1];
+            for (var i = corners.Length - 1; i >= 1; i--)
+            {
+                if (!NavMesh.Raycast(currentPos, corners[i], out _, StateMachine.Ctx.WalkableAreaMask))
+                {
+                    targetCorner = corners[i];
+                    break;
+                }
+            }
+
+            toTarget = targetCorner - currentPos;
+            toTarget.y = 0f;
+            distance = toTarget.magnitude;
+        }
+
+        var yaw = Mathf.Atan2(toTarget.x, toTarget.z) * Mathf.Rad2Deg;
+        StateMachine.Ctx.Input.RotationYaw = yaw;
+
+        var speedFactor = Mathf.Clamp(distance / 2f, 0.3f, 1f);
+        StateMachine.Ctx.Input.MoveInput = new Vector2(0f, speedFactor);
     }
 
     /// <summary>
     /// Возвращает целевую позицию для движения.
     /// Если оригинальная точка охраны недостижима — ищет ближайшую NavMesh позицию.
+    /// При изменении оригинальной guardPosition сбрасывает закешированный fallback.
     /// </summary>
     private Vector3? ResolveTargetPosition(Vector3 guardPosition)
     {
+        // Если guardPosition изменилась — сбрасываем fallback и пересчитываем
+        if (guardPosition != _lastGuardPosition)
+        {
+            _hasFallbackPosition = false;
+            _fallbackGuardPosition = null;
+            _lastGuardPosition = guardPosition;
+        }
+
         if (_hasFallbackPosition && _fallbackGuardPosition.HasValue)
             return _fallbackGuardPosition.Value;
 
