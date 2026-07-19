@@ -46,6 +46,12 @@ public class StateMachineContext : IDisposable
     private Vector3 _fixedGuardPosition;
     private Transform _guardPointTransform;
 
+    /// <summary>
+    /// Флаг, устанавливаемый при получении урона. Сбрасывается при входе в AlarmState.
+    /// Используется в ChaseState для принудительного перезапуска преследования.
+    /// </summary>
+    public bool DamageTakenRecently { get; set; }
+
     public StateMachineContext(IInput input, VisionSystem visionSystem, Damageable self, Transform transform,
         HumanoidController humanoidController, float rotationSpeed, Transform[] patrolWaypoints,
         EnemyBehaviorMode behaviorMode, PatrolMode patrolMode, Factions faction)
@@ -147,32 +153,27 @@ public class StateMachineContext : IDisposable
             _visionSystem.AddCandidate(damagerCollider, damagerDamageable);
         }
 
-        // Neutral режим: при получении удара переходим в AlarmState, если ещё не в бою
-        if (BehaviorMode == EnemyBehaviorMode.Neutral
-            && _fsm != null
-            && _fsm.CurrentState != _fsm.AlarmState
-            && _fsm.CurrentState != _fsm.ChaseState
-            && _fsm.CurrentState != _fsm.AttackState)
+        // Устанавливаем флаг получения урона. ChaseState проверит его и перезапустит
+        // преследование с актуальной позицией цели.
+        DamageTakenRecently = true;
+
+        // При получении удара всегда переводим врага в AlarmState, если он не в атаке и не мёртв.
+        // Это критически важно для "застрявших" врагов: если враг в ChaseState, но не может
+        // достигнуть цели (устаревшая lastKnown позиция, физическое выталкивание и т.д.),
+        // удар по нему должен "разбудить" его и заставить перезапустить преследование.
+        if (_fsm != null
+            && _fsm.CurrentState != _fsm.AttackState
+            && _fsm.CurrentState != _fsm.DeathState)
         {
             await _fsm.TransitionTo(_fsm.AlarmState);
-            return;
         }
-
         // Если мы в состоянии атаки и цель видна — уведомляем о контр-атаке
-        if (_fsm != null && _fsm.CurrentState == _fsm.AttackState && _fsm.AttackState is AttackState attackState)
+        else if (_fsm != null && _fsm.CurrentState == _fsm.AttackState && _fsm.AttackState is AttackState attackState)
         {
             if (IsTargetVisible(damagerDamageable))
             {
                 attackState.OnAttackDetected();
             }
-        }
-        // Не дёргаемся, если уже в бою
-        else if (_fsm != null
-            && _fsm.CurrentState != _fsm.AlarmState
-            && _fsm.CurrentState != _fsm.AttackState
-            && _fsm.CurrentState != _fsm.ChaseState)
-        {
-            await _fsm.TransitionTo(_fsm.AlarmState);
         }
     }
 
@@ -209,10 +210,28 @@ public class StateMachineContext : IDisposable
         return _visionSystem.IsTargetVisible(target);
     }
 
+    public bool IsTargetInRange(Damageable target)
+    {
+        return _visionSystem.IsTargetInRange(target);
+    }
+
     public bool TryGetLastKnownTargetPosition(out Vector3 position)
     {
+        // Если _lastSeenTarget сброшен (например, через ClearLastKnownTargetPosition),
+        // но Target всё ещё жив — используем Target как lastSeen.
+        // Это критически важно для целей, полученных через AlarmState:
+        // после ClearLastKnownTargetPosition _lastSeenTarget становится null,
+        // TryGetLastKnownTargetPosition возвращает false, и ChaseState переходит
+        // в IdleWaitState, хотя цель жива и должна преследоваться.
         if (!_lastSeenTarget)
         {
+            if (Target != null && Target.currentHitPoints > 0)
+            {
+                _lastSeenTarget = Target;
+                position = Target.Transform.position;
+                return true;
+            }
+
             position = default;
             return false;
         }
@@ -254,17 +273,26 @@ public class StateMachineContext : IDisposable
     /// <summary>
     /// Устанавливает цель извне (например, при получении тревоги от другого врага)
     /// </summary>
-    public void SetAlarmTarget(Damageable target, Vector3 lastKnownPosition)
+    public void SetAlarmTarget(Damageable target)
     {
         if (target == null) return;
 
         _lastSeenTarget = target;
-        _visionSystem.SetLastKnownPosition(target, lastKnownPosition);
+        _visionSystem.SetLastKnownPosition(target, target.Transform.position);
 
         // Устанавливаем цель, если её нет или если новая цель отличается
         if (Target == null || Target != target)
         {
             SetTarget(target);
+        }
+
+        // Важно: добавляем коллайдер цели в VisionSystem, чтобы он мог отслеживать
+        // её видимость. Без этого IsTargetVisible всегда будет возвращать false
+        // для целей, полученных через AlarmState, и враг не сможет их атаковать.
+        var targetCollider = target.GetComponent<Collider>();
+        if (targetCollider != null && !_visionSystem.HasCandidate(targetCollider))
+        {
+            _visionSystem.AddCandidate(targetCollider, target);
         }
     }
 

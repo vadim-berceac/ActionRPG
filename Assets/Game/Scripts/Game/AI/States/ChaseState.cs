@@ -19,7 +19,24 @@ public class ChaseState : AsyncState
     {
         await base.OnUpdate(ct);
 
-        if (StateMachine.Ctx.Target != null && StateMachine.Ctx.IsTargetVisible(StateMachine.Ctx.Target))
+        // Если враг получил удар — принудительно перезапускаем преследование.
+        if (StateMachine.Ctx.DamageTakenRecently)
+        {
+            StateMachine.Ctx.DamageTakenRecently = false;
+        }
+
+        // Всегда обновляем lastKnown позицию из Target, если он жив.
+        if (StateMachine.Ctx.Target != null && StateMachine.Ctx.Target.currentHitPoints > 0)
+        {
+            StateMachine.Ctx.VisionSystem.SetLastKnownPosition(
+                StateMachine.Ctx.Target,
+                StateMachine.Ctx.Target.Transform.position);
+        }
+
+        // Если цель в радиусе обнаружения — преследуем напрямую.
+        // Не ждём IsTargetVisible (line-of-sight + гистерезис),
+        // так как цель могла быть получена через AlarmState.
+        if (StateMachine.Ctx.Target != null && StateMachine.Ctx.IsTargetInRange(StateMachine.Ctx.Target))
         {
             await DirectChase(ct);
             await HandleTransition();
@@ -30,6 +47,14 @@ public class ChaseState : AsyncState
                && StateMachine.Ctx.TryGetLastKnownTargetPosition(out var destination)
                && !IsWithinStopDistance(destination))
         {
+            // Пока идём к lastKnown позиции, проверяем, не появилась ли цель в радиусе триггера
+            if (StateMachine.Ctx.Target != null && StateMachine.Ctx.IsTargetInRange(StateMachine.Ctx.Target))
+            {
+                await DirectChase(ct);
+                await HandleTransition();
+                return;
+            }
+
             if (!StateMachine.Ctx.Transform.position.TryGetPathTo(
                     destination, StateMachine.Ctx.WalkableAreaMask, out var corners))
             {
@@ -90,18 +115,8 @@ public class ChaseState : AsyncState
 
     private async UniTask DirectChase(CancellationToken ct)
     {
-        var chaseTimeout = TimeSpan.FromSeconds(10);
-        var chaseStartTime = DateTime.UtcNow;
-        
         while (!IsCancelled)
         {
-            // Защита от зависания в прямом преследовании
-            if (DateTime.UtcNow - chaseStartTime > chaseTimeout)
-            {
-                Debug.LogWarning("DirectChase timeout - forcing exit");
-                break;
-            }
-
             var target = StateMachine.Ctx.Target;
             if (target == null || target.currentHitPoints <= 0) break;
 
@@ -109,6 +124,10 @@ public class ChaseState : AsyncState
             var stopDistance = StateMachine.Ctx.PreferredAttackDistance;
 
             if (IsWithinStopDistance(targetPosition)) break;
+
+            // Обновляем lastKnown позицию цели, чтобы другие враги, получившие
+            // тревогу через AlarmState, могли идти к актуальной позиции
+            StateMachine.Ctx.VisionSystem.SetLastKnownPosition(target, targetPosition);
 
             var toTarget = targetPosition - StateMachine.Ctx.Transform.position;
             toTarget.y = 0f;
@@ -214,12 +233,15 @@ public class ChaseState : AsyncState
         }
 
         var target = StateMachine.Ctx.Target;
-        if (target != null
-            && target.currentHitPoints > 0
-            && IsWithinStopDistance(target.Transform.position))
+        if (target != null && target.currentHitPoints > 0)
         {
-            await StateMachine.TransitionTo(StateMachine.AttackState);
-            return;
+            // Если цель в радиусе атаки или в радиусе обнаружения — атакуем.
+            // AttackState сам решит, когда наносить удар (AdjustApproach подведёт ближе).
+            if (IsWithinStopDistance(target.Transform.position) || StateMachine.Ctx.IsTargetInRange(target))
+            {
+                await StateMachine.TransitionTo(StateMachine.AttackState);
+                return;
+            }
         }
 
         if (target != null && target.currentHitPoints <= 0)

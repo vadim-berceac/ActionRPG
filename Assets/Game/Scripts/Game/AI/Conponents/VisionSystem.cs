@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game;
@@ -17,7 +18,8 @@ public class VisionSystem : MonoBehaviour
     [SerializeField] private float visionCheckInterval = 0.15f;
     [SerializeField] private int hysteresisChecks = 2;
 
-    [Header("Close-Range Failsafe")]
+    [Header("Detection")]
+    [SerializeField] private float triggerRadius = 10f;
     [SerializeField] private float closeRangeRadius = 2f;
 
     public event Action<Damageable> OnTargetReached;
@@ -32,7 +34,10 @@ public class VisionSystem : MonoBehaviour
     private readonly Dictionary<Damageable, Vector3> _lastKnownPositions = new();
 
     private readonly Collider[] _closeRangeBuffer = new Collider[8];
+    private readonly Collider[] _triggerCheckBuffer = new Collider[32];
+    private readonly Collider[] _rangeCheckBuffer = new Collider[32];
     private readonly List<Collider> _pendingRemoval = new();
+    private readonly List<KeyValuePair<Collider, Damageable>> _candidatesSnapshot = new();
 
     private CancellationTokenSource _cts;
 
@@ -83,10 +88,38 @@ public class VisionSystem : MonoBehaviour
     {
         while (!token.IsCancellationRequested)
         {
-            UpdateCloseRangeCandidates();
-            CheckVisibility();
-            RemoveStaleCandidates();
+            try
+            {
+                UpdateCloseRangeCandidates();
+                RemoveStaleCandidates();
+                CheckVisibility();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[VisionSystem] Error in vision loop: {ex}");
+            }
+
             await UniTask.Delay(TimeSpan.FromSeconds(visionCheckInterval), cancellationToken: token);
+        }
+    }
+
+    private void SyncTriggerZone()
+    {
+        var count = Physics.OverlapSphereNonAlloc(owner.position, triggerRadius, _triggerCheckBuffer,
+            humanoidController.TargetLayer, QueryTriggerInteraction.Collide);
+
+        for (var i = 0; i < count; i++)
+        {
+            var col = _triggerCheckBuffer[i];
+            if (col == null) continue;
+            if (!IsValidTarget(col, out var damageable)) continue;
+
+            _inTriggerZone.Add(col);
+
+            if (!_candidates.ContainsKey(col))
+            {
+                _candidates[col] = damageable;
+            }
         }
     }
 
@@ -112,9 +145,11 @@ public class VisionSystem : MonoBehaviour
 
     private void RemoveStaleCandidates()
     {
+        SyncTriggerZone();
+
         _pendingRemoval.Clear();
 
-        foreach (var col in _candidates.Keys)
+        foreach (var col in _candidates.Keys.ToArray())
         {
             if (col != null && (_inTriggerZone.Contains(col) || _closeRangeThisTick.Contains(col)))
                 continue;
@@ -124,6 +159,9 @@ public class VisionSystem : MonoBehaviour
 
         foreach (var col in _pendingRemoval)
         {
+            if (col != null && (_inTriggerZone.Contains(col) || _closeRangeThisTick.Contains(col)))
+                continue;
+
             _candidates.Remove(col, out var damageable);
 
             _visibleStreak.Remove(damageable);
@@ -136,25 +174,23 @@ public class VisionSystem : MonoBehaviour
 
     private void CheckVisibility()
     {
-        foreach (var (col, damageable) in _candidates)
+        _candidatesSnapshot.Clear();
+        _candidatesSnapshot.AddRange(_candidates);
+
+        foreach (var (col, damageable) in _candidatesSnapshot)
         {
             if (col == null) continue;
 
             var targetPoint = col.bounds.center;
             var wasVisible = _visibleTargets.Contains(damageable);
 
-            // Основная проверка видимости через eyePoint
             var isVisibleNow = !Physics.Linecast(eyePoint.position, targetPoint, obstacleMask, QueryTriggerInteraction.Ignore);
 
-            // Fallback: если eyePoint не видит цель из-за смещения, но цель рядом с центром персонажа
-            // (в радиусе closeRangeRadius) — считаем её видимой.
-            // Это компенсирует смещение eyePoint относительно капсулы персонажа.
             if (!isVisibleNow)
             {
                 var distanceToOwner = Vector3.Distance(owner.position, targetPoint);
                 if (distanceToOwner <= closeRangeRadius)
                 {
-                    // Дополнительно проверяем, что нет препятствий от центра персонажа до цели
                     if (!Physics.Linecast(owner.position, targetPoint, obstacleMask, QueryTriggerInteraction.Ignore))
                     {
                         isVisibleNow = true;
@@ -191,6 +227,23 @@ public class VisionSystem : MonoBehaviour
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Проверяет, находится ли цель в радиусе обнаружения.
+    /// В отличие от IsTargetVisible, не требует line-of-sight и гистерезиса.
+    /// Используется для определения, может ли враг начать преследование цели напрямую.
+    /// 
+    /// Использует Vector3.Distance с _triggerRadius — это надёжно и не зависит
+    /// от состояния триггер-коллайдера или _candidates.
+    /// </summary>
+    public bool IsTargetInRange(Damageable target)
+    {
+        if (target == null) return false;
+        if (target.Transform == null) return false;
+
+        var distance = Vector3.Distance(owner.position, target.Transform.position);
+        return distance <= triggerRadius;
     }
 
     public bool IsTargetVisible(Damageable target)

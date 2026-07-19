@@ -16,39 +16,39 @@ public class AlarmState : AsyncState
         await base.OnEnter(ct);
         Debug.Log("Entering Alarm State...");
 
-        if (StateMachine.Ctx.TryGetLastKnownTargetPosition(out var alarmPosition))
+        // Сбрасываем флаг получения урона — AlarmState обработал его
+        StateMachine.Ctx.DamageTakenRecently = false;
+
+        var targetToShare = StateMachine.Ctx.GetLastSeenTarget();
+
+        var colliderCount = Physics.OverlapSphereNonAlloc(
+            StateMachine.Ctx.Transform.position,
+            20f,
+            _overlapBuffer
+        );
+
+        for (int i = 0; i < colliderCount; i++)
         {
-            var targetToShare = StateMachine.Ctx.GetLastSeenTarget();
+            var collider = _overlapBuffer[i];
+            if (collider == null) continue;
 
-            var colliderCount = Physics.OverlapSphereNonAlloc(
-                StateMachine.Ctx.Transform.position,
-                20f,
-                _overlapBuffer
-            );
-
-            for (int i = 0; i < colliderCount; i++)
+            var otherEnemyBrain = collider.GetComponentInParent<EnemyBrain>();
+            if (otherEnemyBrain != null &&
+                otherEnemyBrain != StateMachine.Ctx.Input as EnemyBrain &&
+                otherEnemyBrain.Faction == StateMachine.Ctx.Faction)
             {
-                var collider = _overlapBuffer[i];
-                if (collider == null) continue;
-
-                var otherEnemyBrain = collider.GetComponentInParent<EnemyBrain>();
-                if (otherEnemyBrain != null &&
-                    otherEnemyBrain != StateMachine.Ctx.Input as EnemyBrain &&
-                    otherEnemyBrain.Faction == StateMachine.Ctx.Faction)
+                var otherFsm = otherEnemyBrain.Fsm;
+                if (otherFsm != null)
                 {
-                    var otherFsm = otherEnemyBrain.Fsm;
-                    if (otherFsm != null)
+                    var otherCtx = otherFsm.Ctx;
+                    if (otherCtx.Target == null && !otherCtx.TryGetLastKnownTargetPosition(out _))
                     {
-                        var otherCtx = otherFsm.Ctx;
-                        if (otherCtx.Target == null && !otherCtx.TryGetLastKnownTargetPosition(out _))
-                        {
-                            otherCtx.SetAlarmTarget(targetToShare, alarmPosition);
+                        otherCtx.SetAlarmTarget(targetToShare);
 
-                            if (otherFsm.CurrentState != otherFsm.AlarmState && !otherFsm.IsTransitioning())
-                            {
-                                // Запускаем переход асинхронно, не блокируя текущий AlarmState
-                                TransitionWithErrorHandling(otherFsm, otherFsm.AlarmState).Forget();
-                            }
+                        if (otherFsm.CurrentState != otherFsm.AlarmState && !otherFsm.IsTransitioning())
+                        {
+                            // Запускаем переход асинхронно, не блокируя текущий AlarmState
+                            TransitionWithErrorHandling(otherFsm, otherFsm.AlarmState).Forget();
                         }
                     }
                 }
