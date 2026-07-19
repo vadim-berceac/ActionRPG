@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using Game.Message;
 using Unity.Cinemachine;
+using UnityEngine.Serialization;
 using Zenject;
 
 namespace Game
@@ -13,6 +14,7 @@ namespace Game
     {
         [field: SerializeField] public bool IsPlayer { get; private set; }
         [field: SerializeField] public LayerMask TargetLayer { get; private set; }
+        [field: SerializeField] public RangeWeapon RangeWeaponRoot { get; private set; }
         public bool Respawning => _respawning;
 
         public float maxForwardSpeed = 8f;
@@ -56,6 +58,10 @@ namespace Game
         private float _desiredForwardSpeed;
         private float _forwardSpeed;
         private float _verticalSpeed;
+       
+        private RangedAttackHandler _rangedAttackHandler;
+        private bool _previousShoot;
+
         private IInput _input;
         private CharacterController _charCtrl;
         private Material _currentWalkingSurface;
@@ -119,6 +125,11 @@ namespace Game
         {
             _charCtrl = GetComponent<CharacterController>();
             _animCache     = new AnimatorStateCache(GetComponent<Animator>());
+
+            if (RangeWeaponRoot != null)
+            {
+                _rangedAttackHandler = new RangedAttackHandler(RangeWeaponRoot, TargetLayer);
+            }
         }
 
         private void OnEnable()
@@ -496,8 +507,41 @@ namespace Game
 
         private void UpdateShoot()
         {
-            _isShoot = _input.Shoot;
-            _animCache.SetShoot(_input.Shoot);
+            bool shootPressed = _input.Shoot;
+            _isShoot = shootPressed;
+            _animCache.SetShoot(shootPressed);
+
+            // стрельба по rising edge (по нажатию, а не каждый кадр удержания)
+            if (shootPressed && !_previousShoot)
+            {
+                PerformRangedAttack();
+            }
+
+            _previousShoot = shootPressed;
+        }
+
+        private void PerformRangedAttack()
+        {
+            if (_rangedAttackHandler == null || !_rangedAttackHandler.IsValid)
+                return;
+
+            Vector3 targetPosition;
+
+            if (_targetFacing != null && _targetFacing.HasTargetInRange())
+            {
+                // стреляем в направлении ближайшей цели
+                Vector3 direction = _targetFacing.GetDirectionToNearestTarget();
+                if (direction != Vector3.zero)
+                {
+                    targetPosition = transform.position + direction * 20f;
+                    _rangedAttackHandler.Shoot(targetPosition);
+                    return;
+                }
+            }
+
+            // стреляем прямо перед собой
+            targetPosition = transform.position + transform.forward * 20f;
+            _rangedAttackHandler.Shoot(targetPosition);
         }
 
         public bool IsBlocking => _isBlocking;

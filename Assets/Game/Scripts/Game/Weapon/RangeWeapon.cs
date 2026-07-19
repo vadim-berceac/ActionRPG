@@ -10,6 +10,8 @@ namespace Game
 
         public Projectile projectile;
 
+        [System.NonSerialized] public LayerMask projectileLayerMask = -1;
+
         public Projectile loadedProjectile
         {
             get { return m_LoadedProjectile; }
