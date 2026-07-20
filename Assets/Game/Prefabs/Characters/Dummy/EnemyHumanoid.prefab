@@ -99,6 +99,9 @@ MonoBehaviour:
   humanoidController: {fileID: 3129279076112330710}
   damageable: {fileID: 8221082309353826462}
   rotationSpeed: 5
+  faction: 0
+  behaviorMode: 0
+  patrolMode: 0
   patrolPoints:
   - {fileID: 0}
   - {fileID: 0}
@@ -199,6 +202,7 @@ MonoBehaviour:
   <TargetLayer>k__BackingField:
     serializedVersion: 2
     m_Bits: 512
+  <RangeWeaponRoot>k__BackingField: {fileID: 0}
   maxForwardSpeed: 8
   gravity: 20
   jumpSpeed: 5
@@ -690,7 +694,7 @@ AudioSource:
   Priority: 1
   DopplerLevel: 1
   MinDistance: 1
-  MaxDistance: 50
+  MaxDistance: 15
   Pan2D: 0
   rolloffMode: 1
   BypassEffects: 0

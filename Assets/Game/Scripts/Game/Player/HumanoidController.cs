@@ -25,7 +25,7 @@ namespace Game
         public bool canAttack;
 
         public bool IsGrounded => _charCtrl != null && _charCtrl.isGrounded;
-        public bool HasAdditionalWeapon => _additionalWeaponInstanceInstance != null;
+        public bool HasAdditionalWeapon => _additionalWeaponInstance != null;
 
         public PropBones propBones;
         public RandomAudioPlayer footstepPlayer;
@@ -47,10 +47,10 @@ namespace Game
         private WeaponData _additionalWeaponData;
         private WeaponData _rangedWeaponData;
         private WeaponData _ammunitionWeaponData;
-        private WeaponInstance _primaryWeaponInstanceInstance;
-        private WeaponInstance _additionalWeaponInstanceInstance;
-        private WeaponInstance _rangedWeaponInstanceInstance;
-        private WeaponInstance _ammunitionWeaponInstanceInstance;
+        private WeaponInstance _primaryWeaponInstance;
+        private WeaponInstance _additionalWeaponInstance;
+        private WeaponInstance _rangedWeaponInstance;
+        private WeaponInstance _ammunitionWeaponInstance;
         private bool _isGrounded = true;
         private bool _previouslyGrounded = true;
         private bool _readyToJump;
@@ -159,8 +159,8 @@ namespace Game
 
             UpdateInputBlocking();
 
-            ConnectWeaponToHands(_isWeaponEquipped, _primaryWeaponData,    _primaryWeaponInstanceInstance,    _animCache.HashAttack1);
-            ConnectWeaponToHands(_isWeaponEquipped, _additionalWeaponData, _additionalWeaponInstanceInstance, _animCache.HashAttack2);
+            ConnectWeaponToHands(_isWeaponEquipped, _primaryWeaponData,    _primaryWeaponInstance,    _animCache.HashAttack1);
+            ConnectWeaponToHands(_isWeaponEquipped, _additionalWeaponData, _additionalWeaponInstance, _animCache.HashAttack2);
 
             _animCache.SetStateTime();
             ProcessAttack();
@@ -207,13 +207,13 @@ namespace Game
             _input.InputBlocked = _animCache.IsInputBlocked();
         }
 
-        private void CreateWeapon(WeaponData fromData, ref WeaponData prevData, ref WeaponInstance weaponInstanceInstance, int trigger)
+        private void CreateWeapon(WeaponData fromData, ref WeaponData prevData, ref WeaponInstance weaponInstance, int trigger)
         {
             SetIsWeaponEquipped(false);
             
-            if (weaponInstanceInstance != null)
+            if (weaponInstance != null)
             {
-                weaponInstanceInstance.DestroyInstance();
+                weaponInstance.DestroyInstance();
             }
             if (fromData == null)
             {
@@ -223,33 +223,33 @@ namespace Game
 
             prevData = fromData;
             var weaponObj = prevData.GetViewInstance(transform, _diContainer);
-            weaponInstanceInstance = weaponObj.GetComponent<WeaponInstance>();
-            weaponInstanceInstance.Initialize(gameObject, TargetLayer);
-            weaponInstanceInstance.SetWeaponData(prevData);
-            weaponInstanceInstance.SetKnockbackForce(prevData.knockbackForce);
-            weaponInstanceInstance.SetStaticParts(prevData.GetStaticParts(propBones, _diContainer));
-            ConnectWeaponToHands(false, prevData, weaponInstanceInstance, trigger);
+            weaponInstance = weaponObj.GetComponent<WeaponInstance>();
+            weaponInstance.Initialize(gameObject, TargetLayer);
+            weaponInstance.SetWeaponData(prevData);
+            weaponInstance.SetKnockbackForce(prevData.knockbackForce);
+            weaponInstance.SetStaticParts(prevData.GetStaticParts(propBones, _diContainer));
+            ConnectWeaponToHands(false, prevData, weaponInstance, trigger);
             ConnectCombo(prevData);
         }
 
         public void CreatePrimaryWeapon(WeaponData fromData)
         {
-            CreateWeapon(fromData, ref _primaryWeaponData, ref _primaryWeaponInstanceInstance, _animCache.HashAttack1);
+            CreateWeapon(fromData, ref _primaryWeaponData, ref _primaryWeaponInstance, _animCache.HashAttack1);
         }
 
         public void CreateAdditionalWeapon(WeaponData fromData)
         {
-            CreateWeapon(fromData, ref _additionalWeaponData, ref _additionalWeaponInstanceInstance, _animCache.HashAttack2);
+            CreateWeapon(fromData, ref _additionalWeaponData, ref _additionalWeaponInstance, _animCache.HashAttack2);
         }
 
         public void CreateRangedWeapon(WeaponData fromData)
         {
-            CreateWeapon(fromData, ref _rangedWeaponData, ref _rangedWeaponInstanceInstance, _animCache.HashAttack2);
+            CreateWeapon(fromData, ref _rangedWeaponData, ref _rangedWeaponInstance, _animCache.Shoot);
         }
         
         public void CreateAmmunition(WeaponData fromData)
         {
-            
+            CreateWeapon(fromData, ref _ammunitionWeaponData, ref _ammunitionWeaponInstance, _animCache.Shoot);
         }
 
         public void SetIsWeaponEquipped(bool value)
@@ -334,7 +334,6 @@ namespace Game
             cameraForward.y = 0f;
             cameraForward.Normalize();
 
-            // При атаке, блоке или выстреле - используем только камеру, игнорируя WASD
             if (_inAttack || _isBlocking || _shootPressed)
             {
                 _targetRotation = Quaternion.LookRotation(cameraForward);
@@ -345,7 +344,6 @@ namespace Game
                 return;
             }
 
-            // Обычное поведение: учитываем WASD
             var moveInput = _input.MoveInput;
             var localMovementDirection = new Vector3(moveInput.x, 0f, moveInput.y).normalized;
 
@@ -449,12 +447,22 @@ namespace Game
 
         private void UpdateBlocking()
         {
+            if (!_primaryWeaponInstance && !_additionalWeaponInstance)
+            {
+                _isBlocking = false;
+                return;
+            }
             _isBlocking = _input.Block;
             _animCache.SetBlock(_input.Block);
         }
 
         private void UpdateShoot()
         {
+            if (!_rangedWeaponInstance || !_ammunitionWeaponInstance)
+            {
+                _shootPressed = false;
+                return;
+            }
             _shootPressed = _input.Shoot;
             _isShoot = _shootPressed;
             _animCache.SetShoot(_shootPressed);
@@ -569,29 +577,29 @@ namespace Game
 
         public void MeleeAttackStart(int throwing = 0)
         {
-            if (_primaryWeaponInstanceInstance == null) return;
-            _primaryWeaponInstanceInstance.BeginAttack(throwing != 0);
+            if (_primaryWeaponInstance == null) return;
+            _primaryWeaponInstance.BeginAttack(throwing != 0);
             _inAttack = true;
         }
 
         public void MeleeAttackEnd()
         {
-            if (_primaryWeaponInstanceInstance == null) return;
-            _primaryWeaponInstanceInstance.EndAttack();
+            if (_primaryWeaponInstance == null) return;
+            _primaryWeaponInstance.EndAttack();
             _inAttack = false;
         }
 
         public void AdditionalAttackStart(int throwing = 0)
         {
-            if (_additionalWeaponInstanceInstance == null) return;
-            _additionalWeaponInstanceInstance.BeginAttack(throwing != 0);
+            if (_additionalWeaponInstance == null) return;
+            _additionalWeaponInstance.BeginAttack(throwing != 0);
             _inAttack = true;
         }
 
         public void AdditionalAttackEnd()
         {
-            if (_additionalWeaponInstanceInstance == null) return;
-            _additionalWeaponInstanceInstance.EndAttack();
+            if (_additionalWeaponInstance == null) return;
+            _additionalWeaponInstance.EndAttack();
             _inAttack = false;
         }
 

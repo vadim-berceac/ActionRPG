@@ -213,7 +213,6 @@ MonoBehaviour:
   emoteAttackPlayer: {fileID: 922335842245678068}
   emoteJumpPlayer: {fileID: 515608808743569430}
   blockAudioSource: {fileID: 1619044624411982203}
-  _targetFacing: {fileID: 0}
 --- !u!114 &5555669641611656938
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -243,11 +242,11 @@ MonoBehaviour:
   - <ItemData>k__BackingField: {fileID: 11400000, guid: 7d74bb0bc3a9e4c498dec80622ac6ac3,
       type: 2}
     <Amount>k__BackingField: 1
-    <EquippedOnStart>k__BackingField: 0
+    <EquippedOnStart>k__BackingField: 1
   - <ItemData>k__BackingField: {fileID: 11400000, guid: dc77a825655c3f440a0b3d4cc9929be1,
       type: 2}
     <Amount>k__BackingField: 1
-    <EquippedOnStart>k__BackingField: 1
+    <EquippedOnStart>k__BackingField: 0
   - <ItemData>k__BackingField: {fileID: 11400000, guid: a4812abcae2217b41b1758a8df081f64,
       type: 2}
     <Amount>k__BackingField: 1
@@ -263,7 +262,7 @@ MonoBehaviour:
   - <ItemData>k__BackingField: {fileID: 11400000, guid: 740835a48fbe5774dbed630a9970824e,
       type: 2}
     <Amount>k__BackingField: 1
-    <EquippedOnStart>k__BackingField: 0
+    <EquippedOnStart>k__BackingField: 1
   - <ItemData>k__BackingField: {fileID: 11400000, guid: 262ff168e318c464aad0108114a3aac8,
       type: 2}
     <Amount>k__BackingField: 1
@@ -271,7 +270,11 @@ MonoBehaviour:
   - <ItemData>k__BackingField: {fileID: 11400000, guid: d32aa3e6535e76d43be7eaa46effd2aa,
       type: 2}
     <Amount>k__BackingField: 1
-    <EquippedOnStart>k__BackingField: 0
+    <EquippedOnStart>k__BackingField: 1
+  - <ItemData>k__BackingField: {fileID: 11400000, guid: cfb702314649ae34099dabb2ae5b6709,
+      type: 2}
+    <Amount>k__BackingField: 1
+    <EquippedOnStart>k__BackingField: 1
 --- !u!114 &4971361307042770288
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -856,7 +859,7 @@ AudioSource:
   Priority: 1
   DopplerLevel: 1
   MinDistance: 1
-  MaxDistance: 50
+  MaxDistance: 15
   Pan2D: 0
   rolloffMode: 1
   BypassEffects: 0
