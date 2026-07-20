@@ -51,7 +51,6 @@ GameObject:
   - component: {fileID: 8328305847013917851}
   - component: {fileID: 3589592028908676066}
   - component: {fileID: 1221178880529204029}
-  - component: {fileID: 5448907548818570373}
   - component: {fileID: 8221082309353826462}
   - component: {fileID: 3129279076112330710}
   - component: {fileID: 5555669641611656938}
@@ -149,25 +148,6 @@ CharacterController:
   m_SkinWidth: 0.001
   m_MinMoveDistance: 0.01
   m_Center: {x: 0, y: 0.901, z: 0}
---- !u!114 &5448907548818570373
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1125372579252015583}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ba00ecc1cd317194a9f672482a3c2651, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.TargetFacingController
-  _targetLayer:
-    serializedVersion: 2
-    m_Bits: 8388608
-  _detectionRadius: 4
-  _minDotProduct: 0.2
-  _heightOffset: 1
-  _showGizmos: 0
 --- !u!114 &8221082309353826462
 MonoBehaviour:
   m_ObjectHideFlags: 0

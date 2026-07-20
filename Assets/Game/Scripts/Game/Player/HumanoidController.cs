@@ -57,7 +57,7 @@ namespace Game
         private float _desiredForwardSpeed;
         private float _forwardSpeed;
         private float _verticalSpeed;
-       
+        
         private RangedAttackHandler _rangedAttackHandler;
         private bool _shootPressed;
 
@@ -66,7 +66,6 @@ namespace Game
         private Material _currentWalkingSurface;
         private Quaternion _targetRotation;
         private float _angleDiff;
-        private readonly Collider[] _overlapResult = new Collider[8];
         private bool _inAttack;
         private bool _isBlocking;
         private bool _isShoot;
@@ -80,12 +79,9 @@ namespace Game
         private Vector3 _knockbackVelocity;
         private float _knockbackDeceleration = 15f;
 
-        [SerializeField] private TargetFacingController _targetFacing;
-
         private const float AirborneTurnSpeedProportion = 5.4f;
         private const float GroundedRayDistance = 1f;
         private const float JumpAbortSpeed = 10f;
-        private const float MinEnemyDotCoeff = 0.2f;
         private const float InverseOneEighty = 1f / 180f;
         private const float StickingGravityProportion = 0.3f;
         private const float GroundAcceleration = 20f;
@@ -174,7 +170,7 @@ namespace Game
             CalculateVerticalMovement();
             SetTargetRotation();
 
-            if (IsOrientationUpdated() && (IsMoveInput || _isBlocking))
+            if (IsOrientationUpdated() && (IsMoveInput || _isBlocking || _shootPressed || _inAttack))
             {
                 UpdateOrientation();
             }
@@ -287,15 +283,13 @@ namespace Game
                 weaponInstanceInstance.SetViewParent(propBones, settings);
             }
 
-            _inAttack = false;
-
             if (!equip)
                 _animCache.ResetTrigger(trigger);
         }
 
         private void CalculateForwardMovement()
         {
-            var moveInput = _isBlocking ? Vector2.zero : _input.MoveInput;
+            var moveInput = _isBlocking || _shootPressed || _inAttack ? Vector2.zero : _input.MoveInput;
             if (moveInput.sqrMagnitude > 1f)
                 moveInput.Normalize();
 
@@ -315,7 +309,7 @@ namespace Game
             {
                 _verticalSpeed = -gravity * StickingGravityProportion;
 
-                if (_input.JumpInput && _readyToJump && !CheckCombo() && !_isBlocking)
+                if (_input.JumpInput && _readyToJump && !_inAttack && !_isBlocking)
                 {
                     _verticalSpeed = jumpSpeed;
                     _isGrounded    = false;
@@ -336,89 +330,43 @@ namespace Game
 
         private void SetTargetRotation()
         {
-            var moveInput              = _input.MoveInput;
-            var localMovementDirection = new Vector3(moveInput.x, 0f, moveInput.y).normalized;
+            var cameraForward = Quaternion.Euler(0f, _input.RotationYaw, 0f) * Vector3.forward;
+            cameraForward.y = 0f;
+            cameraForward.Normalize();
 
-            var forward = Quaternion.Euler(0f, _input.RotationYaw, 0f) * Vector3.forward;
-            forward.y = 0f;
-            forward.Normalize();
+            // При атаке, блоке или выстреле - используем только камеру, игнорируя WASD
+            if (_inAttack || _isBlocking || _shootPressed)
+            {
+                _targetRotation = Quaternion.LookRotation(cameraForward);
+                _angleDiff = Mathf.DeltaAngle(
+                    Mathf.Atan2(transform.forward.x, transform.forward.z) * Mathf.Rad2Deg,
+                    Mathf.Atan2(cameraForward.x, cameraForward.z) * Mathf.Rad2Deg
+                );
+                return;
+            }
+
+            // Обычное поведение: учитываем WASD
+            var moveInput = _input.MoveInput;
+            var localMovementDirection = new Vector3(moveInput.x, 0f, moveInput.y).normalized;
 
             Quaternion targetRotation;
 
             if (Mathf.Approximately(Vector3.Dot(localMovementDirection, Vector3.forward), -1.0f))
             {
-                targetRotation = Quaternion.LookRotation(-forward);
+                targetRotation = Quaternion.LookRotation(-cameraForward);
             }
             else
             {
                 var cameraToInputOffset = Quaternion.FromToRotation(Vector3.forward, localMovementDirection);
-                targetRotation                 = Quaternion.LookRotation(cameraToInputOffset * forward);
+                targetRotation = Quaternion.LookRotation(cameraToInputOffset * cameraForward);
             }
 
             var resultingForward = targetRotation * Vector3.forward;
 
-            if (_inAttack || _isBlocking)
-            {
-                var targetDirection = Vector3.zero;
-
-                if (_targetFacing != null)
-                {
-                    targetDirection = _targetFacing.GetDirectionToNearestTarget();
-                }
-                else
-                {
-                    // Fallback: старый OverlapBox если TargetFacingController не назначен
-                    var centre      = transform.position + transform.forward * 2.0f + transform.up;
-                    var halfExtents = new Vector3(3.0f, 1.0f, 2.0f);
-                    var count = Physics.OverlapBoxNonAlloc(centre, halfExtents, _overlapResult, targetRotation, TargetLayer);
-
-                    var closestDot = 0.0f;
-                    var closestForward = Vector3.zero;
-
-                    for (var i = 0; i < count; ++i)
-                    {
-                        var playerToEnemy = _overlapResult[i].transform.position - transform.position;
-                        playerToEnemy.y = 0;
-                        playerToEnemy.Normalize();
-
-                        var d = Vector3.Dot(resultingForward, playerToEnemy);
-                        if (d > MinEnemyDotCoeff && d > closestDot)
-                        {
-                            closestForward = playerToEnemy;
-                            closestDot     = d;
-                        }
-                    }
-
-                    if (closestDot > 0f)
-                    {
-                        targetDirection = closestForward;
-                    }
-                }
-
-                if (targetDirection != Vector3.zero)
-                {
-                    resultingForward = targetDirection;
-                    // При наличии цели - вычисляем targetRotation только на основе камеры (без WASD)
-                    var cameraForward = Quaternion.Euler(0f, _input.RotationYaw, 0f) * Vector3.forward;
-                    cameraForward.y = 0f;
-                    cameraForward.Normalize();
-                    targetRotation = Quaternion.LookRotation(cameraForward);
-                }
-                else
-                {
-                    // Если цели нет, но мы в атаке/блоке - всё равно используем только камеру, игнорируя WASD
-                    var cameraForward = Quaternion.Euler(0f, _input.RotationYaw, 0f) * Vector3.forward;
-                    cameraForward.y = 0f;
-                    cameraForward.Normalize();
-                    targetRotation = Quaternion.LookRotation(cameraForward);
-                    resultingForward = cameraForward;
-                }
-            }
-
             var angleCurrent = Mathf.Atan2(transform.forward.x, transform.forward.z) * Mathf.Rad2Deg;
             var targetAngle  = Mathf.Atan2(resultingForward.x, resultingForward.z) * Mathf.Rad2Deg;
 
-            _angleDiff      = Mathf.DeltaAngle(angleCurrent, targetAngle);
+            _angleDiff = Mathf.DeltaAngle(angleCurrent, targetAngle);
             _targetRotation = targetRotation;
         }
 
@@ -427,16 +375,17 @@ namespace Game
             return _animCache.IsActiveOrEntering(_animCache.HashLocomotion)
                 || _animCache.IsActiveOrEntering(_animCache.HashAirborne)
                 || _animCache.IsActiveOrEntering(_animCache.HashLanding)
-                || CheckCombo() && !_inAttack
-                || _isBlocking;
+                || _inAttack
+                || _isBlocking
+                || _shootPressed;
         }
 
         private void UpdateOrientation()
         {
             _animCache.SetAngleDeltaRad(_angleDiff * Mathf.Deg2Rad);
 
-            // При блоке — мгновенный разворот к цели
-            if (_isBlocking)
+            // При блоке, атаке или выстреле — мгновенный разворот по направлению камеры
+            if (_isBlocking || _inAttack || _shootPressed)
             {
                 transform.rotation = _targetRotation;
                 return;
@@ -550,7 +499,7 @@ namespace Game
 
         private void TimeoutToIdle()
         {
-            var inputDetected = IsMoveInput || _isBlocking || _input.Attack1 || _input.Attack2 || _input.JumpInput;
+            var inputDetected = IsMoveInput || _isBlocking || _shootPressed || _inAttack || _input.Attack1 || _input.Attack2 || _input.JumpInput;
 
             if (_isGrounded && !inputDetected)
             {
@@ -586,7 +535,7 @@ namespace Game
                 }
                 else
                 {
-                    movement                = _animCache.DeltaPosition;
+                    movement = _animCache.DeltaPosition;
                     _currentWalkingSurface = null;
                 }
             }
@@ -689,7 +638,7 @@ namespace Game
 
         public void RespawnFinished()
         {
-            _respawning                = false;
+            _respawning = false;
             _damageable.isInvulnerable = false;
         }
 
