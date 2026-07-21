@@ -39,7 +39,8 @@ namespace Game
 
         private CameraSettings _cameraSettings;
         private DiContainer _diContainer;
-        private bool _isWeaponEquipped;
+        private bool _isMeleeWeaponEquipped;
+        private bool _isRangeWeaponEquipped;
 
         private AnimatorStateCache _animCache;
 
@@ -95,6 +96,7 @@ namespace Game
             => this.canAttack = canAttack;
 
         public int PrimaryWeaponIndex => _primaryWeaponData ? _primaryWeaponData.AnimationSetIndex : 0;
+        public int RangeWeaponIndex => _rangedWeaponData ? _rangedWeaponData.AnimationSetIndex : 0;
         public WeaponData PrimaryWeaponData => _primaryWeaponData;
         public WeaponData AdditionalWeaponData => _additionalWeaponData;
         public WeaponData RangedWeaponData => _rangedWeaponData;
@@ -159,8 +161,9 @@ namespace Game
 
             UpdateInputBlocking();
 
-            ConnectWeaponToHands(_isWeaponEquipped, _primaryWeaponData,    _primaryWeaponInstance,    _animCache.HashAttack1);
-            ConnectWeaponToHands(_isWeaponEquipped, _additionalWeaponData, _additionalWeaponInstance, _animCache.HashAttack2);
+            ConnectWeaponToHands(_isMeleeWeaponEquipped, _primaryWeaponData,    _primaryWeaponInstance,    _animCache.HashAttack1);
+            ConnectWeaponToHands(_isMeleeWeaponEquipped, _additionalWeaponData, _additionalWeaponInstance, _animCache.HashAttack2);
+            ConnectWeaponToHands(_isRangeWeaponEquipped, _rangedWeaponData, _rangedWeaponInstance, _animCache.Shoot);
 
             _animCache.SetStateTime();
             ProcessAttack();
@@ -209,7 +212,7 @@ namespace Game
 
         private void CreateWeapon(WeaponData fromData, ref WeaponData prevData, ref WeaponInstance weaponInstance, int trigger)
         {
-            SetIsWeaponEquipped(false);
+            SetIsMeleeWeaponEquipped(false);
             
             if (weaponInstance != null)
             {
@@ -252,11 +255,22 @@ namespace Game
             CreateWeapon(fromData, ref _ammunitionWeaponData, ref _ammunitionWeaponInstance, _animCache.Shoot);
         }
 
-        public void SetIsWeaponEquipped(bool value)
+        public void SetIsMeleeWeaponEquipped(bool value)
         {
-            _isWeaponEquipped = value;
+            _isMeleeWeaponEquipped = value;
             var index = value && _primaryWeaponData ? _primaryWeaponData.AnimationSetIndex : 0;
             _animCache.SetWeaponEquipped(value, index);
+            
+            if(value) _isRangeWeaponEquipped = false;
+        }
+
+        public void SetRangeWeaponEquipped(bool value)
+        {
+            _isRangeWeaponEquipped = value;
+            var index = value && _rangedWeaponData ? _rangedWeaponData.AnimationSetIndex : 0;
+            _animCache.SetWeaponEquipped(value, index);
+            
+            if(value) _isMeleeWeaponEquipped = false;
         }
 
         private void ProcessAttack()

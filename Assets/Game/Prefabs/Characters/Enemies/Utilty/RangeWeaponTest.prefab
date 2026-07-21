@@ -44,6 +44,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8a16fbab0c6a57e43ae3d1658c4feded, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  muzzleOffset: {x: 0, y: 1, z: 0.4}
-  projectile: {fileID: 114103497732328600, guid: 70114eef33aad434f9c5a08f93c9159d,
+  muzzleOffset: {x: 0.1, y: 1.4, z: -0.7}
+  projectile: {fileID: -5278410550485328620, guid: 70114eef33aad434f9c5a08f93c9159d,
     type: 3}

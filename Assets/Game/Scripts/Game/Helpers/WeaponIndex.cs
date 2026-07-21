@@ -3,7 +3,13 @@ using UnityEngine;
 
 public class WeaponIndex : StateMachineBehaviour
 {
+    public enum WeaponRange
+    {
+        Melee,
+        Ranged
+    }
     [SerializeField] private Mode setMode;
+    [SerializeField] private WeaponRange range = WeaponRange.Melee;
     [SerializeField] private bool onStart;
     
     private HumanoidController _humanoid;
@@ -34,8 +40,13 @@ public class WeaponIndex : StateMachineBehaviour
             animator.SetFloat(m_HashWeaponIndex, 0);
             return;
         }
-        
-        animator.SetFloat(m_HashWeaponIndex, _humanoid.PrimaryWeaponIndex);
+
+        if (range == WeaponRange.Melee)
+        {
+            animator.SetFloat(m_HashWeaponIndex, _humanoid.PrimaryWeaponIndex);
+            return;
+        }
+        animator.SetFloat(m_HashWeaponIndex, _humanoid.RangeWeaponIndex);
     }
 }
 

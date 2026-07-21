@@ -3,11 +3,12 @@ using UnityEngine;
 
 public class WeaponEqupped : StateMachineBehaviour
 {
+   [SerializeField] private WeaponIndex.WeaponRange range = WeaponIndex.WeaponRange.Melee;
    [SerializeField] private bool value;
    [SerializeField] private bool onStart;
    
    private HumanoidController _humanoid;
-
+   
    public override void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
    {
       if(!onStart) return;
@@ -28,6 +29,11 @@ public class WeaponEqupped : StateMachineBehaviour
       
       if(_humanoid == null) return;
       
-      _humanoid?.SetIsWeaponEquipped(value);
+      if (range == WeaponIndex.WeaponRange.Melee)
+      {
+         _humanoid?.SetIsMeleeWeaponEquipped(value);
+         return;
+      }
+      _humanoid?.SetRangeWeaponEquipped(value);
    }
 }
