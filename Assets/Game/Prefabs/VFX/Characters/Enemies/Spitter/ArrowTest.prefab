@@ -5215,7 +5215,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10f688ae8aec93f4182cec65824932a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Arrow
-  projectileSpeed: 20
+  projectileSpeed: 75
   lifetime: 2
   damageAmount: 5
   damageMask:

@@ -4,6 +4,12 @@ namespace Game
 {
     public class RangeWeapon : MonoBehaviour
     {
+        public enum Mode
+        {
+            Standard,
+            ScreenCenter
+        }
+        public Mode mode = Mode.Standard;
         public Vector3 muzzleOffset;
 
         public Projectile projectile;
@@ -45,6 +51,24 @@ namespace Game
             if (m_LoadedProjectile == null) LoadProjectile();
 
             m_LoadedProjectile.transform.SetParent(null, true);
+
+            if (mode == Mode.ScreenCenter)
+            {
+                var cam = Camera.main;
+                if (cam != null)
+                {
+                    Ray ray = cam.ScreenPointToRay(new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f));
+                    if (Physics.Raycast(ray, out RaycastHit hit, 1000f, projectileLayerMask, QueryTriggerInteraction.Ignore))
+                    {
+                        target = hit.point;
+                    }
+                    else
+                    {
+                        target = ray.origin + ray.direction * 1000f;
+                    }
+                }
+            }
+
             m_LoadedProjectile.Shot(target, this);
             m_LoadedProjectile = null; //once shot, we don't own the projectile anymore, it does it's own life.
         }

@@ -8,6 +8,13 @@ namespace Game
     public class CameraSettings : MonoBehaviour
     {
         [Serializable]
+        public struct CameraParts
+        {
+            public CinemachineCamera controllerCamera;
+            public CinemachineOrbitalFollow orbitalFollow;
+        }
+        
+        [Serializable]
         public struct InvertSettings
         {
             public bool invertX;
@@ -33,9 +40,9 @@ namespace Game
             public float time;
         }
 
-        public float CurrentYaw => orbitalFollow.HorizontalAxis.Value;
-        public CinemachineCamera controllerCamera;
-        public CinemachineOrbitalFollow orbitalFollow;
+        public float CurrentYaw => explorationCamera.orbitalFollow.HorizontalAxis.Value;
+        public CameraParts explorationCamera;
+        public CameraParts bowCamera;
         public CinemachineImpulseSource impulseSource;
 
         public InvertSettings controllerInvertSettings;
@@ -50,7 +57,7 @@ namespace Game
         [Tooltip("Максимальный угол Pitch (в градусах). Ограничивает, чтобы камера не смотрела снизу")]
         public float pitchMax = 70f;
 
-        public CinemachineCamera Current => controllerCamera;
+        public CinemachineCamera Current => explorationCamera.controllerCamera;
 
         private float m_CurrentX;
         private float m_VelocityX;
@@ -90,8 +97,8 @@ namespace Game
         
         public void SetTarget(Transform followTo, Transform look)
         {
-            controllerCamera.Follow = followTo;
-            controllerCamera.LookAt = look;
+            explorationCamera.controllerCamera.Follow = followTo;
+            explorationCamera.controllerCamera.LookAt = look;
         }
 
         private void LateUpdate()
@@ -102,21 +109,21 @@ namespace Game
 
         private void UpdateClampSettings()
         {
-            var vertical = orbitalFollow.VerticalAxis;
+            var vertical = explorationCamera.orbitalFollow.VerticalAxis;
             vertical.Range = new Vector2(pitchMin, pitchMax);
             vertical.Value = Mathf.Clamp(vertical.Value, pitchMin, pitchMax);
-            orbitalFollow.VerticalAxis = vertical;
+            explorationCamera.orbitalFollow.VerticalAxis = vertical;
         }
 
         private void UpdateRecenterSettings()
         {
-            var horizontal = orbitalFollow.HorizontalAxis;
+            var horizontal = explorationCamera.orbitalFollow.HorizontalAxis;
             var recentering = horizontal.Recentering;
             recentering.Enabled = controllerRecentering.enabled;
             recentering.Wait = controllerRecentering.wait;
             recentering.Time = controllerRecentering.time;
             horizontal.Recentering = recentering;
-            orbitalFollow.HorizontalAxis = horizontal;
+            explorationCamera.orbitalFollow.HorizontalAxis = horizontal;
         }
 
         private void UpdateInputSettings()
@@ -131,13 +138,13 @@ namespace Game
             m_CurrentX = Mathf.SmoothDamp(m_CurrentX, targetX, ref m_VelocityX, Mathf.Max(controllerSmoothing.smoothTimeX, 0.0001f));
             m_CurrentY = Mathf.SmoothDamp(m_CurrentY, targetY, ref m_VelocityY, Mathf.Max(controllerSmoothing.smoothTimeY, 0.0001f));
 
-            var horizontal = orbitalFollow.HorizontalAxis;
+            var horizontal = explorationCamera.orbitalFollow.HorizontalAxis;
             horizontal.Value += m_CurrentX * Time.deltaTime;
-            orbitalFollow.HorizontalAxis = horizontal;
+            explorationCamera.orbitalFollow.HorizontalAxis = horizontal;
 
-            var vertical = orbitalFollow.VerticalAxis;
+            var vertical = explorationCamera.orbitalFollow.VerticalAxis;
             vertical.Value = Mathf.Clamp(vertical.Value + m_CurrentY * Time.deltaTime, pitchMin, pitchMax);
-            orbitalFollow.VerticalAxis = vertical;
+            explorationCamera.orbitalFollow.VerticalAxis = vertical;
         }
     }
 }
