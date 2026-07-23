@@ -193,6 +193,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <IsPlayer>k__BackingField: 1
+  <ModelTransform>k__BackingField: {fileID: 6421361941627358335}
   <TargetLayer>k__BackingField:
     serializedVersion: 2
     m_Bits: 8388608

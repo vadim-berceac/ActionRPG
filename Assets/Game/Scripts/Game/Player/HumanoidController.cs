@@ -12,6 +12,7 @@ namespace Game
     public class HumanoidController : MonoBehaviour, IMessageReceiver
     {
         [field: SerializeField] public bool IsPlayer { get; private set; }
+        [field: SerializeField] public Transform ModelTransform { get; private set; }
         [field: SerializeField] public LayerMask TargetLayer { get; private set; }
         [field: SerializeField] public RangeWeapon RangeWeaponRoot { get; private set; }
         public bool Respawning => _respawning;
@@ -61,6 +62,8 @@ namespace Game
         
         private RangedAttackHandler _rangedAttackHandler;
         private bool _shootPressed;
+        private bool _bowCameraOn;
+        private Quaternion _modelOriginalLocalRotation;
 
         private IInput _input;
         private CharacterController _charCtrl;
@@ -126,6 +129,11 @@ namespace Game
             if (RangeWeaponRoot != null)
             {
                 _rangedAttackHandler = new RangedAttackHandler(RangeWeaponRoot, TargetLayer);
+            }
+
+            if (ModelTransform != null)
+            {
+                _modelOriginalLocalRotation = ModelTransform.localRotation;
             }
         }
 
@@ -395,8 +403,7 @@ namespace Game
         private void UpdateOrientation()
         {
             _animCache.SetAngleDeltaRad(_angleDiff * Mathf.Deg2Rad);
-
-            // При блоке, атаке или выстреле — мгновенный разворот по направлению камеры
+            
             if (_isBlocking || _inAttack || _shootPressed)
             {
                 transform.rotation = _targetRotation;
@@ -475,16 +482,39 @@ namespace Game
             if (!_rangedWeaponInstance || !_ammunitionWeaponInstance)
             {
                 _shootPressed = false;
+                _bowCameraOn = false;
                 return;
             }
             _shootPressed = _input.Shoot;
             _isShoot = _shootPressed;
             _animCache.SetShoot(_shootPressed);
+            
+            if (!IsPlayer) return;
+            
+            if (_shootPressed && !_bowCameraOn)
+            {
+                _bowCameraOn = true;
+                _cameraSettings.SwitchCamera(CameraSettings.CameraType.Bow);
+            }
+            else if (!_shootPressed && _bowCameraOn)
+            {
+                _bowCameraOn = false;
+                _cameraSettings.SwitchCamera(CameraSettings.CameraType.Exploration);
+            }
+               
+            if (!ModelTransform) return;
+            
+            var targetYaw = _bowCameraOn ? 30f : 0f;
+            var currentYaw = ModelTransform.localEulerAngles.y;
+            if (currentYaw > 180f) currentYaw -= 360f;
+            var newYaw = Mathf.Lerp(currentYaw, targetYaw, Time.deltaTime * 10f);
+            ModelTransform.localRotation = Quaternion.Euler(
+                _modelOriginalLocalRotation.eulerAngles.x,
+                newYaw,
+                _modelOriginalLocalRotation.eulerAngles.z
+            );
         }
 
-        /// <summary>
-        /// Вызывается через анимационное событие в момент выстрела.
-        /// </summary>
         public void Shoot()
         {
             if (_rangedAttackHandler == null || !_rangedAttackHandler.IsValid)

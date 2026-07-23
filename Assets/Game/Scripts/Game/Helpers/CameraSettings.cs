@@ -1,12 +1,19 @@
 ﻿using System;
-using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.Events;
+using Unity.Cinemachine;
 using Zenject;
 
 namespace Game
 {
     public class CameraSettings : MonoBehaviour
     {
+        public enum CameraType
+        {
+            Exploration,
+            Bow
+        }
+        
         [Serializable]
         public struct CameraParts
         {
@@ -40,7 +47,15 @@ namespace Game
             public float time;
         }
 
-        public float CurrentYaw => explorationCamera.orbitalFollow.HorizontalAxis.Value;
+        public float CurrentYaw
+        {
+            get
+            {
+                var active = _currentCamera == CameraType.Bow ? bowCamera : explorationCamera;
+                return active.orbitalFollow.HorizontalAxis.Value;
+            }
+        }
+        
         public CameraParts explorationCamera;
         public CameraParts bowCamera;
         public CinemachineImpulseSource impulseSource;
@@ -57,7 +72,11 @@ namespace Game
         [Tooltip("Максимальный угол Pitch (в градусах). Ограничивает, чтобы камера не смотрела снизу")]
         public float pitchMax = 70f;
 
-        public CinemachineCamera Current => explorationCamera.controllerCamera;
+        public CinemachineCamera Current => _currentCamera == CameraType.Bow ? bowCamera.controllerCamera : explorationCamera.controllerCamera;
+        public CameraType ActiveCamera => _currentCamera;
+
+        [Header("Events")]
+        public UnityEvent<CameraType> onCameraSwitched;
 
         private float m_CurrentX;
         private float m_VelocityX;
@@ -65,13 +84,15 @@ namespace Game
         private float m_VelocityY;
         private PlayerInputHandlerService _playerInputHandler;
 
+        private CameraType _currentCamera = CameraType.Exploration;
+
         [Inject]
         private void Construct(PlayerInputHandlerService playerInputHandler)
         {
             _playerInputHandler = playerInputHandler;
         }
 
-        public void Shake(float amplitude, float duration, CinemachineImpulseDefinition.ImpulseShapes mode,  Vector3? velocity = null)
+        public void Shake(float amplitude, float duration, CinemachineImpulseDefinition.ImpulseShapes mode, Vector3? velocity = null)
         {
             impulseSource.ImpulseDefinition.ImpulseDuration = duration;
             impulseSource.ImpulseDefinition.ImpulseShape = mode;
@@ -91,14 +112,87 @@ namespace Game
         
         private void Awake()
         {
+            explorationCamera.controllerCamera.gameObject.SetActive(true);
+            bowCamera.controllerCamera.gameObject.SetActive(true);
+            
+            explorationCamera.controllerCamera.Priority = 20;
+            bowCamera.controllerCamera.Priority = 10;
+            
             UpdateClampSettings();
             UpdateRecenterSettings();
         }
         
-        public void SetTarget(Transform followTo, Transform look)
+        public void SetTarget(Transform followTo, Transform lookAt)
         {
             explorationCamera.controllerCamera.Follow = followTo;
-            explorationCamera.controllerCamera.LookAt = look;
+            explorationCamera.controllerCamera.LookAt = lookAt;
+            bowCamera.controllerCamera.Follow = followTo;
+            bowCamera.controllerCamera.LookAt = lookAt;
+        }
+
+        public void SwitchCamera(CameraType targetCamera)
+        {
+            if (_currentCamera == targetCamera) return;
+
+            CameraParts from, to;
+            
+            if (targetCamera == CameraType.Bow)
+            {
+                from = explorationCamera;
+                to = bowCamera;
+            }
+            else
+            {
+                from = bowCamera;
+                to = explorationCamera;
+            }
+
+            CopyCameraState(to, from);
+            ApplySettingsToCamera(to);
+            
+            from.controllerCamera.Priority = 10;
+            to.controllerCamera.Priority = 20;
+            _currentCamera = targetCamera;
+
+            ResetSmoothInput();
+            
+            onCameraSwitched?.Invoke(targetCamera);
+        }
+
+        private static void CopyCameraState(CameraParts target, CameraParts source)
+        {
+            var targetHorizontal = target.orbitalFollow.HorizontalAxis;
+            targetHorizontal.Value = source.orbitalFollow.HorizontalAxis.Value;
+            target.orbitalFollow.HorizontalAxis = targetHorizontal;
+
+            var targetVertical = target.orbitalFollow.VerticalAxis;
+            targetVertical.Value = source.orbitalFollow.VerticalAxis.Value;
+            targetVertical.Range = source.orbitalFollow.VerticalAxis.Range;
+            target.orbitalFollow.VerticalAxis = targetVertical;
+        }
+
+        private void ResetSmoothInput()
+        {
+            m_CurrentX = 0f;
+            m_VelocityX = 0f;
+            m_CurrentY = 0f;
+            m_VelocityY = 0f;
+        }
+
+        private void ApplySettingsToCamera(CameraParts camera)
+        {
+            var vertical = camera.orbitalFollow.VerticalAxis;
+            vertical.Range = new Vector2(pitchMin, pitchMax);
+            vertical.Value = Mathf.Clamp(vertical.Value, pitchMin, pitchMax);
+            camera.orbitalFollow.VerticalAxis = vertical;
+
+            var horizontal = camera.orbitalFollow.HorizontalAxis;
+            var recentering = horizontal.Recentering;
+            recentering.Enabled = controllerRecentering.enabled;
+            recentering.Wait = controllerRecentering.wait;
+            recentering.Time = controllerRecentering.time;
+            horizontal.Recentering = recentering;
+            camera.orbitalFollow.HorizontalAxis = horizontal;
         }
 
         private void LateUpdate()
@@ -109,25 +203,31 @@ namespace Game
 
         private void UpdateClampSettings()
         {
-            var vertical = explorationCamera.orbitalFollow.VerticalAxis;
+            var active = _currentCamera == CameraType.Bow ? bowCamera : explorationCamera;
+            
+            var vertical = active.orbitalFollow.VerticalAxis;
             vertical.Range = new Vector2(pitchMin, pitchMax);
             vertical.Value = Mathf.Clamp(vertical.Value, pitchMin, pitchMax);
-            explorationCamera.orbitalFollow.VerticalAxis = vertical;
+            active.orbitalFollow.VerticalAxis = vertical;
         }
 
         private void UpdateRecenterSettings()
         {
-            var horizontal = explorationCamera.orbitalFollow.HorizontalAxis;
+            var active = _currentCamera == CameraType.Bow ? bowCamera : explorationCamera;
+            
+            var horizontal = active.orbitalFollow.HorizontalAxis;
             var recentering = horizontal.Recentering;
             recentering.Enabled = controllerRecentering.enabled;
             recentering.Wait = controllerRecentering.wait;
             recentering.Time = controllerRecentering.time;
             horizontal.Recentering = recentering;
-            explorationCamera.orbitalFollow.HorizontalAxis = horizontal;
+            active.orbitalFollow.HorizontalAxis = horizontal;
         }
 
         private void UpdateInputSettings()
         {
+            var active = _currentCamera == CameraType.Bow ? bowCamera : explorationCamera;
+            
             var look = _playerInputHandler.CameraInput;
             if (controllerInvertSettings.invertX) look.x = -look.x;
             if (controllerInvertSettings.invertY) look.y = -look.y;
@@ -138,13 +238,13 @@ namespace Game
             m_CurrentX = Mathf.SmoothDamp(m_CurrentX, targetX, ref m_VelocityX, Mathf.Max(controllerSmoothing.smoothTimeX, 0.0001f));
             m_CurrentY = Mathf.SmoothDamp(m_CurrentY, targetY, ref m_VelocityY, Mathf.Max(controllerSmoothing.smoothTimeY, 0.0001f));
 
-            var horizontal = explorationCamera.orbitalFollow.HorizontalAxis;
+            var horizontal = active.orbitalFollow.HorizontalAxis;
             horizontal.Value += m_CurrentX * Time.deltaTime;
-            explorationCamera.orbitalFollow.HorizontalAxis = horizontal;
+            active.orbitalFollow.HorizontalAxis = horizontal;
 
-            var vertical = explorationCamera.orbitalFollow.VerticalAxis;
+            var vertical = active.orbitalFollow.VerticalAxis;
             vertical.Value = Mathf.Clamp(vertical.Value + m_CurrentY * Time.deltaTime, pitchMin, pitchMax);
-            explorationCamera.orbitalFollow.VerticalAxis = vertical;
+            active.orbitalFollow.VerticalAxis = vertical;
         }
     }
 }
