@@ -11,10 +11,11 @@ namespace Game
         }
         public Mode mode = Mode.Standard;
         public Vector3 muzzleOffset;
-
         public Projectile projectile;
 
         [System.NonSerialized] public LayerMask projectileLayerMask = -1;
+
+        public Damageable Owner { get; private set; }
 
         public Projectile loadedProjectile
         {
@@ -30,8 +31,9 @@ namespace Game
             m_ProjectilePool.Initialize(20, projectile);
         }
 
-        public void Attack(Vector3 target)
+        public void Attack(Vector3 target, Damageable owner = null)
         {
+            Owner = owner;
             AttackProjectile(target);
         }
 
@@ -46,7 +48,7 @@ namespace Game
             m_LoadedProjectile.transform.localRotation = Quaternion.identity;
         }
 
-        void AttackProjectile(Vector3 target)
+        private void AttackProjectile(Vector3 target)
         {
             if (m_LoadedProjectile == null) LoadProjectile();
 

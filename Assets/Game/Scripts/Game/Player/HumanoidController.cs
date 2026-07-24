@@ -127,11 +127,6 @@ namespace Game
             _charCtrl = GetComponent<CharacterController>();
             _animCache     = new AnimatorStateCache(GetComponent<Animator>());
 
-            if (RangeWeaponRoot != null)
-            {
-                _rangedAttackHandler = new RangedAttackHandler(RangeWeaponRoot, TargetLayer);
-            }
-
             if (ModelTransform != null)
             {
                 _modelOriginalLocalRotation = ModelTransform.localRotation;
@@ -147,6 +142,11 @@ namespace Game
             _damageable.isInvulnerable = true;
             _damageable.onDamageBlocked = OnDamageBlocked;
             _renderers = GetComponentsInChildren<Renderer>();
+
+            if (RangeWeaponRoot != null)
+            {
+                _rangedAttackHandler = new RangedAttackHandler(RangeWeaponRoot, _damageable, TargetLayer);
+            }
         }
 
         private void OnDisable()

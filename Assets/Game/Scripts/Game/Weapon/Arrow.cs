@@ -21,6 +21,7 @@ namespace Game
         [SerializeField] private Trail trail;
 
         private RangeWeapon _shooter;
+        private Damageable _owner;
         private Vector3 _flightDirection;
         private float _sinceFired;
         private Transform _transform;
@@ -38,6 +39,7 @@ namespace Game
         public override void Shot(Vector3 target, RangeWeapon shooter)
         {
             _shooter = shooter;
+            _owner = shooter.Owner;
             _flightDirection = (target - _transform.position).normalized;
             _transform.rotation = Quaternion.LookRotation(_flightDirection);
             _sinceFired = 0.0f;
@@ -100,7 +102,7 @@ namespace Game
                 {
                     amount = damageAmount,
                     damageSource = _transform.position,
-                    damager = this,
+                    damager = _owner,
                     stopCamera = false,
                     throwing = true
                 };
