@@ -23,9 +23,10 @@ public class BowView : MonoBehaviour
     [SerializeField] private AnimTiming cancelTiming;
     
     [Header("Sounds")]
-    [SerializeField] private AudioClip loadSound;
-    [SerializeField] private  AudioClip releaseSound;
-    [SerializeField] private  AudioClip cancelSound;
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioStruct loadSound;
+    [SerializeField] private AudioStruct releaseSound;
+    [SerializeField] private AudioStruct cancelSound;
 
     [Header("Bowstring redraw")]
     [SerializeField] private float bowstringUpdateInterval;
@@ -90,9 +91,9 @@ public class BowView : MonoBehaviour
         var token = RestartAnimation();
         LoadBowAsync(loadTiming.Delay, loadTiming.Duration, token).Forget();
 
-        if (loadSound)
+        if (loadSound.AudioClip)
         {
-            AudioSource.PlayClipAtPoint(loadSound, transform.position);
+            audioSource.PlayOneShot(loadSound.AudioClip, loadSound.Volume);
         }
     }
 
@@ -106,9 +107,9 @@ public class BowView : MonoBehaviour
         var token = RestartAnimation();
         ShootArrowAsync(releaseTiming.Delay, releaseTiming.Duration, token).Forget();
         
-        if (releaseSound)
+        if (releaseSound.AudioClip)
         {
-            AudioSource.PlayClipAtPoint(releaseSound, transform.position);
+            audioSource.PlayOneShot(releaseSound.AudioClip, releaseSound.Volume);
         }
     }
 
@@ -117,9 +118,9 @@ public class BowView : MonoBehaviour
         var token = RestartAnimation();
         CancelLoadBowAsync(cancelTiming.Delay, cancelTiming.Duration, token).Forget();
         
-        if (cancelSound)
+        if (cancelSound.AudioClip)
         {
-            AudioSource.PlayClipAtPoint(cancelSound, transform.position);
+            audioSource.PlayOneShot(cancelSound.AudioClip, cancelSound.Volume);
         }
     }
     
