@@ -60,7 +60,8 @@ AnimatorState:
   m_Transitions:
   - {fileID: 5057429013977080183}
   - {fileID: -1102220166824807492}
-  m_StateMachineBehaviours: []
+  m_StateMachineBehaviours:
+  - {fileID: -4234243861876863698}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 1
   m_WriteDefaultValues: 1
@@ -555,6 +556,20 @@ AnimatorState:
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
+--- !u!114 &-5657803274491577588
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff902b288851de442ae0bdd7e706a3f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BowViewAnimationController
+  condition: 0
+  bowAction: 0
 --- !u!1101 &-5635910066956546945
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -932,6 +947,20 @@ AnimatorState:
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
+--- !u!114 &-4234243861876863698
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff902b288851de442ae0bdd7e706a3f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BowViewAnimationController
+  condition: 1
+  bowAction: 1
 --- !u!1101 &-4164525825145455350
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -5812,6 +5841,7 @@ AnimatorState:
   m_StateMachineBehaviours:
   - {fileID: 7870296673960583686}
   - {fileID: 2269712665868798243}
+  - {fileID: -5657803274491577588}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 1
   m_WriteDefaultValues: 1
