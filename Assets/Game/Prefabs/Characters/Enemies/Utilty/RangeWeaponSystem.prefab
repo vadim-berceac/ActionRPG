@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4403961952923620523}
   - component: {fileID: 3598345265513292795}
   m_Layer: 23
-  m_Name: RangeWeaponTest
+  m_Name: RangeWeaponSystem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -44,6 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8a16fbab0c6a57e43ae3d1658c4feded, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  muzzleOffset: {x: 0.1, y: 1.4, z: -0.7}
+  mode: 1
+  muzzleOffset: {x: 0.1, y: 1.25, z: -1}
   projectile: {fileID: -5278410550485328620, guid: 70114eef33aad434f9c5a08f93c9159d,
     type: 3}

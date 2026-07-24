@@ -6772,7 +6772,7 @@ PrefabInstance:
     - target: {fileID: 4985164280448093178, guid: ed9fd5f248f0cb04aaef6b80ab5e33c5,
         type: 3}
       propertyPath: m_Name
-      value: RangeWeaponTest
+      value: RangeWeaponSystem
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

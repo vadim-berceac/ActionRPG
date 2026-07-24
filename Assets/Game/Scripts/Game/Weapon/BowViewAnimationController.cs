@@ -19,7 +19,7 @@ public class BowViewAnimationController : StateMachineBehaviour
 
     public override void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
-        if(condition != ActionConditions.OnExit)
+        if (condition != ActionConditions.OnExit)
         {
             return;
         }
