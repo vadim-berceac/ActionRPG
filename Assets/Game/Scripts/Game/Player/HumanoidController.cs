@@ -82,6 +82,7 @@ namespace Game
         private float _idleTimer;
         private Vector3 _knockbackVelocity;
         private float _knockbackDeceleration = 15f;
+        private GameObject _projectileView;
 
         private const float AirborneTurnSpeedProportion = 5.4f;
         private const float GroundedRayDistance = 1f;
@@ -513,6 +514,22 @@ namespace Game
                 newYaw,
                 _modelOriginalLocalRotation.eulerAngles.z
             );
+        }
+
+        public void CreateProjectile()
+        {
+            if(_projectileView) return;
+            
+            _projectileView = Instantiate(_ammunitionWeaponData.ViewPrefab);
+            _ammunitionWeaponData.ActiveProp.SetPropBone(_projectileView.transform, propBones);
+        }
+
+        public void DestroyProjectile()
+        {
+            if (!_projectileView) return;
+            
+            Destroy(_projectileView);
+            _projectileView = null;
         }
 
         public void Shoot()

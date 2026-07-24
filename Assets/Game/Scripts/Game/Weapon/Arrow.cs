@@ -9,6 +9,11 @@ namespace Game
         [SerializeField] private int damageAmount = 1;
         [SerializeField] private LayerMask damageMask;
         [SerializeField] private ParticleSystem hitVFX;
+        
+        [Header("Sound")]
+        [SerializeField] private AudioStruct hitSound;
+        [SerializeField] private AudioStruct whooshSound;
+        [SerializeField] private AudioSource audioSource;
 
         private RangeWeapon _shooter;
         private Vector3 _flightDirection;
@@ -28,6 +33,11 @@ namespace Game
             _flightDirection = (target - transform.position).normalized;
             transform.rotation = Quaternion.LookRotation(_flightDirection);
             _sinceFired = 0.0f;
+
+            if (audioSource && whooshSound.AudioClip)
+            {
+                audioSource.PlayOneShot(whooshSound.AudioClip, whooshSound.Volume);
+            }
         }
 
         private void FixedUpdate()
@@ -72,9 +82,9 @@ namespace Game
 
             if (!closest) return;
 
-            var d = closest.GetComponent<Damageable>();
+            var damageable = closest.GetComponent<Damageable>();
 
-            if (d)
+            if (damageable)
             {
                 var message = new Damageable.DamageMessage
                 {
@@ -85,7 +95,7 @@ namespace Game
                     throwing = true
                 };
 
-                d.ApplyDamage(message);
+                damageable.ApplyDamage(message);
             }
 
             if (hitVFX)
@@ -93,6 +103,12 @@ namespace Game
                 var vfx = Instantiate(hitVFX, transform.position, Quaternion.identity);
                 vfx.Play();
                 Destroy(vfx.gameObject, vfx.main.duration + vfx.main.startLifetimeMultiplier);
+            }
+
+            if (audioSource && hitSound.AudioClip)
+            {
+                audioSource.Stop();
+                audioSource.PlayOneShot(hitSound.AudioClip, hitSound.Volume);
             }
 
             pool.Free(this);
