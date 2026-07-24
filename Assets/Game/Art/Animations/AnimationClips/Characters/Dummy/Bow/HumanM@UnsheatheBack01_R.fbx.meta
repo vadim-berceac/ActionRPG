@@ -1,13 +1,5 @@
 fileFormatVersion: 2
-guid: f367d1e1743ee3d458e2144d909e91b1
-AssetOrigin:
-  serializedVersion: 1
-  productId: 162341
-  packageName: Human Mega Animations Pack
-  packageVersion: 2.0
-  assetPath: Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/Bow/HumanM@BowShot01
-    - Load.fbx
-  uploadId: 912162
+guid: 9a4b11d364cc73449a06d48fc80d043a
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -39,11 +31,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: HumanM@BowShot01 - Load
-      takeName: HumanM@BowShot01 - Load
-      internalID: -8447606201520082545
+      name: HumanM@UnsheatheBack01_R
+      takeName: Untitled
+      internalID: 3094330708855449807
       firstFrame: 0
-      lastFrame: 25
+      lastFrame: 22
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -62,7 +54,14 @@ ModelImporter:
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
-      events: []
+      events:
+      - time: 0.5879985
+        functionName: CreateProjectile
+        data: 
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       transformMask:
       - path: 
         weight: 1
@@ -655,18 +654,18 @@ ModelImporter:
         length: 0
         modified: 0
     skeleton:
-    - name: HumanM_Model(Clone)
+    - name: Human_DummyModel_M(Clone)
       parentName: 
       position: {x: -0, y: 0, z: 0}
       rotation: {x: 0, y: -0, z: -0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: HumanM_BodyMesh
-      parentName: HumanM_Model(Clone)
+      parentName: Human_DummyModel_M(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: 0, y: -0, z: -0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: Rig
-      parentName: HumanM_Model(Clone)
+      parentName: Human_DummyModel_M(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: 0, y: -0, z: -0, w: 1}
       scale: {x: 1, y: 1, z: 1}
