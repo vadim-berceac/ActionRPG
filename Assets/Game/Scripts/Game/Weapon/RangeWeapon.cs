@@ -9,6 +9,7 @@ namespace Game
             Standard,
             ScreenCenter
         }
+
         public Mode mode = Mode.Standard;
         public Vector3 muzzleOffset;
         public Projectile projectile;
@@ -57,32 +58,22 @@ namespace Game
             if (mode == Mode.ScreenCenter)
             {
                 var cam = Camera.main;
-                if (cam != null)
+                if (cam)
                 {
-                    Ray ray = cam.ScreenPointToRay(new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f));
-                    if (Physics.Raycast(ray, out RaycastHit hit, 1000f, projectileLayerMask, QueryTriggerInteraction.Ignore))
+                    var ray = cam.ScreenPointToRay(new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f));
+                    if (Physics.Raycast(ray, out var hit, 100f, projectileLayerMask, QueryTriggerInteraction.Ignore))
                     {
                         target = hit.point;
                     }
                     else
                     {
-                        target = ray.origin + ray.direction * 1000f;
+                        target = ray.origin + ray.direction * 100f;
                     }
                 }
             }
 
             m_LoadedProjectile.Shot(target, this);
-            m_LoadedProjectile = null; //once shot, we don't own the projectile anymore, it does it's own life.
+            m_LoadedProjectile = null;
         }
-
-#if UNITY_EDITOR
-        private void OnDrawGizmosSelected()
-        {
-            Vector3 worldOffset = transform.TransformPoint(muzzleOffset);
-            UnityEditor.Handles.color = Color.yellow;
-            UnityEditor.Handles.DrawLine(worldOffset + Vector3.up * 0.4f, worldOffset + Vector3.down * 0.4f);
-            UnityEditor.Handles.DrawLine(worldOffset + Vector3.forward * 0.4f, worldOffset + Vector3.back * 0.4f);
-        }
-#endif
     }
 }

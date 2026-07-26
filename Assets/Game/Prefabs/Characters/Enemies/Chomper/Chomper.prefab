@@ -1117,7 +1117,6 @@ MonoBehaviour:
   - radius: 0.35
     offset: {x: 0, y: 0, z: 0}
     attackRoot: {fileID: 4667632706155090}
-  effects: []
   hitAudio: {fileID: 0}
   attackAudio: {fileID: 0}
 --- !u!1 &1246684386998542

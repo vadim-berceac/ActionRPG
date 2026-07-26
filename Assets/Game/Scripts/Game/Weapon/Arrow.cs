@@ -11,14 +11,12 @@ namespace Game
         [SerializeField] private LayerMask damageMask;
         [SerializeField] private LayerMask stuckMask;
         [SerializeField] private ParticleSystem hitVFX;
-        
-        [Header("Sound")]
-        [SerializeField] private AudioStruct hitSound;
+
+        [Header("Sound")] [SerializeField] private AudioStruct hitSound;
         [SerializeField] private AudioStruct whooshSound;
         [SerializeField] private AudioSource audioSource;
 
-        [Header("Trail")] 
-        [SerializeField] private Trail trail;
+        [Header("Trail")] [SerializeField] private Trail trail;
 
         private RangeWeapon _shooter;
         private Damageable _owner;
@@ -48,7 +46,7 @@ namespace Game
             {
                 audioSource.PlayOneShot(whooshSound.AudioClip, whooshSound.Volume);
             }
-            
+
             trail.enabled = true;
         }
 
@@ -71,8 +69,9 @@ namespace Game
             {
                 return;
             }
-            
-            Collider closest = null;
+
+            Damageable closestDamageable = null;
+            Vector3 vfxPos = default;
             var closestDist = float.MaxValue;
 
             for (var i = 0; i < count; i++)
@@ -83,36 +82,41 @@ namespace Game
                     continue;
                 }
 
-                var dist = Vector3.Distance(_transform.position, c.transform.position);
+                if (!c.TryGetComponent(out Damageable damageable))
+                {
+                    continue;
+                }
+
+                var dist = (_transform.position - c.transform.position).magnitude;
                 if (dist >= closestDist)
                 {
                     continue;
                 }
+
                 closestDist = dist;
-                closest = c;
+                closestDamageable = damageable;
+                vfxPos = c.bounds.center;
             }
 
-            if (!closest) return;
-
-            var damageable = closest.GetComponent<Damageable>();
-
-            if (damageable)
+            if (!closestDamageable)
             {
-                var message = new Damageable.DamageMessage
-                {
-                    amount = damageAmount,
-                    damageSource = _transform.position,
-                    damager = _owner,
-                    stopCamera = false,
-                    throwing = true
-                };
-
-                damageable.ApplyDamage(message);
+                return;
             }
+
+            var message = new Damageable.DamageMessage
+            {
+                amount = damageAmount,
+                damageSource = _transform.position,
+                damager = _owner,
+                stopCamera = false,
+                throwing = true
+            };
+
+            closestDamageable.ApplyDamage(message);
 
             if (hitVFX)
             {
-                var vfx = Instantiate(hitVFX, _transform.position, Quaternion.identity);
+                var vfx = Instantiate(hitVFX, vfxPos, Quaternion.identity);
                 vfx.Play();
                 Destroy(vfx.gameObject, vfx.main.duration + vfx.main.startLifetimeMultiplier);
             }
@@ -122,18 +126,10 @@ namespace Game
                 audioSource.Stop();
                 audioSource.PlayOneShot(hitSound.AudioClip, hitSound.Volume);
             }
-            
+
             trail.enabled = false;
 
             pool.Free(this);
         }
-
-#if UNITY_EDITOR
-        private void OnDrawGizmosSelected()
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(transform.position, 0.3f);
-        }
-#endif
     }
 }
