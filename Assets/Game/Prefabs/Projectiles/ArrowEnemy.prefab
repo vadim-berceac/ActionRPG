@@ -10,8 +10,23 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -5278410550485328620, guid: 70114eef33aad434f9c5a08f93c9159d,
         type: 3}
+      propertyPath: stuckMask.m_Bits
+      value: 66048
+      objectReference: {fileID: 0}
+    - target: {fileID: -5278410550485328620, guid: 70114eef33aad434f9c5a08f93c9159d,
+        type: 3}
       propertyPath: damageMask.m_Bits
       value: 512
+      objectReference: {fileID: 0}
+    - target: {fileID: -5278410550485328620, guid: 70114eef33aad434f9c5a08f93c9159d,
+        type: 3}
+      propertyPath: <PoolID>k__BackingField
+      value: 56
+      objectReference: {fileID: 0}
+    - target: {fileID: -5278410550485328620, guid: 70114eef33aad434f9c5a08f93c9159d,
+        type: 3}
+      propertyPath: <poolID>k__BackingField
+      value: 56
       objectReference: {fileID: 0}
     - target: {fileID: 1772244383996334, guid: 70114eef33aad434f9c5a08f93c9159d, type: 3}
       propertyPath: m_Name

@@ -1,49 +1,72 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Game
 {
-    public class ObjectPooler<T> where T : UnityEngine.MonoBehaviour, IPooled<T>
+    public class ObjectPooler<T> where T : MonoBehaviour, IPooled<T>
     {
-        public T[] instances;
+        private readonly Transform _parent;
+        private readonly T[] _instances;
+        private readonly Stack<int> _freeIdx;
 
-        protected Stack<int> m_FreeIdx;
-
-        public void Initialize(int count, T prefab)
+        public  ObjectPooler (int count, T prefab)
         {
-            instances = new T[count];
-            m_FreeIdx = new Stack<int>(count);
+            _parent = new GameObject(prefab.name).transform;
+            _instances = new T[count];
+            _freeIdx = new Stack<int>(count);
 
-            for (int i = 0; i < count; ++i)
+            for (var i = 0; i < count; ++i)
             {
-                instances[i] = Object.Instantiate(prefab);
-                instances[i].gameObject.SetActive(false);
-                instances[i].poolID = i;
-                instances[i].pool = this;
+                _instances[i] = Object.Instantiate(prefab);
+                _instances[i].gameObject.SetActive(false);
+                _instances[i].PoolID = i;
+                _instances[i].Pool = this;
 
-                m_FreeIdx.Push(i);
+                _freeIdx.Push(i);
+                
+                _instances[i].transform.SetParent(_parent);
             }
+        }
+
+        public void ClearAll()
+        {
+            if (_instances?.Length > 0)
+            {
+                foreach (var instance in _instances)
+                {
+                    Object.Destroy(instance);
+                }
+            }
+
+            if (!_parent)
+            {
+                return;
+            }
+            
+            Object.Destroy(_parent.gameObject);
         }
 
         public T GetNew()
         {
-            int idx = m_FreeIdx.Pop();
-            instances[idx].gameObject.SetActive(true);
+            var idx = _freeIdx.Pop();
+            _instances[idx].transform.SetParent(null);
+            _instances[idx].gameObject.SetActive(true);
 
-            return instances[idx];
+            return _instances[idx];
         }
 
         public void Free(T obj)
         {
-            m_FreeIdx.Push(obj.poolID);
-            instances[obj.poolID].gameObject.SetActive(false);
+            _freeIdx.Push(obj.PoolID);
+            _instances[obj.PoolID].gameObject.SetActive(false);
+            _instances[obj.PoolID].transform.SetParent(_parent);
         }
     }
 
     public interface IPooled<T> where T : MonoBehaviour, IPooled<T>
     {
-        int poolID { get; set; }
-        ObjectPooler<T> pool { get; set; }
+        int PoolID { get; set; }
+        ObjectPooler<T> Pool { get; set; }
     } 
 }

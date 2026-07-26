@@ -99,15 +99,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10f688ae8aec93f4182cec65824932a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Arrow
+  <PoolID>k__BackingField: 55
+  <Count>k__BackingField: 10
   projectileSpeed: 75
   lifetime: 3
-  damageAmount: 5
+  damageAmount: 0
   damageMask:
     serializedVersion: 2
     m_Bits: 8388608
   stuckMask:
     serializedVersion: 2
-    m_Bits: 65536
+    m_Bits: 8454144
+  stuckOffset: {x: 0, y: 0, z: -0.5}
   hitVFX: {fileID: 198200190501009950, guid: 400e06051701a8c4998087ae421728e3, type: 3}
   hitSound:
     <AudioClip>k__BackingField: {fileID: 8300000, guid: f3d9124e987d0214484d45579f241daf,

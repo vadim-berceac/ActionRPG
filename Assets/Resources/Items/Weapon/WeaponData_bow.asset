@@ -19,6 +19,7 @@ MonoBehaviour:
     type: 3}
   <Description>k__BackingField: '  Simple bow.'
   <CanBeEquipped>k__BackingField: 1
+  <Damage>k__BackingField: 0
   <ViewPrefab>k__BackingField: {fileID: 1205787345809761593, guid: f728c532090e76b41ab4aff9b4ab69af,
     type: 3}
   <ActiveProp>k__BackingField:

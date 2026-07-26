@@ -7,10 +7,10 @@ namespace Game
     {
         [SerializeField] private float projectileSpeed = 20f;
         [SerializeField] private float lifetime = 5f;
-        [SerializeField] private int damageAmount = 1;
+        
         [SerializeField] private LayerMask damageMask;
         [SerializeField] private LayerMask stuckMask;
-        [SerializeField] private ParticleSystem hitVFX;
+        [SerializeField] private Vector3 stuckOffset;
 
         [Header("Sound")] [SerializeField] private AudioStruct hitSound;
         [SerializeField] private AudioStruct whooshSound;
@@ -18,11 +18,14 @@ namespace Game
 
         [Header("Trail")] [SerializeField] private Trail trail;
 
+        private int _damageAmount;
+        private ParticleSystem _hitVFX;
         private RangeWeapon _shooter;
         private Damageable _owner;
         private Vector3 _flightDirection;
         private float _sinceFired;
         private Transform _transform;
+        private bool _stuck;
 
         private readonly Collider[] _hitCache = new Collider[8];
         private const float HitRadius = 0.5f;
@@ -31,7 +34,15 @@ namespace Game
         {
             _transform = transform;
             _sinceFired = 0.0f;
+            _stuck = false;
             trail.enabled = false;
+        }
+
+        public override void SetData(WeaponData data)
+        {
+            base.SetData(data);
+            _damageAmount  = data.Damage;
+            _hitVFX = data.hitParticlePrefab;
         }
 
         public override void Shot(Vector3 target, RangeWeapon shooter)
@@ -50,24 +61,45 @@ namespace Game
             trail.enabled = true;
         }
 
+        public override LayerMask GetDamageLayerMask()
+        {
+            return damageMask;
+        }
+
         private void FixedUpdate()
         {
             _sinceFired += Time.fixedDeltaTime;
 
-            var step = projectileSpeed * Time.fixedDeltaTime;
-            _transform.position += _flightDirection * step;
-
             if (_sinceFired > lifetime)
             {
-                pool.Free(this);
+                Pool.Free(this);
                 return;
             }
 
+            if (_stuck)
+            {
+                return;
+            }
+
+            var previousPosition = _transform.position;
+            var step = projectileSpeed * Time.fixedDeltaTime;
+            _transform.position = previousPosition + _flightDirection * step;
+
+            if (TryDamage())
+            {
+                return;
+            }
+
+            TryStick(previousPosition, step);
+        }
+
+        private bool TryDamage()
+        {
             var count = Physics.OverlapSphereNonAlloc(_transform.position, HitRadius, _hitCache, damageMask.value);
 
             if (count <= 0)
             {
-                return;
+                return false;
             }
 
             Damageable closestDamageable = null;
@@ -100,12 +132,12 @@ namespace Game
 
             if (!closestDamageable)
             {
-                return;
+                return false;
             }
 
             var message = new Damageable.DamageMessage
             {
-                amount = damageAmount,
+                amount = _damageAmount,
                 damageSource = _transform.position,
                 damager = _owner,
                 stopCamera = false,
@@ -113,23 +145,45 @@ namespace Game
             };
 
             closestDamageable.ApplyDamage(message);
+            PlayHitEffects(vfxPos, hitSound);
 
-            if (hitVFX)
+            trail.enabled = false;
+            Pool.Free(this);
+
+            return true;
+        }
+
+        private void TryStick(Vector3 previousPosition, float step)
+        {
+            if (!Physics.SphereCast(previousPosition, HitRadius, _flightDirection,
+                    out var hit, step, stuckMask.value, QueryTriggerInteraction.Ignore))
             {
-                var vfx = Instantiate(hitVFX, vfxPos, Quaternion.identity);
+                return;
+            }
+
+            _stuck = true;
+            _transform.position = hit.point + _transform.TransformDirection(stuckOffset);
+            trail.enabled = false;
+
+            PlayHitEffects(hit.point, default);
+        }
+
+        private void PlayHitEffects(Vector3 position, AudioStruct sound)
+        {
+            if (_hitVFX)
+            {
+                var vfx = Instantiate(_hitVFX, position, Quaternion.identity);
                 vfx.Play();
                 Destroy(vfx.gameObject, vfx.main.duration + vfx.main.startLifetimeMultiplier);
             }
 
-            if (audioSource && hitSound.AudioClip)
+            if (!audioSource || !sound.AudioClip)
             {
-                audioSource.Stop();
-                audioSource.PlayOneShot(hitSound.AudioClip, hitSound.Volume);
+                return;
             }
-
-            trail.enabled = false;
-
-            pool.Free(this);
+            
+            audioSource.Stop();
+            audioSource.PlayOneShot(sound.AudioClip, sound.Volume);
         }
     }
 }

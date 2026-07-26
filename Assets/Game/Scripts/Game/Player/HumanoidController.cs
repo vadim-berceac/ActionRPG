@@ -261,6 +261,7 @@ namespace Game
         
         public void CreateAmmunition(WeaponData fromData)
         {
+            RangeWeaponRoot.SetData(fromData);
             CreateWeapon(fromData, ref _ammunitionWeaponData, ref _ammunitionWeaponInstance, _animCache.Shoot);
         }
 

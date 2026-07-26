@@ -68,6 +68,11 @@ namespace Game
             transform.forward = target - transform.position;
         }
 
+        public override LayerMask GetDamageLayerMask()
+        {
+            return damageMask;
+        }
+
         private void FixedUpdate()
         {
             m_SinceFired += Time.deltaTime;
@@ -113,7 +118,7 @@ namespace Game
                     d.ApplyDamage(message);
             }
 
-            pool.Free(this);
+            Pool.Free(this);
 
             Vector3 playPosition = transform.position;
             Vector3 playNormal = Vector3.up;

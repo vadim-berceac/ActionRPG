@@ -10,13 +10,11 @@ namespace Game
     {
         private readonly RangeWeapon _rangeWeapon;
         private readonly Damageable _owner;
-        private LayerMask _targetLayer;
 
         public RangedAttackHandler(RangeWeapon rangeWeapon, Damageable owner, LayerMask targetLayer)
         {
             _rangeWeapon = rangeWeapon;
             _owner = owner;
-            _targetLayer = targetLayer;
         }
 
         /// <summary>
@@ -27,17 +25,7 @@ namespace Game
             if (_rangeWeapon == null)
                 return;
 
-            // Set target layer so the projectile damages only objects on this layer
-            _rangeWeapon.projectileLayerMask = _targetLayer;
             _rangeWeapon.Attack(targetPosition, _owner);
-        }
-
-        /// <summary>
-        /// Update the target layer mask (e.g. when weapon owner changes layers).
-        /// </summary>
-        public void SetTargetLayer(LayerMask targetLayer)
-        {
-            _targetLayer = targetLayer;
         }
 
         /// <summary>

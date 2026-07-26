@@ -45,6 +45,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mode: 1
-  muzzleOffset: {x: 0.1, y: 1.25, z: -1}
+  muzzleOffset: {x: 0.1, y: 1.25, z: 1}
   projectile: {fileID: -5278410550485328620, guid: 70114eef33aad434f9c5a08f93c9159d,
     type: 3}

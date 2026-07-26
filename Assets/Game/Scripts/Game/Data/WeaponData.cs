@@ -19,7 +19,7 @@ public class WeaponData : ItemData
         [field: SerializeField] public GameObject Prefab { get; set; }
         [field: SerializeField] public PropBoneSettings BoneSettings { get; set; }
     }
-    
+    [field: SerializeField] public int Damage { get; set; }
     [field: SerializeField] public GameObject ViewPrefab { get; set; }
     [field: SerializeField] public PropBoneSettings ActiveProp { get; set; }
     [field: SerializeField] public PropBoneSettings UnActiveProp { get; set; }

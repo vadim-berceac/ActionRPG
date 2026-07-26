@@ -4,32 +4,36 @@ namespace Game
 {
     public class RangeWeapon : MonoBehaviour
     {
-        public enum Mode
+        private enum Mode
         {
             Standard,
             ScreenCenter
         }
 
-        public Mode mode = Mode.Standard;
-        public Vector3 muzzleOffset;
-        public Projectile projectile;
+        [SerializeField] private Mode mode = Mode.Standard;
+        [SerializeField] private Vector3 muzzleOffset;
+        [SerializeField] private Projectile projectile;
 
-        [System.NonSerialized] public LayerMask projectileLayerMask = -1;
-
+        private WeaponData _currentProjectileData;
+        private ObjectPooler<Projectile> _projectilePool;
+        
         public Damageable Owner { get; private set; }
+        public Projectile LoadedProjectile { get; private set; }
 
-        public Projectile loadedProjectile
+        public void SetData(WeaponData data)
         {
-            get { return m_LoadedProjectile; }
+            _currentProjectileData = null;
+            _projectilePool?.ClearAll();
+            _projectilePool = null;
+            
+            _currentProjectileData = data;
+            _projectilePool = new ObjectPooler<Projectile>(projectile.Count, projectile);
         }
 
-        protected Projectile m_LoadedProjectile = null;
-        protected ObjectPooler<Projectile> m_ProjectilePool;
-
-        private void Start()
+        private void OnDisable()
         {
-            m_ProjectilePool = new ObjectPooler<Projectile>();
-            m_ProjectilePool.Initialize(20, projectile);
+            _projectilePool?.ClearAll();
+            _projectilePool = null;
         }
 
         public void Attack(Vector3 target, Damageable owner = null)
@@ -40,20 +44,22 @@ namespace Game
 
         public void LoadProjectile()
         {
-            if (m_LoadedProjectile != null)
+            if (LoadedProjectile != null)
                 return;
 
-            m_LoadedProjectile = m_ProjectilePool.GetNew();
-            m_LoadedProjectile.transform.SetParent(transform, false);
-            m_LoadedProjectile.transform.localPosition = muzzleOffset;
-            m_LoadedProjectile.transform.localRotation = Quaternion.identity;
+            LoadedProjectile = _projectilePool.GetNew();
+            
+            LoadedProjectile.SetData(_currentProjectileData);
+            LoadedProjectile.transform.SetParent(transform, false);
+            LoadedProjectile.transform.localPosition = muzzleOffset;
+            LoadedProjectile.transform.localRotation = Quaternion.identity;
         }
 
         private void AttackProjectile(Vector3 target)
         {
-            if (m_LoadedProjectile == null) LoadProjectile();
+            if (!LoadedProjectile) LoadProjectile();
 
-            m_LoadedProjectile.transform.SetParent(null, true);
+            LoadedProjectile.transform.SetParent(null, true);
 
             if (mode == Mode.ScreenCenter)
             {
@@ -61,7 +67,7 @@ namespace Game
                 if (cam)
                 {
                     var ray = cam.ScreenPointToRay(new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f));
-                    if (Physics.Raycast(ray, out var hit, 100f, projectileLayerMask, QueryTriggerInteraction.Ignore))
+                    if (Physics.Raycast(ray, out var hit, 100f, LoadedProjectile.GetDamageLayerMask(), QueryTriggerInteraction.Ignore))
                     {
                         target = hit.point;
                     }
@@ -72,8 +78,8 @@ namespace Game
                 }
             }
 
-            m_LoadedProjectile.Shot(target, this);
-            m_LoadedProjectile = null;
+            LoadedProjectile.Shot(target, this);
+            LoadedProjectile = null;
         }
     }
 }
