@@ -7,6 +7,7 @@ namespace Game
     {
         [SerializeField] private float projectileSpeed = 20f;
         [SerializeField] private float lifetime = 5f;
+        [SerializeField] private float hitRadius = 0.5f;
         
         [SerializeField] private LayerMask damageMask;
         [SerializeField] private LayerMask stuckMask;
@@ -28,7 +29,6 @@ namespace Game
         private bool _stuck;
 
         private readonly Collider[] _hitCache = new Collider[8];
-        private const float HitRadius = 0.5f;
 
         private void OnEnable()
         {
@@ -95,7 +95,7 @@ namespace Game
 
         private bool TryDamage()
         {
-            var count = Physics.OverlapSphereNonAlloc(_transform.position, HitRadius, _hitCache, damageMask.value);
+            var count = Physics.OverlapSphereNonAlloc(_transform.position, hitRadius, _hitCache, damageMask.value);
 
             if (count <= 0)
             {
@@ -155,7 +155,7 @@ namespace Game
 
         private void TryStick(Vector3 previousPosition, float step)
         {
-            if (!Physics.SphereCast(previousPosition, HitRadius, _flightDirection,
+            if (!Physics.SphereCast(previousPosition, hitRadius, _flightDirection,
                     out var hit, step, stuckMask.value, QueryTriggerInteraction.Ignore))
             {
                 return;
