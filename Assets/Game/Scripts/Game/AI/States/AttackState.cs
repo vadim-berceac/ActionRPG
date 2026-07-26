@@ -162,6 +162,13 @@ public class AttackState : AsyncState
 
         if (IsOutOfRange())
         {
+            // Если есть дальнобойное оружие и цель не слишком далеко — переключаемся на стрельбу
+            if (StateMachine.Ctx.HasRangedWeapon)
+            {
+                await StateMachine.TransitionTo(StateMachine.ShootState);
+                return;
+            }
+
             await StateMachine.TransitionTo(StateMachine.ChaseState);
         }
     }

@@ -1,7 +1,9 @@
 using System;
+using Cysharp.Threading.Tasks;
 using Game;
 using UnityEngine;
 using UnityEngine.AI;
+using Random = UnityEngine.Random;
 
 public class StateMachineContext : IDisposable
 {
@@ -13,6 +15,10 @@ public class StateMachineContext : IDisposable
     public bool IsDead { get; private set; }
     public bool IsGrounded => _humanoidController.IsGrounded;
     public bool HasAdditionalWeapon => _humanoidController.HasAdditionalWeapon;
+    public bool HasRangedWeapon => _humanoidController.RangedWeaponData != null
+                                   && _humanoidController.RangeWeaponRoot != null;
+    public float LoadProgressCurve => _humanoidController.LoadProgressCurve;
+    public void TriggerRangedAttack() => _humanoidController.TriggerRangedAttack();
     public EnemyBehaviorMode BehaviorMode { get; private set; }
     public PatrolMode PatrolMode { get; private set; }
 
@@ -118,7 +124,7 @@ public class StateMachineContext : IDisposable
     {
         // В Neutral режиме игнорируем обнаружение целей, пока не вступили в бой
         if (BehaviorMode == EnemyBehaviorMode.Neutral
-            && (_fsm == null || (_fsm.CurrentState != _fsm.ChaseState && _fsm.CurrentState != _fsm.AttackState)))
+            && (_fsm == null || (_fsm.CurrentState != _fsm.ChaseState && _fsm.CurrentState != _fsm.AttackState && _fsm.CurrentState != _fsm.ShootState)))
         {
             return;
         }
@@ -157,12 +163,13 @@ public class StateMachineContext : IDisposable
         // преследование с актуальной позицией цели.
         DamageTakenRecently = true;
 
-        // При получении удара всегда переводим врага в AlarmState, если он не в атаке и не мёртв.
+        // При получении удара всегда переводим врага в AlarmState, если он не в атаке, не стреляет и не мёртв.
         // Это критически важно для "застрявших" врагов: если враг в ChaseState, но не может
         // достигнуть цели (устаревшая lastKnown позиция, физическое выталкивание и т.д.),
         // удар по нему должен "разбудить" его и заставить перезапустить преследование.
         if (_fsm != null
             && _fsm.CurrentState != _fsm.AttackState
+            && _fsm.CurrentState != _fsm.ShootState
             && _fsm.CurrentState != _fsm.DeathState)
         {
             await _fsm.TransitionTo(_fsm.AlarmState);
@@ -173,6 +180,16 @@ public class StateMachineContext : IDisposable
             if (IsTargetVisible(damagerDamageable))
             {
                 attackState.OnAttackDetected();
+            }
+        }
+        // Если мы в состоянии стрельбы и цель видна — также можем блокировать
+        else if (_fsm != null && _fsm.CurrentState == _fsm.ShootState && _fsm.ShootState is ShootState shootState)
+        {
+            if (IsTargetVisible(damagerDamageable) && Random.value <= 0.7f)
+            {
+                // При получении урона во время стрельбы — переключаемся на BlockState
+                // (аналогично AttackState.OnAttackDetected)
+                _fsm.TransitionTo(_fsm.BlockState).Forget();
             }
         }
     }

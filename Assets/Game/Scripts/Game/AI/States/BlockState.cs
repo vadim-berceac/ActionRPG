@@ -112,6 +112,13 @@ public class BlockState : AsyncState
 
         if (IsOutOfRange())
         {
+            // Если есть дальнобойное оружие — переключаемся на стрельбу
+            if (StateMachine.Ctx.HasRangedWeapon)
+            {
+                await StateMachine.TransitionTo(StateMachine.ShootState);
+                return;
+            }
+
             await StateMachine.TransitionTo(StateMachine.ChaseState);
             return;
         }

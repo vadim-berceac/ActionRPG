@@ -37,5 +37,6 @@ public static class Constants
     public const float CornerProbeDistance = 2.0f;
     public const float WallSlideStrength = 0.6f;
     public const float WallSlideProbeDistance = 1.0f;
+    public const float PreferredShootDistance = 35f;
     public static readonly int ObstacleLayerMask = Physics.DefaultRaycastLayers;
 }
