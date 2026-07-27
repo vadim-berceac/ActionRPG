@@ -19,6 +19,7 @@ public class StateMachineContext : IDisposable
                                    && _humanoidController.RangeWeaponRoot != null;
     public float LoadProgressCurve => _humanoidController.LoadProgressCurve;
     public void TriggerRangedAttack() => _humanoidController.TriggerRangedAttack();
+    public float LastRangedFireTime { get; set; } = -10f;
     public EnemyBehaviorMode BehaviorMode { get; private set; }
     public PatrolMode PatrolMode { get; private set; }
 

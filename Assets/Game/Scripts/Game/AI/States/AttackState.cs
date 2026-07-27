@@ -38,7 +38,7 @@ public class AttackState : AsyncState
             var attackResult = await TryExecuteAttack(CancellationTokenSource.Token)
                 .SuppressCancellationThrow();
 
-            if (attackResult) break;
+            if (attackResult.Result) break;
             if (IsCancelled) break;
 
             // Небольшая задержка между атаками, но с ранним выходом по условиям
@@ -57,9 +57,10 @@ public class AttackState : AsyncState
         await UniTask.CompletedTask;
     }
 
-    private async UniTask TryExecuteAttack(CancellationToken ct)
+    private async UniTask<bool> TryExecuteAttack(CancellationToken ct)
     {
         await AIActions.AttackAsync(ct, StateMachine);
+        return true;
     }
 
     public void OnAttackDetected()

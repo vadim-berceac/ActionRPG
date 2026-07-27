@@ -647,10 +647,8 @@ namespace Game
         /// </summary>
         public void TriggerRangedAttack()
         {
-            // ProcessAttack каждый FixedUpdate делает ResetAttack1(),
-            // поэтому прямой SetTrigger может быть сброшен.
-            // Решение: временно включить canAttack и установить Input.Attack1 = true.
-            // ProcessAttack подхватит Attack1 на следующем FixedUpdate и вызовет TriggerAttack1.
+            // Включаем canAttack и устанавливаем Attack1
+            // ProcessAttack() в следующем FixedUpdate подхватит Attack1 и вызовет TriggerAttack1()
             canAttack = true;
             _input.Attack1 = true;
         }
