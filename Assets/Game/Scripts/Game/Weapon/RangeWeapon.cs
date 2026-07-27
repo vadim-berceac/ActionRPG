@@ -25,6 +25,7 @@ namespace Game
         public Damageable Owner { get; private set; }
         public Projectile LoadedProjectile { get; private set; }
         public Transform AimTarget { get; private set; }
+        public float VerticalAimAngle { get; private set; }
 
         private void Awake()
         {
@@ -33,6 +34,8 @@ namespace Game
             AimTarget.SetParent(transform, false);
             AimTarget.localPosition = Vector3.up + Vector3.forward * 10f;
             _lastTarget = AimTarget.position;
+
+            UpdateVerticalAimAngle();
         }
 
         private void OnEnable()
@@ -124,8 +127,19 @@ namespace Game
             while (!token.IsCancellationRequested)
             {
                 AimTarget.position = ResolveTarget(_lastTarget);
+                UpdateVerticalAimAngle();
                 await UniTask.Yield(PlayerLoopTiming.Update, token);
             }
+        }
+        
+        private void UpdateVerticalAimAngle()
+        {
+            var direction = AimTarget.position - transform.position;
+            if (direction.sqrMagnitude < 0.0001f)
+                return;
+
+            var localDir = transform.InverseTransformDirection(direction.normalized);
+            VerticalAimAngle = Mathf.Atan2(localDir.y, localDir.z) * Mathf.Rad2Deg;
         }
     }
 }

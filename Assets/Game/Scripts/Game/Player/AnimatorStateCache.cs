@@ -5,10 +5,12 @@ namespace Game
     public class AnimatorStateCache
     {
         private readonly Animator _animator;
+        private readonly RangeWeapon _rangeWeapon;
 
-        public AnimatorStateCache(Animator animator)
+        public AnimatorStateCache(Animator animator, RangeWeapon  range)
         {
             _animator = animator;
+            _rangeWeapon = range;
         }
 
         public int HashLocomotion  { get; } = Animator.StringToHash("Locomotion");
@@ -37,6 +39,7 @@ namespace Game
         private readonly int _hashHasAdditionalWeapon   = Animator.StringToHash("HasAdditionalWeapon");
         private readonly int _hashRespawn               = Animator.StringToHash("Respawn");
         private readonly int _blockHitTrigger          = Animator.StringToHash("BlockHitTrigger");
+        private readonly int _hashVerticalAimAngle     =  Animator.StringToHash("VerticalAimAngle");
         
         private const string BlockInput = "BlockInput";
 
@@ -63,6 +66,7 @@ namespace Game
 
             FootFall = _animator.GetFloat(_hashFootFall);
             LoadProgressCurve = _animator.GetFloat(_hashLoadProgressCurve);
+            _animator.SetFloat(_hashVerticalAimAngle, _rangeWeapon.VerticalAimAngle);
         }
 
         public bool IsInState(int hash)            => _current.shortNameHash == hash || _next.shortNameHash == hash;

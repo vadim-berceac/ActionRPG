@@ -126,7 +126,7 @@ namespace Game
         private void Awake()
         {
             _charCtrl = GetComponent<CharacterController>();
-            _animCache     = new AnimatorStateCache(GetComponent<Animator>());
+            _animCache     = new AnimatorStateCache(GetComponent<Animator>(), RangeWeaponRoot);
 
             if (ModelTransform != null)
             {
