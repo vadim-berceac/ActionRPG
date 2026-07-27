@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Threading;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 namespace Game
 {
@@ -13,12 +15,47 @@ namespace Game
         [SerializeField] private Mode mode = Mode.Standard;
         [SerializeField] private Vector3 muzzleOffset;
         [SerializeField] private Projectile projectile;
+        [SerializeField] private float aimRayDistance = 100f;
 
         private WeaponData _currentProjectileData;
         private ObjectPooler<Projectile> _projectilePool;
-        
+        private CancellationTokenSource _aimUpdateCts;
+        private Vector3 _lastTarget;
+
         public Damageable Owner { get; private set; }
         public Projectile LoadedProjectile { get; private set; }
+        public Transform AimTarget { get; private set; }
+
+        private void Awake()
+        {
+            var aimTargetObject = new GameObject($"{name}_AimTarget");
+            AimTarget = aimTargetObject.transform;
+            AimTarget.SetParent(transform, false);
+            AimTarget.localPosition = Vector3.up + Vector3.forward * 10f;
+            _lastTarget = AimTarget.position;
+        }
+
+        private void OnEnable()
+        {
+            _aimUpdateCts = new CancellationTokenSource();
+            UpdateAimTargetLoop(_aimUpdateCts.Token).Forget();
+        }
+
+        private void OnDisable()
+        {
+            _aimUpdateCts?.Cancel();
+            _aimUpdateCts?.Dispose();
+            _aimUpdateCts = null;
+
+            _projectilePool?.ClearAll();
+            _projectilePool = null;
+        }
+
+        private void OnDestroy()
+        {
+            if (AimTarget != null)
+                Destroy(AimTarget.gameObject);
+        }
 
         public void SetData(WeaponData data)
         {
@@ -28,12 +65,6 @@ namespace Game
             
             _currentProjectileData = data;
             _projectilePool = new ObjectPooler<Projectile>(projectile.Count, projectile);
-        }
-
-        private void OnDisable()
-        {
-            _projectilePool?.ClearAll();
-            _projectilePool = null;
         }
 
         public void Attack(Vector3 target, Damageable owner = null)
@@ -61,25 +92,40 @@ namespace Game
 
             LoadedProjectile.transform.SetParent(null, true);
 
-            if (mode == Mode.ScreenCenter)
-            {
-                var cam = Camera.main;
-                if (cam)
-                {
-                    var ray = cam.ScreenPointToRay(new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f));
-                    if (Physics.Raycast(ray, out var hit, 100f, LoadedProjectile.GetDamageLayerMask(), QueryTriggerInteraction.Ignore))
-                    {
-                        target = hit.point;
-                    }
-                    else
-                    {
-                        target = ray.origin + ray.direction * 100f;
-                    }
-                }
-            }
+            target = ResolveTarget(target);
+            _lastTarget = target;
 
             LoadedProjectile.Shot(target, this);
             LoadedProjectile = null;
+        }
+
+        private Vector3 ResolveTarget(Vector3 fallbackTarget)
+        {
+            if (mode != Mode.ScreenCenter)
+                return fallbackTarget;
+
+            var cam = Camera.main;
+            if (!cam)
+                return fallbackTarget;
+
+            var layerMask = LoadedProjectile != null
+                ? LoadedProjectile.GetDamageLayerMask()
+                : projectile.GetDamageLayerMask();
+
+            var ray = cam.ScreenPointToRay(new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f));
+            if (Physics.Raycast(ray, out var hit, aimRayDistance, layerMask, QueryTriggerInteraction.Ignore))
+                return hit.point;
+
+            return ray.origin + ray.direction * aimRayDistance;
+        }
+
+        private async UniTaskVoid UpdateAimTargetLoop(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                AimTarget.position = ResolveTarget(_lastTarget);
+                await UniTask.Yield(PlayerLoopTiming.Update, token);
+            }
         }
     }
 }
