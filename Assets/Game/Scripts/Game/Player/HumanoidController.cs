@@ -104,6 +104,7 @@ namespace Game
         public WeaponData PrimaryWeaponData => _primaryWeaponData;
         public WeaponData AdditionalWeaponData => _additionalWeaponData;
         public WeaponData RangedWeaponData => _rangedWeaponData;
+        public float LoadProgressCurve => _animCache.LoadProgressCurve;
 
         [Inject]
         private void Construct(DiContainer container, CameraSettings cameraSettings, HealthUI healthUI, PlayerInputHandlerService playerInputHandlerService)
@@ -313,7 +314,9 @@ namespace Game
 
         private void CalculateForwardMovement()
         {
-            var moveInput = _isBlocking || _shootPressed || _inAttack ? Vector2.zero : _input.MoveInput;
+            // Для AI движение при стрельбе разрешено (ShootState управляет позиционированием),
+            // для игрока — заблокировано (прицеливание требует неподвижности)
+            var moveInput = _isBlocking || (_shootPressed && IsPlayer) || _inAttack ? Vector2.zero : _input.MoveInput;
             if (moveInput.sqrMagnitude > 1f)
                 moveInput.Normalize();
 
@@ -635,6 +638,19 @@ namespace Game
                 _animCache.SetAirborneVerticalSpeed(_verticalSpeed);
 
             _animCache.SetGrounded(_isGrounded);
+        }
+
+        /// <summary>
+        /// Прямой вызов TriggerAttack1 для выстрела из лука (используется AI в ShootState).
+        /// Обходит canAttack и ResetAttack1, чтобы гарантированно инициировать анимацию выстрела.
+        /// Вызывается через UniTask.Delay, чтобы не блокировать основной поток.
+        /// </summary>
+        public void TriggerRangedAttack()
+        {
+            // Включаем canAttack и устанавливаем Attack1
+            // ProcessAttack() в следующем FixedUpdate подхватит Attack1 и вызовет TriggerAttack1()
+            canAttack = true;
+            _input.Attack1 = true;
         }
 
         public void MeleeAttackStart(int throwing = 0)

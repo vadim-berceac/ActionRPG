@@ -2,21 +2,20 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-public class AttackState : AsyncState
+public class ShootState : AsyncState
 {
-    public AttackState(AsyncStateMachine stateMachine) : base(stateMachine)
+    private const float AimDuration = 3f;
+    private const float ShootCooldown = 0.5f;
+
+    public ShootState(AsyncStateMachine stateMachine) : base(stateMachine)
     {
     }
 
     public override async UniTask OnEnter(CancellationToken ct)
     {
         await base.OnEnter(ct);
-        StopInput();
-        Debug.Log("Entering Attack State...");
-        // Запускаем первую атаку асинхронно, не блокируя вход в состояние
-        TryExecuteAttack(CancellationTokenSource.Token)
-            .SuppressCancellationThrow()
-            .Forget();
+        Debug.Log("Entering Shoot State...");
+        StateMachine.Ctx.Input.Shoot = true;
     }
 
     public override async UniTask OnUpdate(CancellationToken ct)
@@ -25,24 +24,37 @@ public class AttackState : AsyncState
 
         while (!IsCancelled && !StateMachine.Ctx.IsDead)
         {
-            // Если цель мертва или отсутствует — выходим
             if (!StateMachine.Ctx.Target || StateMachine.Ctx.Target.currentHitPoints <= 0)
                 break;
 
-            // Если цель вышла за радиус атаки — переходим в ChaseState
+            var distance = GetDistanceToTarget();
+
             if (IsOutOfRange())
+                break;
+
+            if (distance <= StateMachine.Ctx.PreferredAttackDistance * (StateMachine.Ctx.HasRangedWeapon ? 1f : 1.5f))
                 break;
 
             AdjustApproach();
 
-            var attackResult = await TryExecuteAttack(CancellationTokenSource.Token)
-                .SuppressCancellationThrow();
+            StateMachine.Ctx.Input.Shoot = true;
 
-            if (attackResult.Result) break;
-            if (IsCancelled) break;
+            var now = Time.time;
 
-            // Небольшая задержка между атаками, но с ранним выходом по условиям
-            await UniTask.Delay(200, cancellationToken: CancellationTokenSource.Token)
+            if (now - StateMachine.Ctx.LastRangedFireTime >= ShootCooldown + AimDuration)
+            {
+                StateMachine.Ctx.LastRangedFireTime = now;
+
+                StateMachine.Ctx.TriggerRangedAttack();
+                await UniTask.Delay(50, cancellationToken: CancellationTokenSource.Token)
+                    .SuppressCancellationThrow();
+                StateMachine.Ctx.Input.Attack1 = false;
+
+                await UniTask.Delay(100, cancellationToken: CancellationTokenSource.Token)
+                    .SuppressCancellationThrow();
+            }
+
+            await UniTask.Delay(50, cancellationToken: CancellationTokenSource.Token)
                 .SuppressCancellationThrow();
         }
 
@@ -55,20 +67,6 @@ public class AttackState : AsyncState
         await base.OnExit(ct);
         StopInput();
         await UniTask.CompletedTask;
-    }
-
-    private async UniTask<bool> TryExecuteAttack(CancellationToken ct)
-    {
-        await AIActions.AttackAsync(ct, StateMachine);
-        return true;
-    }
-
-    public void OnAttackDetected()
-    {
-        if (Random.value <= 0.7f && StateMachine.Ctx.IsTargetVisible(StateMachine.Ctx.Target))
-        {
-            StateMachine.TransitionTo(StateMachine.BlockState).Forget();
-        }
     }
 
     private float _approachThrottle;
@@ -91,9 +89,8 @@ public class AttackState : AsyncState
 
         if (distance < 0.01f) return;
 
-        var preferredDistance = StateMachine.Ctx.PreferredAttackDistance;
-        var deadZoneMin = preferredDistance * 0.75f;
-        var deadZoneMax = preferredDistance * 1.25f;
+        var deadZoneMin = Constants.PreferredShootDistance * 0.75f;
+        var deadZoneMax = Constants.PreferredShootDistance * 1.25f;
 
         if (distance >= deadZoneMin && distance <= deadZoneMax)
         {
@@ -105,7 +102,7 @@ public class AttackState : AsyncState
             return;
         }
 
-        var moveTarget = targetPos - toTarget.normalized * preferredDistance;
+        var moveTarget = targetPos - toTarget.normalized * Constants.PreferredShootDistance;
         var toMove = myPos - moveTarget;
         toMove.y = 0f;
 
@@ -120,23 +117,32 @@ public class AttackState : AsyncState
         }
 
         var targetThrottle = Mathf.Lerp(0.3f, 0.7f,
-            Mathf.Clamp01(toMove.magnitude / preferredDistance));
+            Mathf.Clamp01(toMove.magnitude / Constants.PreferredShootDistance));
         _approachThrottle = Mathf.MoveTowards(_approachThrottle, targetThrottle, 3f * Time.deltaTime);
         StateMachine.Ctx.Input.MoveInput = new Vector2(0f, _approachThrottle);
     }
 
-    private bool IsOutOfRange()
+    private float GetDistanceToTarget()
     {
-        if (!StateMachine.Ctx.Target) return false;
-
-        var distance = Vector3.Distance(StateMachine.Ctx.Transform.position, StateMachine.Ctx.Target.Transform.position);
-        return distance > StateMachine.Ctx.PreferredAttackDistance * 1.5f;
+        if (!StateMachine.Ctx.Target) return float.MaxValue;
+        return Vector3.Distance(
+            StateMachine.Ctx.Transform.position,
+            StateMachine.Ctx.Target.Transform.position);
     }
 
+    private bool IsOutOfRange()
+    {
+        if (!StateMachine.Ctx.Target) return true;
+
+        var distance = GetDistanceToTarget();
+
+        return distance > Constants.PreferredShootDistance;
+    }
 
     private void StopInput()
     {
         StateMachine.Ctx.Input.MoveInput = Vector2.zero;
+        StateMachine.Ctx.Input.Shoot = false;
         StateMachine.Ctx.Input.Attack1 = false;
         StateMachine.Ctx.Input.Attack2 = false;
         StateMachine.Ctx.Input.JumpInput = false;
@@ -153,7 +159,6 @@ public class AttackState : AsyncState
             return;
         }
 
-        // Если цель мертва — сбрасываем и переходим в ожидание
         if (!StateMachine.Ctx.Target || StateMachine.Ctx.Target.currentHitPoints <= 0)
         {
             StateMachine.Ctx.ClearLastKnownTargetPosition();
@@ -161,16 +166,18 @@ public class AttackState : AsyncState
             return;
         }
 
+        var distance = GetDistanceToTarget();
+
+        if (distance <= StateMachine.Ctx.PreferredAttackDistance * 1.5f)
+        {
+            await StateMachine.TransitionTo(StateMachine.AttackState);
+            return;
+        }
+
         if (IsOutOfRange())
         {
-            // Если есть дальнобойное оружие и цель не слишком далеко — переключаемся на стрельбу
-            if (StateMachine.Ctx.HasRangedWeapon)
-            {
-                await StateMachine.TransitionTo(StateMachine.ShootState);
-                return;
-            }
-
             await StateMachine.TransitionTo(StateMachine.ChaseState);
+            return;
         }
     }
 }

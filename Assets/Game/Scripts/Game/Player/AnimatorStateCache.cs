@@ -31,6 +31,7 @@ namespace Game
         private readonly int _hashHurtFromY             = Animator.StringToHash("HurtFromY");
         private readonly int _hashStateTime             = Animator.StringToHash("StateTime");
         private readonly int _hashFootFall              = Animator.StringToHash("FootFall");
+        private readonly int _hashLoadProgressCurve     = Animator.StringToHash("LoadProgressCurve");
         private readonly int _hashWeaponEquipped        = Animator.StringToHash("WeaponEquipped");
         private readonly int _hashWeaponIndex           = Animator.StringToHash("WeaponIndex");
         private readonly int _hashHasAdditionalWeapon   = Animator.StringToHash("HasAdditionalWeapon");
@@ -48,6 +49,7 @@ namespace Game
         private bool _hasAdditionalWeapon;
 
         public float FootFall { get; private set; }
+        public float LoadProgressCurve { get; private set; }
 
         public void OnUpdate(int layer = 0)
         {
@@ -60,6 +62,7 @@ namespace Game
             _isTransitioning = _animator.IsInTransition(layer);
 
             FootFall = _animator.GetFloat(_hashFootFall);
+            LoadProgressCurve = _animator.GetFloat(_hashLoadProgressCurve);
         }
 
         public bool IsInState(int hash)            => _current.shortNameHash == hash || _next.shortNameHash == hash;
