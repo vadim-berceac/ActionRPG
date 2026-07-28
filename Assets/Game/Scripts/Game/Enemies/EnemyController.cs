@@ -52,8 +52,8 @@ namespace Game
             if (m_BlockerCollider == null)
                 m_BlockerCollider = GetComponentInChildren<Collider>();
 
-            if (m_BlockerCollider != null)
-                m_BlockerCollider.isTrigger = true;
+            // if (m_BlockerCollider != null)
+            //     m_BlockerCollider.isTrigger = true;
 
             m_FollowNavmeshAgent = true;
         }

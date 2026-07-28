@@ -159,7 +159,11 @@ public class Equipment : MonoBehaviour
 
         if (slot == _rangedWeapon)
         {
-            
+            _humanoidController.CreateRangedWeapon(null);
+        }
+        if (slot == _ammunition)
+        {
+            _humanoidController.CreateAmmunition(null);
         }
         ReturnToInventory(slot.ItemData, slot.Amount);
         slot.Dispose();

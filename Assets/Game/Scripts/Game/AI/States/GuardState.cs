@@ -184,11 +184,22 @@ public class GuardState : AsyncState
         }
 
         if (StateMachine.Ctx.Target
-            && StateMachine.Ctx.TryGetLastKnownTargetPosition(out var destPos)
-            && Vector3.Distance(StateMachine.Ctx.Transform.position, destPos) <= StateMachine.Ctx.PreferredAttackDistance)
+            && StateMachine.Ctx.TryGetLastKnownTargetPosition(out var destPos))
         {
-            await StateMachine.TransitionTo(StateMachine.AttackState);
-            return;
+            var distance = Vector3.Distance(StateMachine.Ctx.Transform.position, destPos);
+
+            // Если есть дальнобойное оружие и цель дальше melee-дистанции — стреляем
+            if (StateMachine.Ctx.HasRangedWeapon && distance > StateMachine.Ctx.PreferredAttackDistance * 1.5f)
+            {
+                await StateMachine.TransitionTo(StateMachine.ShootState);
+                return;
+            }
+
+            if (distance <= StateMachine.Ctx.PreferredAttackDistance)
+            {
+                await StateMachine.TransitionTo(StateMachine.AttackState);
+                return;
+            }
         }
 
         if (StateMachine.Ctx.Target)

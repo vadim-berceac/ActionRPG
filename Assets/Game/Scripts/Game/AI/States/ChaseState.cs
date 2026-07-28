@@ -121,7 +121,6 @@ public class ChaseState : AsyncState
             if (target == null || target.currentHitPoints <= 0) break;
 
             var targetPosition = target.Transform.position;
-            var stopDistance = StateMachine.Ctx.PreferredAttackDistance;
 
             if (IsWithinStopDistance(targetPosition)) break;
 
@@ -134,6 +133,11 @@ public class ChaseState : AsyncState
             var distance = toTarget.magnitude;
             if (distance <= 0.01f) break;
 
+            // Используем ту же stop distance что и IsWithinStopDistance, чтобы
+            // DirectChase остановился на правильной дистанции (35 для ranged оружия)
+            var stopDistance = StateMachine.Ctx.HasRangedWeapon
+                ? Constants.PreferredShootDistance
+                : StateMachine.Ctx.PreferredAttackDistance;
             var moveTarget = targetPosition - toTarget.normalized * stopDistance;
             var toMove = moveTarget - StateMachine.Ctx.Transform.position;
             toMove.y = 0f;
@@ -162,7 +166,11 @@ public class ChaseState : AsyncState
     private bool IsWithinStopDistance(Vector3 point)
     {
         var distance = Vector3.Distance(StateMachine.Ctx.Transform.position, point);
-        return distance <= StateMachine.Ctx.PreferredAttackDistance;
+        // Если есть дальнобойное оружие — останавливаемся на дистанции стрельбы
+        var stopDistance = StateMachine.Ctx.HasRangedWeapon
+            ? Constants.PreferredShootDistance
+            : StateMachine.Ctx.PreferredAttackDistance;
+        return distance <= stopDistance;
     }
 
     private void StopInput()
@@ -235,10 +243,19 @@ public class ChaseState : AsyncState
         var target = StateMachine.Ctx.Target;
         if (target != null && target.currentHitPoints > 0)
         {
+            var distance = Vector3.Distance(StateMachine.Ctx.Transform.position, target.Transform.position);
+
             // Если цель в радиусе атаки или в радиусе обнаружения — атакуем.
             // AttackState сам решит, когда наносить удар (AdjustApproach подведёт ближе).
             if (IsWithinStopDistance(target.Transform.position) || StateMachine.Ctx.IsTargetInRange(target))
             {
+                // Если есть дальнобойное оружие и цель дальше melee-дистанции — стреляем
+                if (StateMachine.Ctx.HasRangedWeapon && distance > StateMachine.Ctx.PreferredAttackDistance * 1.5f)
+                {
+                    await StateMachine.TransitionTo(StateMachine.ShootState);
+                    return;
+                }
+
                 await StateMachine.TransitionTo(StateMachine.AttackState);
                 return;
             }

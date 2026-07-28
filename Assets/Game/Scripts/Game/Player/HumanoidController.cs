@@ -12,7 +12,9 @@ namespace Game
     public class HumanoidController : MonoBehaviour, IMessageReceiver
     {
         [field: SerializeField] public bool IsPlayer { get; private set; }
+        [field: SerializeField] public Transform ModelTransform { get; private set; }
         [field: SerializeField] public LayerMask TargetLayer { get; private set; }
+        [field: SerializeField] public RangeWeapon RangeWeaponRoot { get; private set; }
         public bool Respawning => _respawning;
 
         public float maxForwardSpeed = 8f;
@@ -24,7 +26,7 @@ namespace Game
         public bool canAttack;
 
         public bool IsGrounded => _charCtrl != null && _charCtrl.isGrounded;
-        public bool HasAdditionalWeapon => _additionalWeaponInstanceInstance != null;
+        public bool HasAdditionalWeapon => _additionalWeaponInstance != null;
 
         public PropBones propBones;
         public RandomAudioPlayer footstepPlayer;
@@ -38,7 +40,8 @@ namespace Game
 
         private CameraSettings _cameraSettings;
         private DiContainer _diContainer;
-        private bool _isWeaponEquipped;
+        private bool _isMeleeWeaponEquipped;
+        private bool _isRangeWeaponEquipped;
 
         private AnimatorStateCache _animCache;
 
@@ -46,22 +49,27 @@ namespace Game
         private WeaponData _additionalWeaponData;
         private WeaponData _rangedWeaponData;
         private WeaponData _ammunitionWeaponData;
-        private WeaponInstance _primaryWeaponInstanceInstance;
-        private WeaponInstance _additionalWeaponInstanceInstance;
-        private WeaponInstance _rangedWeaponInstanceInstance;
-        private WeaponInstance _ammunitionWeaponInstanceInstance;
+        private WeaponInstance _primaryWeaponInstance;
+        private WeaponInstance _additionalWeaponInstance;
+        private WeaponInstance _rangedWeaponInstance;
+        private WeaponInstance _ammunitionWeaponInstance;
         private bool _isGrounded = true;
         private bool _previouslyGrounded = true;
         private bool _readyToJump;
         private float _desiredForwardSpeed;
         private float _forwardSpeed;
         private float _verticalSpeed;
+        
+        private RangedAttackHandler _rangedAttackHandler;
+        private bool _shootPressed;
+        private bool _bowCameraOn;
+        private Quaternion _modelOriginalLocalRotation;
+
         private IInput _input;
         private CharacterController _charCtrl;
         private Material _currentWalkingSurface;
         private Quaternion _targetRotation;
         private float _angleDiff;
-        private readonly Collider[] _overlapResult = new Collider[8];
         private bool _inAttack;
         private bool _isBlocking;
         private bool _isShoot;
@@ -74,13 +82,11 @@ namespace Game
         private float _idleTimer;
         private Vector3 _knockbackVelocity;
         private float _knockbackDeceleration = 15f;
-
-        [SerializeField] private TargetFacingController _targetFacing;
+        private GameObject _projectileView;
 
         private const float AirborneTurnSpeedProportion = 5.4f;
         private const float GroundedRayDistance = 1f;
         private const float JumpAbortSpeed = 10f;
-        private const float MinEnemyDotCoeff = 0.2f;
         private const float InverseOneEighty = 1f / 180f;
         private const float StickingGravityProportion = 0.3f;
         private const float GroundAcceleration = 20f;
@@ -94,9 +100,11 @@ namespace Game
             => this.canAttack = canAttack;
 
         public int PrimaryWeaponIndex => _primaryWeaponData ? _primaryWeaponData.AnimationSetIndex : 0;
+        public int RangeWeaponIndex => _rangedWeaponData ? _rangedWeaponData.AnimationSetIndex : 0;
         public WeaponData PrimaryWeaponData => _primaryWeaponData;
         public WeaponData AdditionalWeaponData => _additionalWeaponData;
         public WeaponData RangedWeaponData => _rangedWeaponData;
+        public float LoadProgressCurve => _animCache.LoadProgressCurve;
 
         [Inject]
         private void Construct(DiContainer container, CameraSettings cameraSettings, HealthUI healthUI, PlayerInputHandlerService playerInputHandlerService)
@@ -118,7 +126,12 @@ namespace Game
         private void Awake()
         {
             _charCtrl = GetComponent<CharacterController>();
-            _animCache     = new AnimatorStateCache(GetComponent<Animator>());
+            _animCache     = new AnimatorStateCache(GetComponent<Animator>(), RangeWeaponRoot);
+
+            if (ModelTransform != null)
+            {
+                _modelOriginalLocalRotation = ModelTransform.localRotation;
+            }
         }
 
         private void OnEnable()
@@ -130,6 +143,11 @@ namespace Game
             _damageable.isInvulnerable = true;
             _damageable.onDamageBlocked = OnDamageBlocked;
             _renderers = GetComponentsInChildren<Renderer>();
+
+            if (RangeWeaponRoot != null)
+            {
+                _rangedAttackHandler = new RangedAttackHandler(RangeWeaponRoot, _damageable, TargetLayer);
+            }
         }
 
         private void OnDisable()
@@ -153,8 +171,9 @@ namespace Game
 
             UpdateInputBlocking();
 
-            ConnectWeaponToHands(_isWeaponEquipped, _primaryWeaponData,    _primaryWeaponInstanceInstance,    _animCache.HashAttack1);
-            ConnectWeaponToHands(_isWeaponEquipped, _additionalWeaponData, _additionalWeaponInstanceInstance, _animCache.HashAttack2);
+            ConnectWeaponToHands(_isMeleeWeaponEquipped, _primaryWeaponData,    _primaryWeaponInstance,    _animCache.HashAttack1);
+            ConnectWeaponToHands(_isMeleeWeaponEquipped, _additionalWeaponData, _additionalWeaponInstance, _animCache.HashAttack2);
+            ConnectWeaponToHands(_isRangeWeaponEquipped, _rangedWeaponData, _rangedWeaponInstance, _animCache.Shoot);
 
             _animCache.SetStateTime();
             ProcessAttack();
@@ -164,7 +183,7 @@ namespace Game
             CalculateVerticalMovement();
             SetTargetRotation();
 
-            if (IsOrientationUpdated() && (IsMoveInput || _isBlocking))
+            if (IsOrientationUpdated() && (IsMoveInput || _isBlocking || _shootPressed || _inAttack))
             {
                 UpdateOrientation();
             }
@@ -201,13 +220,13 @@ namespace Game
             _input.InputBlocked = _animCache.IsInputBlocked();
         }
 
-        private void CreateWeapon(WeaponData fromData, ref WeaponData prevData, ref WeaponInstance weaponInstanceInstance, int trigger)
+        private void CreateWeapon(WeaponData fromData, ref WeaponData prevData, ref WeaponInstance weaponInstance, int trigger)
         {
-            SetIsWeaponEquipped(false);
+            SetIsMeleeWeaponEquipped(false);
             
-            if (weaponInstanceInstance != null)
+            if (weaponInstance != null)
             {
-                weaponInstanceInstance.DestroyInstance();
+                weaponInstance.DestroyInstance();
             }
             if (fromData == null)
             {
@@ -217,40 +236,52 @@ namespace Game
 
             prevData = fromData;
             var weaponObj = prevData.GetViewInstance(transform, _diContainer);
-            weaponInstanceInstance = weaponObj.GetComponent<WeaponInstance>();
-            weaponInstanceInstance.Initialize(gameObject, TargetLayer);
-            weaponInstanceInstance.SetWeaponData(prevData);
-            weaponInstanceInstance.SetKnockbackForce(prevData.knockbackForce);
-            weaponInstanceInstance.SetStaticParts(prevData.GetStaticParts(propBones, _diContainer));
-            ConnectWeaponToHands(false, prevData, weaponInstanceInstance, trigger);
+            weaponInstance = weaponObj.GetComponent<WeaponInstance>();
+            weaponInstance.Initialize(gameObject, TargetLayer);
+            weaponInstance.SetWeaponData(prevData);
+            weaponInstance.SetKnockbackForce(prevData.knockbackForce);
+            weaponInstance.SetStaticParts(prevData.GetStaticParts(propBones, _diContainer));
+            ConnectWeaponToHands(false, prevData, weaponInstance, trigger);
             ConnectCombo(prevData);
         }
 
         public void CreatePrimaryWeapon(WeaponData fromData)
         {
-            CreateWeapon(fromData, ref _primaryWeaponData, ref _primaryWeaponInstanceInstance, _animCache.HashAttack1);
+            CreateWeapon(fromData, ref _primaryWeaponData, ref _primaryWeaponInstance, _animCache.HashAttack1);
         }
 
         public void CreateAdditionalWeapon(WeaponData fromData)
         {
-            CreateWeapon(fromData, ref _additionalWeaponData, ref _additionalWeaponInstanceInstance, _animCache.HashAttack2);
+            CreateWeapon(fromData, ref _additionalWeaponData, ref _additionalWeaponInstance, _animCache.HashAttack2);
         }
 
         public void CreateRangedWeapon(WeaponData fromData)
         {
-            CreateWeapon(fromData, ref _rangedWeaponData, ref _rangedWeaponInstanceInstance, _animCache.HashAttack2);
+            CreateWeapon(fromData, ref _rangedWeaponData, ref _rangedWeaponInstance, _animCache.Shoot);
         }
         
         public void CreateAmmunition(WeaponData fromData)
         {
-            
+            RangeWeaponRoot.SetData(fromData);
+            CreateWeapon(fromData, ref _ammunitionWeaponData, ref _ammunitionWeaponInstance, _animCache.Shoot);
         }
 
-        public void SetIsWeaponEquipped(bool value)
+        public void SetIsMeleeWeaponEquipped(bool value)
         {
-            _isWeaponEquipped = value;
+            _isMeleeWeaponEquipped = value;
             var index = value && _primaryWeaponData ? _primaryWeaponData.AnimationSetIndex : 0;
             _animCache.SetWeaponEquipped(value, index);
+            
+            if(value) _isRangeWeaponEquipped = false;
+        }
+
+        public void SetRangeWeaponEquipped(bool value)
+        {
+            _isRangeWeaponEquipped = value;
+            var index = value && _rangedWeaponData ? _rangedWeaponData.AnimationSetIndex : 0;
+            _animCache.SetWeaponEquipped(value, index);
+            
+            if(value) _isMeleeWeaponEquipped = false;
         }
 
         private void ProcessAttack()
@@ -277,15 +308,15 @@ namespace Game
                 weaponInstanceInstance.SetViewParent(propBones, settings);
             }
 
-            _inAttack = false;
-
             if (!equip)
                 _animCache.ResetTrigger(trigger);
         }
 
         private void CalculateForwardMovement()
         {
-            var moveInput = _isBlocking ? Vector2.zero : _input.MoveInput;
+            // Для AI движение при стрельбе разрешено (ShootState управляет позиционированием),
+            // для игрока — заблокировано (прицеливание требует неподвижности)
+            var moveInput = _isBlocking || (_shootPressed && IsPlayer) || _inAttack ? Vector2.zero : _input.MoveInput;
             if (moveInput.sqrMagnitude > 1f)
                 moveInput.Normalize();
 
@@ -305,7 +336,7 @@ namespace Game
             {
                 _verticalSpeed = -gravity * StickingGravityProportion;
 
-                if (_input.JumpInput && _readyToJump && !CheckCombo() && !_isBlocking)
+                if (_input.JumpInput && _readyToJump && !_inAttack && !_isBlocking)
                 {
                     _verticalSpeed = jumpSpeed;
                     _isGrounded    = false;
@@ -326,89 +357,41 @@ namespace Game
 
         private void SetTargetRotation()
         {
-            var moveInput              = _input.MoveInput;
-            var localMovementDirection = new Vector3(moveInput.x, 0f, moveInput.y).normalized;
+            var cameraForward = Quaternion.Euler(0f, _input.RotationYaw, 0f) * Vector3.forward;
+            cameraForward.y = 0f;
+            cameraForward.Normalize();
 
-            var forward = Quaternion.Euler(0f, _input.RotationYaw, 0f) * Vector3.forward;
-            forward.y = 0f;
-            forward.Normalize();
+            if (_inAttack || _isBlocking || _shootPressed)
+            {
+                _targetRotation = Quaternion.LookRotation(cameraForward);
+                _angleDiff = Mathf.DeltaAngle(
+                    Mathf.Atan2(transform.forward.x, transform.forward.z) * Mathf.Rad2Deg,
+                    Mathf.Atan2(cameraForward.x, cameraForward.z) * Mathf.Rad2Deg
+                );
+                return;
+            }
+
+            var moveInput = _input.MoveInput;
+            var localMovementDirection = new Vector3(moveInput.x, 0f, moveInput.y).normalized;
 
             Quaternion targetRotation;
 
             if (Mathf.Approximately(Vector3.Dot(localMovementDirection, Vector3.forward), -1.0f))
             {
-                targetRotation = Quaternion.LookRotation(-forward);
+                targetRotation = Quaternion.LookRotation(-cameraForward);
             }
             else
             {
                 var cameraToInputOffset = Quaternion.FromToRotation(Vector3.forward, localMovementDirection);
-                targetRotation                 = Quaternion.LookRotation(cameraToInputOffset * forward);
+                targetRotation = Quaternion.LookRotation(cameraToInputOffset * cameraForward);
             }
 
             var resultingForward = targetRotation * Vector3.forward;
 
-            if (_inAttack || _isBlocking)
-            {
-                var targetDirection = Vector3.zero;
-
-                if (_targetFacing != null)
-                {
-                    targetDirection = _targetFacing.GetDirectionToNearestTarget();
-                }
-                else
-                {
-                    // Fallback: старый OverlapBox если TargetFacingController не назначен
-                    var centre      = transform.position + transform.forward * 2.0f + transform.up;
-                    var halfExtents = new Vector3(3.0f, 1.0f, 2.0f);
-                    var count = Physics.OverlapBoxNonAlloc(centre, halfExtents, _overlapResult, targetRotation, TargetLayer);
-
-                    var closestDot = 0.0f;
-                    var closestForward = Vector3.zero;
-
-                    for (var i = 0; i < count; ++i)
-                    {
-                        var playerToEnemy = _overlapResult[i].transform.position - transform.position;
-                        playerToEnemy.y = 0;
-                        playerToEnemy.Normalize();
-
-                        var d = Vector3.Dot(resultingForward, playerToEnemy);
-                        if (d > MinEnemyDotCoeff && d > closestDot)
-                        {
-                            closestForward = playerToEnemy;
-                            closestDot     = d;
-                        }
-                    }
-
-                    if (closestDot > 0f)
-                    {
-                        targetDirection = closestForward;
-                    }
-                }
-
-                if (targetDirection != Vector3.zero)
-                {
-                    resultingForward = targetDirection;
-                    // При наличии цели - вычисляем targetRotation только на основе камеры (без WASD)
-                    var cameraForward = Quaternion.Euler(0f, _input.RotationYaw, 0f) * Vector3.forward;
-                    cameraForward.y = 0f;
-                    cameraForward.Normalize();
-                    targetRotation = Quaternion.LookRotation(cameraForward);
-                }
-                else
-                {
-                    // Если цели нет, но мы в атаке/блоке - всё равно используем только камеру, игнорируя WASD
-                    var cameraForward = Quaternion.Euler(0f, _input.RotationYaw, 0f) * Vector3.forward;
-                    cameraForward.y = 0f;
-                    cameraForward.Normalize();
-                    targetRotation = Quaternion.LookRotation(cameraForward);
-                    resultingForward = cameraForward;
-                }
-            }
-
             var angleCurrent = Mathf.Atan2(transform.forward.x, transform.forward.z) * Mathf.Rad2Deg;
             var targetAngle  = Mathf.Atan2(resultingForward.x, resultingForward.z) * Mathf.Rad2Deg;
 
-            _angleDiff      = Mathf.DeltaAngle(angleCurrent, targetAngle);
+            _angleDiff = Mathf.DeltaAngle(angleCurrent, targetAngle);
             _targetRotation = targetRotation;
         }
 
@@ -417,16 +400,16 @@ namespace Game
             return _animCache.IsActiveOrEntering(_animCache.HashLocomotion)
                 || _animCache.IsActiveOrEntering(_animCache.HashAirborne)
                 || _animCache.IsActiveOrEntering(_animCache.HashLanding)
-                || CheckCombo() && !_inAttack
-                || _isBlocking;
+                || _inAttack
+                || _isBlocking
+                || _shootPressed;
         }
 
         private void UpdateOrientation()
         {
             _animCache.SetAngleDeltaRad(_angleDiff * Mathf.Deg2Rad);
-
-            // При блоке — мгновенный разворот к цели
-            if (_isBlocking)
+            
+            if (_isBlocking || _inAttack || _shootPressed)
             {
                 transform.rotation = _targetRotation;
                 return;
@@ -490,14 +473,76 @@ namespace Game
 
         private void UpdateBlocking()
         {
+            if (!_primaryWeaponInstance && !_additionalWeaponInstance)
+            {
+                _isBlocking = false;
+                return;
+            }
             _isBlocking = _input.Block;
             _animCache.SetBlock(_input.Block);
         }
 
         private void UpdateShoot()
         {
-            _isShoot = _input.Shoot;
-            _animCache.SetShoot(_input.Shoot);
+            if (!_rangedWeaponInstance || !_ammunitionWeaponInstance)
+            {
+                _shootPressed = false;
+                _bowCameraOn = false;
+                return;
+            }
+            _shootPressed = _input.Shoot;
+            _isShoot = _shootPressed;
+            _animCache.SetShoot(_shootPressed);
+            
+            if (!IsPlayer) return;
+            
+            if (_shootPressed && !_bowCameraOn)
+            {
+                _bowCameraOn = true;
+                _cameraSettings.SwitchCamera(CameraSettings.CameraType.Bow);
+            }
+            else if (!_shootPressed && _bowCameraOn)
+            {
+                _bowCameraOn = false;
+                _cameraSettings.SwitchCamera(CameraSettings.CameraType.Exploration);
+            }
+               
+            if (!ModelTransform) return;
+            
+            var targetYaw = _bowCameraOn ? 30f : 0f;
+            var currentYaw = ModelTransform.localEulerAngles.y;
+            if (currentYaw > 180f) currentYaw -= 360f;
+            var newYaw = Mathf.Lerp(currentYaw, targetYaw, Time.deltaTime * 10f);
+            ModelTransform.localRotation = Quaternion.Euler(
+                _modelOriginalLocalRotation.eulerAngles.x,
+                newYaw,
+                _modelOriginalLocalRotation.eulerAngles.z
+            );
+        }
+
+        public void CreateProjectile()
+        {
+            if(_projectileView) return;
+            
+            _projectileView = Instantiate(_ammunitionWeaponData.ViewPrefab);
+            _ammunitionWeaponData.ActiveProp.SetPropBone(_projectileView.transform, propBones);
+        }
+
+        public void DestroyProjectile()
+        {
+            if (!_projectileView) return;
+            
+            Destroy(_projectileView);
+            _projectileView = null;
+        }
+
+        public void Shoot()
+        {
+            if (_rangedAttackHandler == null || !_rangedAttackHandler.IsValid)
+                return;
+
+            var targetPosition = transform.position + transform.forward * 20f;
+            _rangedAttackHandler.Shoot(targetPosition);
         }
 
         public bool IsBlocking => _isBlocking;
@@ -527,7 +572,7 @@ namespace Game
 
         private void TimeoutToIdle()
         {
-            var inputDetected = IsMoveInput || _isBlocking || _input.Attack1 || _input.Attack2 || _input.JumpInput;
+            var inputDetected = IsMoveInput || _isBlocking || _shootPressed || _inAttack || _input.Attack1 || _input.Attack2 || _input.JumpInput;
 
             if (_isGrounded && !inputDetected)
             {
@@ -563,7 +608,7 @@ namespace Game
                 }
                 else
                 {
-                    movement                = _animCache.DeltaPosition;
+                    movement = _animCache.DeltaPosition;
                     _currentWalkingSurface = null;
                 }
             }
@@ -595,31 +640,44 @@ namespace Game
             _animCache.SetGrounded(_isGrounded);
         }
 
+        /// <summary>
+        /// Прямой вызов TriggerAttack1 для выстрела из лука (используется AI в ShootState).
+        /// Обходит canAttack и ResetAttack1, чтобы гарантированно инициировать анимацию выстрела.
+        /// Вызывается через UniTask.Delay, чтобы не блокировать основной поток.
+        /// </summary>
+        public void TriggerRangedAttack()
+        {
+            // Включаем canAttack и устанавливаем Attack1
+            // ProcessAttack() в следующем FixedUpdate подхватит Attack1 и вызовет TriggerAttack1()
+            canAttack = true;
+            _input.Attack1 = true;
+        }
+
         public void MeleeAttackStart(int throwing = 0)
         {
-            if (_primaryWeaponInstanceInstance == null) return;
-            _primaryWeaponInstanceInstance.BeginAttack(throwing != 0);
+            if (_primaryWeaponInstance == null) return;
+            _primaryWeaponInstance.BeginAttack(throwing != 0);
             _inAttack = true;
         }
 
         public void MeleeAttackEnd()
         {
-            if (_primaryWeaponInstanceInstance == null) return;
-            _primaryWeaponInstanceInstance.EndAttack();
+            if (_primaryWeaponInstance == null) return;
+            _primaryWeaponInstance.EndAttack();
             _inAttack = false;
         }
 
         public void AdditionalAttackStart(int throwing = 0)
         {
-            if (_additionalWeaponInstanceInstance == null) return;
-            _additionalWeaponInstanceInstance.BeginAttack(throwing != 0);
+            if (_additionalWeaponInstance == null) return;
+            _additionalWeaponInstance.BeginAttack(throwing != 0);
             _inAttack = true;
         }
 
         public void AdditionalAttackEnd()
         {
-            if (_additionalWeaponInstanceInstance == null) return;
-            _additionalWeaponInstanceInstance.EndAttack();
+            if (_additionalWeaponInstance == null) return;
+            _additionalWeaponInstance.EndAttack();
             _inAttack = false;
         }
 
@@ -666,7 +724,7 @@ namespace Game
 
         public void RespawnFinished()
         {
-            _respawning                = false;
+            _respawning = false;
             _damageable.isInvulnerable = false;
         }
 
@@ -684,15 +742,13 @@ namespace Game
             if (!_isBlocking || !IsFacingDamageSource(damageMessage.damageSource))
                 return false;
 
-            // Защита от многократного срабатывания за один FixedUpdate
             if (_blockTriggeredThisFixedUpdate)
-                return true; // всё ещё блокируем урон, но не спамим звук/анимацию
+                return true; 
 
             _blockTriggeredThisFixedUpdate = true;
             PlayBlockSound();
             _animCache.TriggerBlock();
 
-            // Отталкивание при блоке — 1/4 от силы удара
             if (damageMessage.knockbackForce > 0f)
             {
                 var knockbackDir = (transform.position - damageMessage.damageSource).normalized;
@@ -704,7 +760,6 @@ namespace Game
                 }
             }
 
-            // Возврат четверти импульса атакующему в противоположную сторону
             if (damageMessage.knockbackForce > 0f && damageMessage.damager != null)
             {
                 var attackerController = damageMessage.damager.GetComponent<HumanoidController>();
@@ -730,7 +785,6 @@ namespace Game
 
         private void Damaged(Damageable.DamageMessage damageMessage)
         {
-            // Защита от многократного срабатывания за один FixedUpdate
             if (_damageTriggeredThisFixedUpdate) return;
 
             _damageTriggeredThisFixedUpdate = true;

@@ -14,9 +14,9 @@ namespace Game.GameCommands
         [Tooltip("Perform an action when increment is performed. (optional)")]
         public GameCommandHandler onIncrementPerformAction;
         [Space]
-        [Tooltip("Send a command when target count is reacted. (optional)")]
+        [Tooltip("Send a command when target Count is reacted. (optional)")]
         public SendGameCommand onTargetReachedSendCommand;
-        [Tooltip("Perform an action when target count is reacted. (optional)")]
+        [Tooltip("Perform an action when target Count is reacted. (optional)")]
         public GameCommandHandler onTargetReachedPerformAction;
 
 

@@ -1,62 +1,139 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Game
 {
     public class RangeWeapon : MonoBehaviour
     {
-        public Vector3 muzzleOffset;
-
-        public Projectile projectile;
-
-        public Projectile loadedProjectile
+        private enum Mode
         {
-            get { return m_LoadedProjectile; }
+            Standard,
+            ScreenCenter
         }
 
-        protected Projectile m_LoadedProjectile = null;
-        protected ObjectPooler<Projectile> m_ProjectilePool;
+        [SerializeField] private Mode mode = Mode.Standard;
+        [SerializeField] private Vector3 muzzleOffset;
+        [SerializeField] private Projectile projectile;
+        [SerializeField] private float aimRayDistance = 100f;
 
-        private void Start()
+        private WeaponData _currentProjectileData;
+        private ObjectPooler<Projectile> _projectilePool;
+        private CancellationTokenSource _aimUpdateCts;
+        private Vector3 _lastTarget;
+
+        public Damageable Owner { get; private set; }
+        public Projectile LoadedProjectile { get; private set; }
+        public Transform AimTarget { get; private set; }
+        public float VerticalAimAngle { get; private set; }
+
+        private void Awake()
         {
-            m_ProjectilePool = new ObjectPooler<Projectile>();
-            m_ProjectilePool.Initialize(20, projectile);
+            var aimTargetObject = new GameObject($"{name}_AimTarget");
+            AimTarget = aimTargetObject.transform;
+            AimTarget.SetParent(transform, false);
+            AimTarget.localPosition = Vector3.up + Vector3.forward * 10f;
+            _lastTarget = AimTarget.position;
+
+            UpdateVerticalAimAngle();
         }
 
-        public void Attack(Vector3 target)
+        private void OnEnable()
         {
+            _aimUpdateCts = new CancellationTokenSource();
+            UpdateAimTargetLoop(_aimUpdateCts.Token).Forget();
+        }
+
+        private void OnDisable()
+        {
+            _aimUpdateCts?.Cancel();
+            _aimUpdateCts?.Dispose();
+            _aimUpdateCts = null;
+
+            _projectilePool?.ClearAll();
+            _projectilePool = null;
+        }
+
+        private void OnDestroy()
+        {
+            if (AimTarget != null)
+                Destroy(AimTarget.gameObject);
+        }
+
+        public void SetData(WeaponData data)
+        {
+            _currentProjectileData = null;
+            _projectilePool?.ClearAll();
+            _projectilePool = null;
+            
+            _currentProjectileData = data;
+            _projectilePool = new ObjectPooler<Projectile>(projectile.Count, projectile);
+        }
+
+        public void Attack(Vector3 target, Damageable owner = null)
+        {
+            Owner = owner;
             AttackProjectile(target);
         }
 
         public void LoadProjectile()
         {
-            if (m_LoadedProjectile != null)
+            if (LoadedProjectile != null)
                 return;
 
-            m_LoadedProjectile = m_ProjectilePool.GetNew();
-            m_LoadedProjectile.transform.SetParent(transform, false);
-            m_LoadedProjectile.transform.localPosition = muzzleOffset;
-            m_LoadedProjectile.transform.localRotation = Quaternion.identity;
+            LoadedProjectile = _projectilePool.GetNew();
+            
+            LoadedProjectile.SetData(_currentProjectileData);
+            LoadedProjectile.transform.SetParent(transform, false);
+            LoadedProjectile.transform.localPosition = muzzleOffset;
+            LoadedProjectile.transform.localRotation = Quaternion.identity;
         }
 
-        void AttackProjectile(Vector3 target)
+        private void AttackProjectile(Vector3 target)
         {
-            if (m_LoadedProjectile == null) LoadProjectile();
+            if (!LoadedProjectile) LoadProjectile();
 
-            m_LoadedProjectile.transform.SetParent(null, true);
-            m_LoadedProjectile.Shot(target, this);
-            m_LoadedProjectile = null; //once shot, we don't own the projectile anymore, it does it's own life.
+            LoadedProjectile.transform.SetParent(null, true);
+
+            target = ResolveTarget(target);
+            _lastTarget = target;
+
+            LoadedProjectile.Shot(target, this);
+            LoadedProjectile = null;
         }
 
-#if UNITY_EDITOR
-        private void OnDrawGizmosSelected()
+        private Vector3 ResolveTarget(Vector3 fallbackTarget)
         {
-            Vector3 worldOffset = transform.TransformPoint(muzzleOffset);
-            UnityEditor.Handles.color = Color.yellow;
-            UnityEditor.Handles.DrawLine(worldOffset + Vector3.up * 0.4f, worldOffset + Vector3.down * 0.4f);
-            UnityEditor.Handles.DrawLine(worldOffset + Vector3.forward * 0.4f, worldOffset + Vector3.back * 0.4f);
+            if (mode != Mode.ScreenCenter)
+                return fallbackTarget;
+
+            var cam = Camera.main;
+            if (!cam)
+                return fallbackTarget;
+
+            var ray = cam.ScreenPointToRay(new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f));
+
+            return ray.origin + ray.direction * aimRayDistance;
         }
-#endif
+
+        private async UniTaskVoid UpdateAimTargetLoop(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                AimTarget.position = ResolveTarget(_lastTarget);
+                UpdateVerticalAimAngle();
+                await UniTask.Yield(PlayerLoopTiming.Update, token);
+            }
+        }
+        
+        private void UpdateVerticalAimAngle()
+        {
+            var direction = AimTarget.position - transform.position;
+            if (direction.sqrMagnitude < 0.0001f)
+                return;
+
+            var localDir = transform.InverseTransformDirection(direction.normalized);
+            VerticalAimAngle = Mathf.Atan2(localDir.y, localDir.z) * Mathf.Rad2Deg;
+        }
     }
 }

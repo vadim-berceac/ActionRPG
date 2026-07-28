@@ -17,8 +17,8 @@ namespace Game
             m_MonoBehaviour.RememberTargetPosition();
             m_MonoBehaviour.grenadeLauncher.LoadProjectile();
 
-            m_MonoBehaviour.grenadeLauncher.loadedProjectile.transform.up = Vector3.up;
-            m_MonoBehaviour.grenadeLauncher.loadedProjectile.transform.forward = m_MonoBehaviour.transform.forward;
+            m_MonoBehaviour.grenadeLauncher.LoadedProjectile.transform.up = Vector3.up;
+            m_MonoBehaviour.grenadeLauncher.LoadedProjectile.transform.forward = m_MonoBehaviour.transform.forward;
 
             m_GrowthTimer = 0.0f;
         }
@@ -28,8 +28,8 @@ namespace Game
             base.OnSLStateNoTransitionUpdate(animator, stateInfo, layerIndex);
 
             m_GrowthTimer = Mathf.Clamp(m_GrowthTimer + Time.deltaTime, 0.0f, growthTime);
-            if (m_MonoBehaviour.grenadeLauncher.loadedProjectile != null)
-                m_MonoBehaviour.grenadeLauncher.loadedProjectile.transform.localScale =
+            if (m_MonoBehaviour.grenadeLauncher.LoadedProjectile != null)
+                m_MonoBehaviour.grenadeLauncher.LoadedProjectile.transform.localScale =
                     Vector3.one * (m_GrowthTimer / growthTime);
         }
     }

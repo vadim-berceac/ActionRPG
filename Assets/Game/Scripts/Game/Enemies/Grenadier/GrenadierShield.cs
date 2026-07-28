@@ -33,10 +33,10 @@ namespace Game
     //         data.stopCamera = false;
     //         data.throwing = true;
     //
-    //         int count = Physics.OverlapSphereNonAlloc(transform.position, m_Collider.radius * transform.localScale.x,
+    //         int Count = Physics.OverlapSphereNonAlloc(transform.position, m_Collider.radius * transform.localScale.x,
     //             sOverlapCache, m_PlayerMask);
     //
-    //         for (int i = 0; i < count; ++i)
+    //         for (int i = 0; i < Count; ++i)
     //         {
     //             Damageable d = sOverlapCache[i].GetComponent<Damageable>();
     //

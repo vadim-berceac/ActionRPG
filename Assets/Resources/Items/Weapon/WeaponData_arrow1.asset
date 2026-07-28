@@ -19,12 +19,13 @@ MonoBehaviour:
     type: 3}
   <Description>k__BackingField: '  Simple quiver with arrows.'
   <CanBeEquipped>k__BackingField: 1
+  <Damage>k__BackingField: 5
   <ViewPrefab>k__BackingField: {fileID: 1205787345809761593, guid: 26e6efa3634a46149a343f6732e24ebc,
     type: 3}
   <ActiveProp>k__BackingField:
     <PropType>k__BackingField: 1
     <Position>k__BackingField: {x: 0, y: 0, z: 0}
-    <Rotation>k__BackingField: {x: 0, y: 270, z: 180}
+    <Rotation>k__BackingField: {x: 270, y: 0, z: 0}
     <Scale>k__BackingField: 1
   <UnActiveProp>k__BackingField:
     <PropType>k__BackingField: 4
