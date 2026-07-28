@@ -19,6 +19,9 @@ namespace Game
         {
             public CinemachineCamera controllerCamera;
             public CinemachineOrbitalFollow orbitalFollow;
+            [Header("Rotate Speed")]
+            public float xFactor;
+            public float yFactor;
         }
         
         [Serializable]
@@ -63,9 +66,6 @@ namespace Game
         public InvertSettings controllerInvertSettings;
         public SmoothingSettings controllerSmoothing;
         public RecenterSettings controllerRecentering;
-
-        public float xFactor;
-        public float yFactor;
 
         [Tooltip("Минимальный угол Pitch (в градусах). Отрицательное значение — камера выше персонажа")]
         public float pitchMin = -30f;
@@ -232,8 +232,8 @@ namespace Game
             if (controllerInvertSettings.invertX) look.x = -look.x;
             if (controllerInvertSettings.invertY) look.y = -look.y;
 
-            var targetX = look.x * xFactor;
-            var targetY = look.y * yFactor;
+            var targetX = look.x * active.yFactor;
+            var targetY = look.y * active.xFactor;
 
             m_CurrentX = Mathf.SmoothDamp(m_CurrentX, targetX, ref m_VelocityX, Mathf.Max(controllerSmoothing.smoothTimeX, 0.0001f));
             m_CurrentY = Mathf.SmoothDamp(m_CurrentY, targetY, ref m_VelocityY, Mathf.Max(controllerSmoothing.smoothTimeY, 0.0001f));

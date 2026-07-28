@@ -12,6 +12,7 @@ public class CrossHair : MonoBehaviour
    private void OnEnable()
    {
       image.enabled = false;
+      image.rectTransform.anchoredPosition = Vector2.zero;
       _cameraSettings.onCameraSwitched.AddListener(OnCameraSwitched);
    }
 

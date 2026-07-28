@@ -11,7 +11,7 @@ PrefabInstance:
     - target: {fileID: -5278410550485328620, guid: 70114eef33aad434f9c5a08f93c9159d,
         type: 3}
       propertyPath: stuckMask.m_Bits
-      value: 66048
+      value: 65536
       objectReference: {fileID: 0}
     - target: {fileID: -5278410550485328620, guid: 70114eef33aad434f9c5a08f93c9159d,
         type: 3}

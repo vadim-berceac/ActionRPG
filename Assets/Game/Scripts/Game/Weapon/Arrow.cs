@@ -8,6 +8,7 @@ namespace Game
         [SerializeField] private float projectileSpeed = 20f;
         [SerializeField] private float lifetime = 5f;
         [SerializeField] private float hitRadius = 0.5f;
+        [SerializeField] private float stuckRadius = 0.3f;
         
         [SerializeField] private LayerMask damageMask;
         [SerializeField] private LayerMask stuckMask;
@@ -155,7 +156,7 @@ namespace Game
 
         private void TryStick(Vector3 previousPosition, float step)
         {
-            if (!Physics.SphereCast(previousPosition, hitRadius, _flightDirection,
+            if (!Physics.SphereCast(previousPosition, stuckRadius, _flightDirection,
                     out var hit, step, stuckMask.value, QueryTriggerInteraction.Ignore))
             {
                 return;

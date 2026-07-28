@@ -111,13 +111,7 @@ namespace Game
             if (!cam)
                 return fallbackTarget;
 
-            var layerMask = LoadedProjectile != null
-                ? LoadedProjectile.GetDamageLayerMask()
-                : projectile.GetDamageLayerMask();
-
             var ray = cam.ScreenPointToRay(new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f));
-            if (Physics.Raycast(ray, out var hit, aimRayDistance, layerMask, QueryTriggerInteraction.Ignore))
-                return hit.point;
 
             return ray.origin + ray.direction * aimRayDistance;
         }
