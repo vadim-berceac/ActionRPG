@@ -28,6 +28,13 @@ public class GuardState : AsyncState
     {
         await base.OnUpdate(ct);
 
+        // Защита от гонки: агент мог быть уничтожен между кадрами,
+        // пока update-loop ещё не успел отмениться через ct
+        if (!StateMachine.Ctx.Transform)
+        {
+            return;
+        }
+
         // Если появился враг — выходим, HandleTransition решит куда переключиться
         if (StateMachine.Ctx.Target)
         {
@@ -94,6 +101,11 @@ public class GuardState : AsyncState
     /// </summary>
     private Vector3? ResolveTargetPosition(Vector3 guardPosition)
     {
+        if (!StateMachine.Ctx.Transform)
+        {
+            return null;
+        }
+
         // Если guardPosition изменилась — сбрасываем fallback и пересчитываем
         if (guardPosition != _lastGuardPosition)
         {
@@ -146,6 +158,11 @@ public class GuardState : AsyncState
     /// </summary>
     private bool IsWithinStopDistance(Vector3 point)
     {
+        if (!StateMachine.Ctx.Transform)
+        {
+            return true; // некому двигаться — считаем цель достигнутой
+        }
+
         var stopDistance = StateMachine.Ctx.PreferredAttackDistance + GuardExtraStopDistance;
         var distance = Vector3.Distance(StateMachine.Ctx.Transform.position, point);
         return distance <= stopDistance;

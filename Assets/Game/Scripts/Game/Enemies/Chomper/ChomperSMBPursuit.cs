@@ -20,7 +20,7 @@ namespace Game
                 return;
             }
 
-            if (m_MonoBehaviour.target == null || m_MonoBehaviour.target.Respawning)
+            if (m_MonoBehaviour.target == null)
             {//if the target was lost or is Respawning, we stop the pursit
                 m_MonoBehaviour.StopPursuit();
             }

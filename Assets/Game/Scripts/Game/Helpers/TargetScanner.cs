@@ -26,7 +26,7 @@ namespace Game
         public HumanoidController Detect(Transform detector, HumanoidController player, bool useHeightDifference = true)
         {
             //if either the humanoid is not spwned or they are spawning, we do not target them
-            if (player == null || player.Respawning)
+            if (player == null)
                 return null;
 
             Vector3 eyePos = detector.position + Vector3.up * heightOffset;

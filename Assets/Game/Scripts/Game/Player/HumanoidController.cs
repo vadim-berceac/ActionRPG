@@ -1,5 +1,5 @@
+using System;
 using UnityEngine;
-using System.Collections;
 using Game.Message;
 using Unity.Cinemachine;
 using Zenject;
@@ -15,7 +15,6 @@ namespace Game
         [field: SerializeField] public Transform ModelTransform { get; private set; }
         [field: SerializeField] public LayerMask TargetLayer { get; private set; }
         [field: SerializeField] public RangeWeapon RangeWeaponRoot { get; private set; }
-        public bool Respawning => _respawning;
 
         public float maxForwardSpeed = 8f;
         public float gravity = 20f;
@@ -27,6 +26,7 @@ namespace Game
 
         public bool IsGrounded => _charCtrl != null && _charCtrl.isGrounded;
         public bool HasAdditionalWeapon => _additionalWeaponInstance != null;
+        public bool IsBlocking { get; private set; }
 
         public PropBones propBones;
         public RandomAudioPlayer footstepPlayer;
@@ -71,26 +71,14 @@ namespace Game
         private Quaternion _targetRotation;
         private float _angleDiff;
         private bool _inAttack;
-        private bool _isBlocking;
         private bool _isShoot;
         private bool _blockTriggeredThisFixedUpdate;
         private bool _damageTriggeredThisFixedUpdate;
         private Damageable _damageable;
         private Renderer[] _renderers;
-        private Checkpoint _currentCheckpoint;
-        private bool _respawning;
         private float _idleTimer;
         private Vector3 _knockbackVelocity;
-        private float _knockbackDeceleration = 15f;
         private GameObject _projectileView;
-
-        private const float AirborneTurnSpeedProportion = 5.4f;
-        private const float GroundedRayDistance = 1f;
-        private const float JumpAbortSpeed = 10f;
-        private const float InverseOneEighty = 1f / 180f;
-        private const float StickingGravityProportion = 0.3f;
-        private const float GroundAcceleration = 20f;
-        private const float GroundDeceleration = 25f;
 
         private int[] m_ComboHashes;
 
@@ -165,6 +153,7 @@ namespace Game
         private void FixedUpdate()
         {
             _animCache.OnUpdate();
+            _animCache.SetStateTime();
 
             _blockTriggeredThisFixedUpdate = false;
             _damageTriggeredThisFixedUpdate = false;
@@ -174,24 +163,23 @@ namespace Game
             ConnectWeaponToHands(_isMeleeWeaponEquipped, _primaryWeaponData,    _primaryWeaponInstance,    _animCache.HashAttack1);
             ConnectWeaponToHands(_isMeleeWeaponEquipped, _additionalWeaponData, _additionalWeaponInstance, _animCache.HashAttack2);
             ConnectWeaponToHands(_isRangeWeaponEquipped, _rangedWeaponData, _rangedWeaponInstance, _animCache.Shoot);
-
-            _animCache.SetStateTime();
+            
             ProcessAttack();
-            UpdateBlocking();
-            UpdateShoot();
-            CalculateForwardMovement();
-            CalculateVerticalMovement();
-            SetTargetRotation();
-
-            if (IsOrientationUpdated() && (IsMoveInput || _isBlocking || _shootPressed || _inAttack))
-            {
-                UpdateOrientation();
-            }
+            ProcessBlocking();
+            ProcessShoot();
+            CalcForwardMovement();
+            CalcVerticalMovement();
+            CalcOrientation();
 
             PlayAudio();
             TimeoutToIdle();
 
             _previouslyGrounded = _isGrounded;
+        }
+
+        private void LateUpdate()
+        {
+            ApplyOrientation();
         }
 
         private void ConnectCombo(WeaponData data)
@@ -286,11 +274,15 @@ namespace Game
 
         private void ProcessAttack()
         {
-            _animCache.SetHasAdditionalWeapon(_additionalWeaponData != null);
+            if (_damageable.currentHitPoints < 1)
+            {
+                return;
+            }
+            _animCache.SetHasAdditionalWeapon(_additionalWeaponData);
             _animCache.ResetAttack1();
             _animCache.ResetAttack2();
 
-            if (!_isBlocking)
+            if (!IsBlocking)
             {
                 if (_input.Attack1 && canAttack) _animCache.TriggerAttack1();
                 if (_input.Attack2 && canAttack) _animCache.TriggerAttack2();
@@ -312,31 +304,35 @@ namespace Game
                 _animCache.ResetTrigger(trigger);
         }
 
-        private void CalculateForwardMovement()
+        private void CalcForwardMovement()
         {
-            // Для AI движение при стрельбе разрешено (ShootState управляет позиционированием),
-            // для игрока — заблокировано (прицеливание требует неподвижности)
-            var moveInput = _isBlocking || (_shootPressed && IsPlayer) || _inAttack ? Vector2.zero : _input.MoveInput;
+            var moveInput = IsBlocking || (_shootPressed && IsPlayer) || _inAttack ? Vector2.zero : _input.MoveInput;
             if (moveInput.sqrMagnitude > 1f)
                 moveInput.Normalize();
 
             _desiredForwardSpeed = moveInput.magnitude * maxForwardSpeed;
-            var acceleration    = IsMoveInput ? GroundAcceleration : GroundDeceleration;
+            var acceleration    = IsMoveInput ? Constants.GroundAcceleration : Constants.GroundDeceleration;
             _forwardSpeed        = Mathf.MoveTowards(_forwardSpeed, _desiredForwardSpeed, acceleration * Time.deltaTime);
 
             _animCache.SetForwardSpeed(_forwardSpeed);
         }
 
-        private void CalculateVerticalMovement()
+        private void CalcVerticalMovement()
         {
-            if (!_input.JumpInput && _isGrounded)
+            if (_damageable.currentHitPoints < 1)
+            {
+                _readyToJump = false;
+            }
+            else if (!_input.JumpInput && _isGrounded)
+            {
                 _readyToJump = true;
+            }
 
             if (_isGrounded)
             {
-                _verticalSpeed = -gravity * StickingGravityProportion;
+                _verticalSpeed = -gravity * Constants.StickingGravityProportion;
 
-                if (_input.JumpInput && _readyToJump && !_inAttack && !_isBlocking)
+                if (_input.JumpInput && _readyToJump && !_inAttack && !IsBlocking)
                 {
                     _verticalSpeed = jumpSpeed;
                     _isGrounded    = false;
@@ -346,7 +342,7 @@ namespace Game
             else
             {
                 if (!_input.JumpInput && _verticalSpeed > 0.0f)
-                    _verticalSpeed -= JumpAbortSpeed * Time.deltaTime;
+                    _verticalSpeed -= Constants.JumpAbortSpeed * Time.deltaTime;
 
                 if (Mathf.Approximately(_verticalSpeed, 0f))
                     _verticalSpeed = 0f;
@@ -355,13 +351,13 @@ namespace Game
             }
         }
 
-        private void SetTargetRotation()
+        private void CalcOrientation()
         {
             var cameraForward = Quaternion.Euler(0f, _input.RotationYaw, 0f) * Vector3.forward;
             cameraForward.y = 0f;
             cameraForward.Normalize();
 
-            if (_inAttack || _isBlocking || _shootPressed)
+            if (_inAttack || IsBlocking || _shootPressed)
             {
                 _targetRotation = Quaternion.LookRotation(cameraForward);
                 _angleDiff = Mathf.DeltaAngle(
@@ -401,15 +397,18 @@ namespace Game
                 || _animCache.IsActiveOrEntering(_animCache.HashAirborne)
                 || _animCache.IsActiveOrEntering(_animCache.HashLanding)
                 || _inAttack
-                || _isBlocking
+                || IsBlocking
                 || _shootPressed;
         }
 
-        private void UpdateOrientation()
+        private void ApplyOrientation()
         {
+            if (_damageable.currentHitPoints < 1 || !IsOrientationUpdated() 
+                && !(IsMoveInput || IsBlocking || _shootPressed || _inAttack)) return;
+            
             _animCache.SetAngleDeltaRad(_angleDiff * Mathf.Deg2Rad);
             
-            if (_isBlocking || _inAttack || _shootPressed)
+            if (IsBlocking || _inAttack || _shootPressed)
             {
                 transform.rotation = _targetRotation;
                 return;
@@ -419,7 +418,8 @@ namespace Game
             var groundedTurnSpeed = Mathf.Lerp(maxTurnSpeed, minTurnSpeed, _forwardSpeed / _desiredForwardSpeed);
             var actualTurnSpeed   = _isGrounded
                 ? groundedTurnSpeed
-                : Vector3.Angle(transform.forward, localInput) * InverseOneEighty * AirborneTurnSpeedProportion * groundedTurnSpeed;
+                : Vector3.Angle(transform.forward, localInput) * Constants.InverseOneEighty 
+                                                               * Constants.AirborneTurnSpeedProportion * groundedTurnSpeed;
 
             _targetRotation   = Quaternion.RotateTowards(transform.rotation, _targetRotation, actualTurnSpeed * Time.deltaTime);
             transform.rotation = _targetRotation;
@@ -471,20 +471,20 @@ namespace Game
             }
         }
 
-        private void UpdateBlocking()
+        private void ProcessBlocking()
         {
-            if (!_primaryWeaponInstance && !_additionalWeaponInstance)
+            if (_damageable.currentHitPoints < 1 || !_primaryWeaponInstance && !_additionalWeaponInstance)
             {
-                _isBlocking = false;
+                IsBlocking = false;
                 return;
             }
-            _isBlocking = _input.Block;
+            IsBlocking = _input.Block;
             _animCache.SetBlock(_input.Block);
         }
 
-        private void UpdateShoot()
+        private void ProcessShoot()
         {
-            if (!_rangedWeaponInstance || !_ammunitionWeaponInstance)
+            if (_damageable.currentHitPoints < 1 || !_rangedWeaponInstance || !_ammunitionWeaponInstance)
             {
                 _shootPressed = false;
                 _bowCameraOn = false;
@@ -545,8 +545,6 @@ namespace Game
             _rangedAttackHandler.Shoot(targetPosition);
         }
 
-        public bool IsBlocking => _isBlocking;
-
         private bool IsFacingDamageSource(Vector3 damageSource)
         {
             var toSource = (damageSource - transform.position).normalized;
@@ -572,7 +570,7 @@ namespace Game
 
         private void TimeoutToIdle()
         {
-            var inputDetected = IsMoveInput || _isBlocking || _shootPressed || _inAttack || _input.Attack1 || _input.Attack2 || _input.JumpInput;
+            var inputDetected = IsMoveInput || IsBlocking || _shootPressed || _inAttack || _input.Attack1 || _input.Attack2 || _input.JumpInput;
 
             if (_isGrounded && !inputDetected)
             {
@@ -599,8 +597,9 @@ namespace Game
             if (_isGrounded)
             {
                 RaycastHit hit;
-                var ray = new Ray(transform.position + Vector3.up * GroundedRayDistance * 0.5f, -Vector3.up);
-                if (Physics.Raycast(ray, out hit, GroundedRayDistance, Physics.AllLayers, QueryTriggerInteraction.Ignore))
+                var ray = new Ray(transform.position + Vector3.up 
+                    * Constants.GroundedRayDistance * 0.5f, -Vector3.up);
+                if (Physics.Raycast(ray, out hit, Constants.GroundedRayDistance, Physics.AllLayers, QueryTriggerInteraction.Ignore))
                 {
                     movement = Vector3.ProjectOnPlane(_animCache.DeltaPosition, hit.normal);
                     var groundRenderer = hit.collider.GetComponentInChildren<Renderer>();
@@ -625,7 +624,7 @@ namespace Game
             {
                 var knockbackMovement = _knockbackVelocity * Time.deltaTime;
                 _charCtrl.Move(knockbackMovement);
-                _knockbackVelocity = Vector3.Lerp(_knockbackVelocity, Vector3.zero, _knockbackDeceleration * Time.deltaTime);
+                _knockbackVelocity = Vector3.Lerp(_knockbackVelocity, Vector3.zero, Constants.KnockbackDeceleration * Time.deltaTime);
             }
             else
             {
@@ -640,92 +639,38 @@ namespace Game
             _animCache.SetGrounded(_isGrounded);
         }
 
-        /// <summary>
-        /// Прямой вызов TriggerAttack1 для выстрела из лука (используется AI в ShootState).
-        /// Обходит canAttack и ResetAttack1, чтобы гарантированно инициировать анимацию выстрела.
-        /// Вызывается через UniTask.Delay, чтобы не блокировать основной поток.
-        /// </summary>
         public void TriggerRangedAttack()
         {
-            // Включаем canAttack и устанавливаем Attack1
-            // ProcessAttack() в следующем FixedUpdate подхватит Attack1 и вызовет TriggerAttack1()
             canAttack = true;
             _input.Attack1 = true;
         }
 
         public void MeleeAttackStart(int throwing = 0)
         {
-            if (_primaryWeaponInstance == null) return;
+            if (!_primaryWeaponInstance) return;
             _primaryWeaponInstance.BeginAttack(throwing != 0);
             _inAttack = true;
         }
 
         public void MeleeAttackEnd()
         {
-            if (_primaryWeaponInstance == null) return;
+            if (!_primaryWeaponInstance) return;
             _primaryWeaponInstance.EndAttack();
             _inAttack = false;
         }
 
         public void AdditionalAttackStart(int throwing = 0)
         {
-            if (_additionalWeaponInstance == null) return;
+            if (!_additionalWeaponInstance) return;
             _additionalWeaponInstance.BeginAttack(throwing != 0);
             _inAttack = true;
         }
 
         public void AdditionalAttackEnd()
         {
-            if (_additionalWeaponInstance == null) return;
+            if (!_additionalWeaponInstance) return;
             _additionalWeaponInstance.EndAttack();
             _inAttack = false;
-        }
-
-        public void SetCheckpoint(Checkpoint checkpoint)
-        {
-            if (checkpoint != null)
-                _currentCheckpoint = checkpoint;
-        }
-
-        public void Respawn()
-            => StartCoroutine(RespawnRoutine());
-
-        private IEnumerator RespawnRoutine()
-        {
-            while (!_animCache.IsTransitioningInto(_animCache.HashDeath)
-                && !_animCache.IsInState(_animCache.HashDeath))
-            {
-                yield return null;
-            }
-
-            yield return StartCoroutine(ScreenFader.FadeSceneOut());
-            while (ScreenFader.IsFading)
-                yield return null;
-
-            var spawn = GetComponentInChildren<EllenSpawn>();
-            spawn.enabled = true;
-
-            if (_currentCheckpoint != null)
-            {
-                transform.position = _currentCheckpoint.transform.position;
-                transform.rotation = _currentCheckpoint.transform.rotation;
-            }
-            else
-            {
-                Debug.LogError("There is no Checkpoint set. Did you add a checkpoint at the spawn?");
-            }
-
-            _animCache.TriggerRespawn();
-            spawn.StartEffect();
-            yield return StartCoroutine(ScreenFader.FadeSceneIn());
-
-            _damageable.ResetDamage();
-        }
-
-        public void RespawnFinished()
-        {
-            _respawning = false;
-            _damageable.isInvulnerable = false;
         }
 
         public void OnReceiveMessage(MessageType type, object sender, object data)
@@ -739,7 +684,7 @@ namespace Game
 
         private bool OnDamageBlocked(Damageable.DamageMessage damageMessage)
         {
-            if (!_isBlocking || !IsFacingDamageSource(damageMessage.damageSource))
+            if (!IsBlocking || !IsFacingDamageSource(damageMessage.damageSource))
                 return false;
 
             if (_blockTriggeredThisFixedUpdate)
@@ -763,7 +708,7 @@ namespace Game
             if (damageMessage.knockbackForce > 0f && damageMessage.damager != null)
             {
                 var attackerController = damageMessage.damager.GetComponent<HumanoidController>();
-                if (attackerController != null)
+                if (attackerController)
                 {
                     var knockbackDir = (damageMessage.damageSource - transform.position).normalized;
                     knockbackDir.y = 0f;
@@ -821,7 +766,6 @@ namespace Game
             _forwardSpeed              = 0f;
             _verticalSpeed             = 0f;
             _knockbackVelocity         = Vector3.zero;
-            _respawning                = true;
             _damageable.isInvulnerable = true;
         }
 
