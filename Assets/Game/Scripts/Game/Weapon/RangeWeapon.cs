@@ -56,8 +56,10 @@ namespace Game
 
         private void OnDestroy()
         {
-            if (AimTarget != null)
+            if (AimTarget)
+            {
                 Destroy(AimTarget.gameObject);
+            }
         }
 
         public void SetData(WeaponData data)
@@ -78,8 +80,10 @@ namespace Game
 
         public void LoadProjectile()
         {
-            if (LoadedProjectile != null)
+            if (LoadedProjectile)
+            {
                 return;
+            }
 
             LoadedProjectile = _projectilePool.GetNew();
             
@@ -97,6 +101,9 @@ namespace Game
 
             target = ResolveTarget(target);
             _lastTarget = target;
+
+            AimTarget.position = target;
+            UpdateVerticalAimAngle();
 
             LoadedProjectile.Shot(target, this);
             LoadedProjectile = null;
@@ -128,7 +135,9 @@ namespace Game
         
         private void UpdateVerticalAimAngle()
         {
-            var direction = AimTarget.position - transform.position;
+            var muzzleWorldPos = transform.TransformPoint(muzzleOffset);
+            var direction = AimTarget.position - muzzleWorldPos;
+    
             if (direction.sqrMagnitude < 0.0001f)
                 return;
 

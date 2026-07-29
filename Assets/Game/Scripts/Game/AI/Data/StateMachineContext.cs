@@ -14,9 +14,9 @@ public class StateMachineContext : IDisposable
     public Vector3[] PatrolWaypoints { get; private set; }
     public bool IsDead { get; private set; }
     public bool IsGrounded => _humanoidController.IsGrounded;
+    public bool HasPrimaryWeapon => _humanoidController.HasPrimaryWeapon;
     public bool HasAdditionalWeapon => _humanoidController.HasAdditionalWeapon;
-    public bool HasRangedWeapon => _humanoidController.RangedWeaponData != null
-                                   && _humanoidController.RangeWeaponRoot != null;
+    public bool HasRangedWeapon => _humanoidController.HasRangeWeapon;
     public float LoadProgressCurve => _humanoidController.LoadProgressCurve;
     public void TriggerRangedAttack() => _humanoidController.TriggerRangedAttack();
     public float LastRangedFireTime { get; set; } = -10f;
@@ -27,14 +27,7 @@ public class StateMachineContext : IDisposable
         ? _guardPointTransform.position
         : _fixedGuardPosition;
 
-    public float PreferredAttackDistance
-    {
-        get
-        {
-            var weaponData = _humanoidController.PrimaryWeaponData;
-            return weaponData ? weaponData.preferredDistance : 2f;
-        }
-    }
+    public float PreferredAttackDistance => _humanoidController.PrimaryWeaponPreferredAttackDistance;
 
     public readonly int WalkableAreaMask = NavMesh.GetAreaFromName("Walkable") != -1
         ? 1 << NavMesh.GetAreaFromName("Walkable")

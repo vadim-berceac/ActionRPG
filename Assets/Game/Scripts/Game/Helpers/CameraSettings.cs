@@ -227,8 +227,8 @@ namespace Game
         private void UpdateInputSettings()
         {
             var active = _currentCamera == CameraType.Bow ? bowCamera : explorationCamera;
-            
-            var look = _playerInputHandler.CameraInput;
+
+            var look = _playerInputHandler.CameraInput; 
             if (controllerInvertSettings.invertX) look.x = -look.x;
             if (controllerInvertSettings.invertY) look.y = -look.y;
 
@@ -239,11 +239,11 @@ namespace Game
             m_CurrentY = Mathf.SmoothDamp(m_CurrentY, targetY, ref m_VelocityY, Mathf.Max(controllerSmoothing.smoothTimeY, 0.0001f));
 
             var horizontal = active.orbitalFollow.HorizontalAxis;
-            horizontal.Value += m_CurrentX * Time.deltaTime;
+            horizontal.Value += m_CurrentX; 
             active.orbitalFollow.HorizontalAxis = horizontal;
 
             var vertical = active.orbitalFollow.VerticalAxis;
-            vertical.Value = Mathf.Clamp(vertical.Value + m_CurrentY * Time.deltaTime, pitchMin, pitchMax);
+            vertical.Value = Mathf.Clamp(vertical.Value + m_CurrentY, pitchMin, pitchMax);
             active.orbitalFollow.VerticalAxis = vertical;
         }
     }

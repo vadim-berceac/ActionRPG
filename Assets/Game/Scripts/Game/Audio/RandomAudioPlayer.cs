@@ -6,9 +6,10 @@ using Random = UnityEngine.Random;
 
 namespace Game
 {
-    [RequireComponent(typeof(AudioSource))]
     public class RandomAudioPlayer : MonoBehaviour
     {
+        [SerializeField] private AudioSource audiosource;
+        
         [Serializable]
         public class MaterialAudioOverride
         {
@@ -33,22 +34,21 @@ namespace Game
         public bool playing;
         [HideInInspector]
         public bool canPlay;
-
-        protected AudioSource m_Audiosource;
+        
         protected Dictionary<Material, SoundBank[]> m_Lookup = new Dictionary<Material, SoundBank[]>();
 
-        public AudioSource audioSource { get { return m_Audiosource; } }
+        public AudioSource audioSource { get { return audiosource; } }
 
         public AudioClip clip { get; private set; }
 
-        /// <summary>
-        /// True if the AudioSource is currently playing a clip.
-        /// </summary>
-        public bool IsPlaying => m_Audiosource != null && m_Audiosource.isPlaying;
+        public bool IsPlaying => audiosource != null && audiosource.isPlaying;
 
         void Awake()
         {
-            m_Audiosource = GetComponent<AudioSource>();
+            if (!audiosource)
+            {
+                audiosource = GetComponent<AudioSource>();
+            }
             for (int i = 0; i < overrides.Length; i++)
             {
                 foreach (var material in overrides[i].materials)
@@ -58,9 +58,7 @@ namespace Game
 
         public AudioClip PlayRandomClip(Material overrideMaterial, int bankId = 0)
         {
-#if UNITY_EDITOR
-#endif
-            if (overrideMaterial == null) return null;
+            if (!overrideMaterial) return null;
             return InternalPlayRandomClip(overrideMaterial, bankId);
         }
 
@@ -75,24 +73,28 @@ namespace Game
             clip = InternalPlayRandomClip(overrideMaterial, bankId);
         }
 
-        AudioClip InternalPlayRandomClip(Material overrideMaterial, int bankId)
+        private AudioClip InternalPlayRandomClip(Material overrideMaterial, int bankId)
         {
-            SoundBank[] banks = null;
             var bank = defaultBank;
-            if (overrideMaterial != null)
-                if (m_Lookup.TryGetValue(overrideMaterial, out banks))
-                    if (bankId < banks.Length)
-                        bank = banks[bankId];
+            if (overrideMaterial)
+            {
+                if (m_Lookup.TryGetValue(overrideMaterial, out var currentBanks))
+                {
+                    if (bankId < currentBanks.Length)
+                    {
+                        bank = currentBanks[bankId];
+                    }
+                }
+            }
             if (bank.clips == null || bank.clips.Length == 0)
                 return null;
             var clip = bank.clips[Random.Range(0, bank.clips.Length)];
 
-            if (clip == null)
-                return null;
+            if (!clip) return null;
 
-            m_Audiosource.pitch = randomizePitch ? Random.Range(1.0f - pitchRandomRange, 1.0f + pitchRandomRange) : 1.0f;
-            m_Audiosource.clip = clip;
-            m_Audiosource.PlayDelayed(playDelay);
+            audiosource.pitch = randomizePitch ? Random.Range(1.0f - pitchRandomRange, 1.0f + pitchRandomRange) : 1.0f;
+            audiosource.clip = clip;
+            audiosource.PlayDelayed(playDelay);
 
             return clip;
         }

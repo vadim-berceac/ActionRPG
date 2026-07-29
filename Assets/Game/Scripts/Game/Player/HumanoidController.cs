@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using Game.Message;
 using Unity.Cinemachine;
@@ -15,28 +14,35 @@ namespace Game
         [field: SerializeField] public Transform ModelTransform { get; private set; }
         [field: SerializeField] public LayerMask TargetLayer { get; private set; }
         [field: SerializeField] public RangeWeapon RangeWeaponRoot { get; private set; }
+        [field: SerializeField] public PropBones PropBones { get; private set; }
+        [field: Header("Sound")]
+        [field: SerializeField] public RandomAudioPlayer FootstepPlayer { get; private set; }
+        [field: SerializeField] public RandomAudioPlayer HurtAudioPlayer { get; private set; }
+        [field: SerializeField] public RandomAudioPlayer LandingPlayer { get; private set; }
+        [field: SerializeField] public RandomAudioPlayer EmoteLandingPlayer { get; private set; }
+        [field: SerializeField] public RandomAudioPlayer EmoteDeathPlayer { get; private set; }
+        [field: SerializeField] public RandomAudioPlayer EmoteAttackPlayer { get; private set; }
+        [field: SerializeField] public RandomAudioPlayer EmoteJumpPlayer { get; private set; }
+        [field: SerializeField] public AudioSource BlockAudioSource { get; private set; }
+        [field: Header("Movement")]
+        [field: SerializeField] public float MaxForwardSpeed { get; private set; } = 8f;
+        [field: SerializeField] public float Gravity { get; private set; } = 20f;
+        [field: SerializeField] public float JumpSpeed { get; private set; } = 10f;
+        [field: SerializeField] public float MinTurnSpeed { get; private set; } = 400f;
+        [field: SerializeField] public float MaxTurnSpeed { get; private set; } = 1200f;
+        [field: SerializeField] public float CombatTurnSpeed { get; private set; } = 100f;
+        [field: SerializeField] public float AimTurnSpeed { get; private set; } = 400f;
+        [field: SerializeField] public float IdleTimeout { get; private set; } = 5f;
 
-        public float maxForwardSpeed = 8f;
-        public float gravity = 20f;
-        public float jumpSpeed = 10f;
-        public float minTurnSpeed = 400f;
-        public float maxTurnSpeed = 1200f;
-        public float idleTimeout = 5f;
-        public bool canAttack;
-
-        public bool IsGrounded => _charCtrl != null && _charCtrl.isGrounded;
-        public bool HasAdditionalWeapon => _additionalWeaponInstance != null;
+        public bool IsGrounded => _charCtrl && _charCtrl.isGrounded;
+        public bool HasPrimaryWeapon => _primaryWeaponInstance;
+        public bool HasRangeWeapon => _rangedWeaponInstance;
+        public bool HasAdditionalWeapon => _additionalWeaponInstance;
         public bool IsBlocking { get; private set; }
-
-        public PropBones propBones;
-        public RandomAudioPlayer footstepPlayer;
-        public RandomAudioPlayer hurtAudioPlayer;
-        public RandomAudioPlayer landingPlayer;
-        public RandomAudioPlayer emoteLandingPlayer;
-        public RandomAudioPlayer emoteDeathPlayer;
-        public RandomAudioPlayer emoteAttackPlayer;
-        public RandomAudioPlayer emoteJumpPlayer;
-        public AudioSource blockAudioSource;
+        public int PrimaryWeaponIndex => _primaryWeaponData ? _primaryWeaponData.AnimationSetIndex : 0;
+        public int RangeWeaponIndex => _rangedWeaponData ? _rangedWeaponData.AnimationSetIndex : 0;
+        public float PrimaryWeaponPreferredAttackDistance => _primaryWeaponData.preferredDistance;
+        public float LoadProgressCurve => _animCache.LoadProgressCurve;
 
         private CameraSettings _cameraSettings;
         private DiContainer _diContainer;
@@ -75,24 +81,15 @@ namespace Game
         private bool _blockTriggeredThisFixedUpdate;
         private bool _damageTriggeredThisFixedUpdate;
         private Damageable _damageable;
-        private Renderer[] _renderers;
+        private Transform _transform;
         private float _idleTimer;
         private Vector3 _knockbackVelocity;
         private GameObject _projectileView;
 
-        private int[] m_ComboHashes;
+        private int[] _comboHashes;
 
         private bool IsMoveInput => !Mathf.Approximately(_input.MoveInput.sqrMagnitude, 0f);
-
-        public void SetCanAttack(bool canAttack)
-            => this.canAttack = canAttack;
-
-        public int PrimaryWeaponIndex => _primaryWeaponData ? _primaryWeaponData.AnimationSetIndex : 0;
-        public int RangeWeaponIndex => _rangedWeaponData ? _rangedWeaponData.AnimationSetIndex : 0;
-        public WeaponData PrimaryWeaponData => _primaryWeaponData;
-        public WeaponData AdditionalWeaponData => _additionalWeaponData;
-        public WeaponData RangedWeaponData => _rangedWeaponData;
-        public float LoadProgressCurve => _animCache.LoadProgressCurve;
+        
 
         [Inject]
         private void Construct(DiContainer container, CameraSettings cameraSettings, HealthUI healthUI, PlayerInputHandlerService playerInputHandlerService)
@@ -114,9 +111,10 @@ namespace Game
         private void Awake()
         {
             _charCtrl = GetComponent<CharacterController>();
-            _animCache     = new AnimatorStateCache(GetComponent<Animator>(), RangeWeaponRoot);
+            _animCache = new AnimatorStateCache(GetComponent<Animator>(), RangeWeaponRoot);
+            _transform = transform;
 
-            if (ModelTransform != null)
+            if (ModelTransform)
             {
                 _modelOriginalLocalRotation = ModelTransform.localRotation;
             }
@@ -130,9 +128,8 @@ namespace Game
             _damageable.onDamageMessageReceivers.Add(this);
             _damageable.isInvulnerable = true;
             _damageable.onDamageBlocked = OnDamageBlocked;
-            _renderers = GetComponentsInChildren<Renderer>();
 
-            if (RangeWeaponRoot != null)
+            if (RangeWeaponRoot)
             {
                 _rangedAttackHandler = new RangedAttackHandler(RangeWeaponRoot, _damageable, TargetLayer);
             }
@@ -142,12 +139,6 @@ namespace Game
         {
             _damageable.onDamageMessageReceivers.Remove(this);
             _damageable.onDamageBlocked = null;
-
-            for (var i = 0; i < _renderers.Length; ++i)
-            {
-                if (_renderers[i] == null) continue;
-                _renderers[i].enabled = true;
-            }
         }
 
         private void FixedUpdate()
@@ -169,9 +160,7 @@ namespace Game
             ProcessShoot();
             CalcForwardMovement();
             CalcVerticalMovement();
-            CalcOrientation();
-
-            PlayAudio();
+            
             TimeoutToIdle();
 
             _previouslyGrounded = _isGrounded;
@@ -179,23 +168,25 @@ namespace Game
 
         private void LateUpdate()
         {
+            CalcOrientation();
             ApplyOrientation();
+            PlayAudio();
         }
 
         private void ConnectCombo(WeaponData data)
         {
-            m_ComboHashes = new int[data.ComboNames.Length];
+            _comboHashes = new int[data.ComboNames.Length];
             for (var i = 0; i < data.ComboNames.Length; i++)
             {
-                m_ComboHashes[i] = Animator.StringToHash(data.ComboNames[i]);
+                _comboHashes[i] = Animator.StringToHash(data.ComboNames[i]);
             }
         }
 
         private bool CheckCombo()
         {
-            if (_primaryWeaponData == null || m_ComboHashes == null) return false;
+            if (_comboHashes == null) return false;
 
-            foreach (var hash in m_ComboHashes)
+            foreach (var hash in _comboHashes)
             {
                 if (_animCache.IsInState(hash)) return true;
             }
@@ -212,23 +203,23 @@ namespace Game
         {
             SetIsMeleeWeaponEquipped(false);
             
-            if (weaponInstance != null)
+            if (weaponInstance)
             {
                 weaponInstance.DestroyInstance();
             }
-            if (fromData == null)
+            if (!fromData)
             {
                 prevData = null;
                 return;
             }
 
             prevData = fromData;
-            var weaponObj = prevData.GetViewInstance(transform, _diContainer);
+            var weaponObj = prevData.GetViewInstance(_transform, _diContainer);
             weaponInstance = weaponObj.GetComponent<WeaponInstance>();
             weaponInstance.Initialize(gameObject, TargetLayer);
             weaponInstance.SetWeaponData(prevData);
             weaponInstance.SetKnockbackForce(prevData.knockbackForce);
-            weaponInstance.SetStaticParts(prevData.GetStaticParts(propBones, _diContainer));
+            weaponInstance.SetStaticParts(prevData.GetStaticParts(PropBones, _diContainer));
             ConnectWeaponToHands(false, prevData, weaponInstance, trigger);
             ConnectCombo(prevData);
         }
@@ -282,11 +273,13 @@ namespace Game
             _animCache.ResetAttack1();
             _animCache.ResetAttack2();
 
-            if (!IsBlocking)
+            if (IsBlocking)
             {
-                if (_input.Attack1 && canAttack) _animCache.TriggerAttack1();
-                if (_input.Attack2 && canAttack) _animCache.TriggerAttack2();
+                return;
             }
+            
+            if (_input.Attack1) _animCache.TriggerAttack1();
+            if (_input.Attack2) _animCache.TriggerAttack2();
         }
 
         private void ConnectWeaponToHands(bool equip, WeaponData data, WeaponInstance weaponInstanceInstance, int trigger)
@@ -297,7 +290,7 @@ namespace Game
 
             if (weaponInstanceInstance)
             {
-                weaponInstanceInstance.SetViewParent(propBones, settings);
+                weaponInstanceInstance.SetViewParent(PropBones, settings);
             }
 
             if (!equip)
@@ -310,7 +303,7 @@ namespace Game
             if (moveInput.sqrMagnitude > 1f)
                 moveInput.Normalize();
 
-            _desiredForwardSpeed = moveInput.magnitude * maxForwardSpeed;
+            _desiredForwardSpeed = moveInput.magnitude * MaxForwardSpeed;
             var acceleration    = IsMoveInput ? Constants.GroundAcceleration : Constants.GroundDeceleration;
             _forwardSpeed        = Mathf.MoveTowards(_forwardSpeed, _desiredForwardSpeed, acceleration * Time.deltaTime);
 
@@ -330,11 +323,11 @@ namespace Game
 
             if (_isGrounded)
             {
-                _verticalSpeed = -gravity * Constants.StickingGravityProportion;
+                _verticalSpeed = -Gravity * Constants.StickingGravityProportion;
 
                 if (_input.JumpInput && _readyToJump && !_inAttack && !IsBlocking)
                 {
-                    _verticalSpeed = jumpSpeed;
+                    _verticalSpeed = JumpSpeed;
                     _isGrounded    = false;
                     _readyToJump   = false;
                 }
@@ -347,7 +340,7 @@ namespace Game
                 if (Mathf.Approximately(_verticalSpeed, 0f))
                     _verticalSpeed = 0f;
 
-                _verticalSpeed -= gravity * Time.deltaTime;
+                _verticalSpeed -= Gravity * Time.deltaTime;
             }
         }
 
@@ -361,13 +354,21 @@ namespace Game
             {
                 _targetRotation = Quaternion.LookRotation(cameraForward);
                 _angleDiff = Mathf.DeltaAngle(
-                    Mathf.Atan2(transform.forward.x, transform.forward.z) * Mathf.Rad2Deg,
+                    Mathf.Atan2(_transform.forward.x, _transform.forward.z) * Mathf.Rad2Deg,
                     Mathf.Atan2(cameraForward.x, cameraForward.z) * Mathf.Rad2Deg
                 );
                 return;
             }
 
             var moveInput = _input.MoveInput;
+
+            if (moveInput.sqrMagnitude < 0.0001f)
+            {
+                _angleDiff = 0f;
+                _targetRotation = _transform.rotation;
+                return;
+            }
+
             var localMovementDirection = new Vector3(moveInput.x, 0f, moveInput.y).normalized;
 
             Quaternion targetRotation;
@@ -384,7 +385,7 @@ namespace Game
 
             var resultingForward = targetRotation * Vector3.forward;
 
-            var angleCurrent = Mathf.Atan2(transform.forward.x, transform.forward.z) * Mathf.Rad2Deg;
+            var angleCurrent = Mathf.Atan2(_transform.forward.x, _transform.forward.z) * Mathf.Rad2Deg;
             var targetAngle  = Mathf.Atan2(resultingForward.x, resultingForward.z) * Mathf.Rad2Deg;
 
             _angleDiff = Mathf.DeltaAngle(angleCurrent, targetAngle);
@@ -405,69 +406,71 @@ namespace Game
         {
             if (_damageable.currentHitPoints < 1 || !IsOrientationUpdated() 
                 && !(IsMoveInput || IsBlocking || _shootPressed || _inAttack)) return;
-            
+    
             _animCache.SetAngleDeltaRad(_angleDiff * Mathf.Deg2Rad);
-            
-            if (IsBlocking || _inAttack || _shootPressed)
+
+            if (_shootPressed)
             {
-                transform.rotation = _targetRotation;
+                _transform.rotation = Quaternion.RotateTowards(_transform.rotation, _targetRotation, AimTurnSpeed * Time.deltaTime);
+                return;
+            }
+    
+            if (IsBlocking || _inAttack)
+            {
+                _transform.rotation = Quaternion.RotateTowards(_transform.rotation, _targetRotation, CombatTurnSpeed * Time.deltaTime);
                 return;
             }
 
             var localInput      = new Vector3(_input.MoveInput.x, 0f, _input.MoveInput.y);
-            var groundedTurnSpeed = Mathf.Lerp(maxTurnSpeed, minTurnSpeed, _forwardSpeed / _desiredForwardSpeed);
+            var groundedTurnSpeed = Mathf.Lerp(MinTurnSpeed, MaxTurnSpeed, _forwardSpeed / _desiredForwardSpeed);
             var actualTurnSpeed   = _isGrounded
                 ? groundedTurnSpeed
-                : Vector3.Angle(transform.forward, localInput) * Constants.InverseOneEighty 
-                                                               * Constants.AirborneTurnSpeedProportion * groundedTurnSpeed;
+                : Vector3.Angle(_transform.forward, localInput) * Constants.InverseOneEighty 
+                                                                * Constants.AirborneTurnSpeedProportion * groundedTurnSpeed;
 
-            _targetRotation   = Quaternion.RotateTowards(transform.rotation, _targetRotation, actualTurnSpeed * Time.deltaTime);
-            transform.rotation = _targetRotation;
+            _targetRotation   = Quaternion.RotateTowards(_transform.rotation, _targetRotation, actualTurnSpeed * Time.deltaTime);
+            _transform.rotation = _targetRotation;
         }
 
         private void PlayAudio()
         {
             var footfall = _animCache.FootFall;
 
-            if (footfall > 0.01f && !footstepPlayer.playing && footstepPlayer.canPlay)
+            if (footfall > 0.01f && !FootstepPlayer.playing)
             {
-                footstepPlayer.playing = true;
-                footstepPlayer.canPlay = false;
-                footstepPlayer.PlayRandomClip(_currentWalkingSurface, _forwardSpeed < 4 ? 0 : 1);
+                FootstepPlayer.playing = true;
+                FootstepPlayer.PlayRandomClip(_currentWalkingSurface, _forwardSpeed < 4 ? 0 : 1);
             }
-            else if (footstepPlayer.playing)
+            else if (FootstepPlayer.playing)
             {
-                footstepPlayer.playing = false;
-            }
-            else if (footfall < 0.01f && !footstepPlayer.canPlay)
-            {
-                footstepPlayer.canPlay = true;
+                FootstepPlayer.playing = false;
             }
 
             if (_isGrounded && !_previouslyGrounded)
             {
-                landingPlayer.PlayRandomClipOneShot(_currentWalkingSurface, bankId: _forwardSpeed < 4 ? 0 : 1);
-                emoteLandingPlayer.PlayRandomClipOneShot();
+                LandingPlayer.PlayRandomClipOneShot(_currentWalkingSurface, bankId: _forwardSpeed < 4 ? 0 : 1);
+                EmoteLandingPlayer.PlayRandomClipOneShot();
             }
 
             if (!_isGrounded && _previouslyGrounded && _verticalSpeed > 0f)
-                emoteJumpPlayer.PlayRandomClipOneShot();
+                EmoteJumpPlayer.PlayRandomClipOneShot();
 
             if (_animCache.JustEntered(_animCache.HashHurt))
-                hurtAudioPlayer.PlayRandomClipOneShot();
+                HurtAudioPlayer.PlayRandomClipOneShot();
 
             if (_animCache.JustEntered(_animCache.HashDeath))
-                emoteDeathPlayer.PlayRandomClip();
+                EmoteDeathPlayer.PlayRandomClip();
 
-            if (m_ComboHashes == null || m_ComboHashes.Length < 1) return;
+            if (_comboHashes == null || _comboHashes.Length < 1) return;
 
-            foreach (var hash in m_ComboHashes)
+            foreach (var hash in _comboHashes)
             {
-                if (_animCache.JustEntered(hash))
+                if (!_animCache.JustEntered(hash))
                 {
-                    emoteAttackPlayer.PlayRandomClipOneShot();
-                    break;
+                    continue;
                 }
+                EmoteAttackPlayer.PlayRandomClipOneShot();
+                break;
             }
         }
 
@@ -525,7 +528,7 @@ namespace Game
             if(_projectileView) return;
             
             _projectileView = Instantiate(_ammunitionWeaponData.ViewPrefab);
-            _ammunitionWeaponData.ActiveProp.SetPropBone(_projectileView.transform, propBones);
+            _ammunitionWeaponData.ActiveProp.SetPropBone(_projectileView.transform, PropBones);
         }
 
         public void DestroyProjectile()
@@ -541,15 +544,15 @@ namespace Game
             if (_rangedAttackHandler == null || !_rangedAttackHandler.IsValid)
                 return;
 
-            var targetPosition = transform.position + transform.forward * 20f;
+            var targetPosition = _transform.position + _transform.forward * 20f;
             _rangedAttackHandler.Shoot(targetPosition);
         }
 
         private bool IsFacingDamageSource(Vector3 damageSource)
         {
-            var toSource = (damageSource - transform.position).normalized;
+            var toSource = (damageSource - _transform.position).normalized;
             toSource.y = 0f;
-            return Vector3.Dot(transform.forward, toSource) > 0f;
+            return Vector3.Dot(_transform.forward, toSource) > 0f;
         }
 
         private void PlayBlockSound()
@@ -564,8 +567,8 @@ namespace Game
 
             if (!clip) return;
 
-            blockAudioSource.clip = clip;
-            blockAudioSource.Play();
+            BlockAudioSource.clip = clip;
+            BlockAudioSource.Play();
         }
 
         private void TimeoutToIdle()
@@ -575,7 +578,7 @@ namespace Game
             if (_isGrounded && !inputDetected)
             {
                 _idleTimer += Time.deltaTime;
-                if (_idleTimer >= idleTimeout)
+                if (_idleTimer >= IdleTimeout)
                 {
                     _idleTimer = 0f;
                     _animCache.TriggerTimeoutToIdle();
@@ -596,10 +599,9 @@ namespace Game
 
             if (_isGrounded)
             {
-                RaycastHit hit;
-                var ray = new Ray(transform.position + Vector3.up 
+                var ray = new Ray(_transform.position + Vector3.up 
                     * Constants.GroundedRayDistance * 0.5f, -Vector3.up);
-                if (Physics.Raycast(ray, out hit, Constants.GroundedRayDistance, Physics.AllLayers, QueryTriggerInteraction.Ignore))
+                if (Physics.Raycast(ray, out var hit, Constants.GroundedRayDistance, Physics.AllLayers, QueryTriggerInteraction.Ignore))
                 {
                     movement = Vector3.ProjectOnPlane(_animCache.DeltaPosition, hit.normal);
                     var groundRenderer = hit.collider.GetComponentInChildren<Renderer>();
@@ -613,10 +615,10 @@ namespace Game
             }
             else
             {
-                movement = _forwardSpeed * transform.forward * Time.deltaTime;
+                movement = _forwardSpeed * _transform.forward * Time.deltaTime;
             }
 
-            _charCtrl.transform.rotation *= _animCache.DeltaRotation;
+            //_transform.rotation *= _animCache.DeltaRotation;
             movement += _verticalSpeed * Vector3.up * Time.deltaTime;
             _charCtrl.Move(movement);
 
@@ -641,7 +643,6 @@ namespace Game
 
         public void TriggerRangedAttack()
         {
-            canAttack = true;
             _input.Attack1 = true;
         }
 
@@ -696,7 +697,7 @@ namespace Game
 
             if (damageMessage.knockbackForce > 0f)
             {
-                var knockbackDir = (transform.position - damageMessage.damageSource).normalized;
+                var knockbackDir = (_transform.position - damageMessage.damageSource).normalized;
                 knockbackDir.y = 0f;
                 if (knockbackDir.sqrMagnitude > 0.001f)
                 {
@@ -705,12 +706,12 @@ namespace Game
                 }
             }
 
-            if (damageMessage.knockbackForce > 0f && damageMessage.damager != null)
+            if (damageMessage.knockbackForce > 0f && damageMessage.damager)
             {
                 var attackerController = damageMessage.damager.GetComponent<HumanoidController>();
                 if (attackerController)
                 {
-                    var knockbackDir = (damageMessage.damageSource - transform.position).normalized;
+                    var knockbackDir = (damageMessage.damageSource - _transform.position).normalized;
                     knockbackDir.y = 0f;
                     if (knockbackDir.sqrMagnitude > 0.001f)
                     {
@@ -735,29 +736,33 @@ namespace Game
             _damageTriggeredThisFixedUpdate = true;
             _animCache.TriggerHurt();
 
-            var forward   = damageMessage.damageSource - transform.position;
+            var forward   = damageMessage.damageSource - _transform.position;
             forward.y         = 0f;
-            var localHurt = transform.InverseTransformDirection(forward);
+            var localHurt = _transform.InverseTransformDirection(forward);
             _animCache.SetHurtDirection(localHurt.x, localHurt.z);
 
-            if (hurtAudioPlayer)
-                hurtAudioPlayer.PlayRandomClipOneShot();
+            if (HurtAudioPlayer)
+                HurtAudioPlayer.PlayRandomClipOneShot();
 
             if (IsPlayer)
             {
                 _cameraSettings.Shake();
             }
 
-            if (damageMessage.knockbackForce > 0f)
+            if (damageMessage.knockbackForce <= 0f)
             {
-                var knockbackDir = (transform.position - damageMessage.damageSource).normalized;
-                knockbackDir.y = 0f;
-                if (knockbackDir.sqrMagnitude > 0.001f)
-                {
-                    _knockbackVelocity = knockbackDir * damageMessage.knockbackForce;
-                    _isGrounded = false;
-                }
+                return;
             }
+            
+            var knockbackDir = (_transform.position - damageMessage.damageSource).normalized;
+            knockbackDir.y = 0f;
+            
+            if (knockbackDir.sqrMagnitude <= 0.001f)
+            {
+                return;
+            }
+            _knockbackVelocity = knockbackDir * damageMessage.knockbackForce;
+            _isGrounded = false;
         }
 
         public void Die(Damageable.DamageMessage damageMessage)
@@ -769,7 +774,7 @@ namespace Game
             _damageable.isInvulnerable = true;
         }
 
-        public void ApplyKnockback(Vector3 knockbackVelocity)
+        private void ApplyKnockback(Vector3 knockbackVelocity)
         {
             _knockbackVelocity = knockbackVelocity;
             _isGrounded = false;
