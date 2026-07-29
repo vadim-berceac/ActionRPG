@@ -307,11 +307,12 @@ MonoBehaviour:
   <MaxForwardSpeed>k__BackingField: 8
   <Gravity>k__BackingField: 20
   <JumpSpeed>k__BackingField: 7
-  <MinTurnSpeed>k__BackingField: 800
-  <MaxTurnSpeed>k__BackingField: 2000
-  <CombatTurnSpeed>k__BackingField: 100
-  <AimTurnSpeed>k__BackingField: 400
+  <MinTurnSpeed>k__BackingField: 200
+  <MaxTurnSpeed>k__BackingField: 400
+  <CombatTurnSpeed>k__BackingField: 50
+  <AimTurnSpeed>k__BackingField: 100
   <IdleTimeout>k__BackingField: 5
+  <GroundedTurnSmoothTime>k__BackingField: 0.15
 --- !u!114 &5555669641611656938
 MonoBehaviour:
   m_ObjectHideFlags: 0

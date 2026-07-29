@@ -33,6 +33,7 @@ namespace Game
         [field: SerializeField] public float CombatTurnSpeed { get; private set; } = 100f;
         [field: SerializeField] public float AimTurnSpeed { get; private set; } = 400f;
         [field: SerializeField] public float IdleTimeout { get; private set; } = 5f;
+        [field: SerializeField] public float GroundedTurnSmoothTime { get; private set; } = 0.15f;
 
         public bool IsGrounded => _charCtrl && _charCtrl.isGrounded;
         public bool HasPrimaryWeapon => _primaryWeaponInstance;
@@ -76,6 +77,7 @@ namespace Game
         private Material _currentWalkingSurface;
         private Quaternion _targetRotation;
         private float _angleDiff;
+        private float _turnVelocity;
         private bool _inAttack;
         private bool _isShoot;
         private bool _blockTriggeredThisFixedUpdate;
@@ -406,7 +408,7 @@ namespace Game
         {
             if (_damageable.currentHitPoints < 1 || !IsOrientationUpdated() 
                 && !(IsMoveInput || IsBlocking || _shootPressed || _inAttack)) return;
-    
+
             _animCache.SetAngleDeltaRad(_angleDiff * Mathf.Deg2Rad);
 
             if (_shootPressed)
@@ -414,22 +416,18 @@ namespace Game
                 _transform.rotation = Quaternion.RotateTowards(_transform.rotation, _targetRotation, AimTurnSpeed * Time.deltaTime);
                 return;
             }
-    
+
             if (IsBlocking || _inAttack)
             {
                 _transform.rotation = Quaternion.RotateTowards(_transform.rotation, _targetRotation, CombatTurnSpeed * Time.deltaTime);
                 return;
             }
 
-            var localInput      = new Vector3(_input.MoveInput.x, 0f, _input.MoveInput.y);
-            var groundedTurnSpeed = Mathf.Lerp(MinTurnSpeed, MaxTurnSpeed, _forwardSpeed / _desiredForwardSpeed);
-            var actualTurnSpeed   = _isGrounded
-                ? groundedTurnSpeed
-                : Vector3.Angle(_transform.forward, localInput) * Constants.InverseOneEighty 
-                                                                * Constants.AirborneTurnSpeedProportion * groundedTurnSpeed;
+            var currentEuler = _transform.rotation.eulerAngles.y;
+            var targetEuler  = _targetRotation.eulerAngles.y;
 
-            _targetRotation   = Quaternion.RotateTowards(_transform.rotation, _targetRotation, actualTurnSpeed * Time.deltaTime);
-            _transform.rotation = _targetRotation;
+            var newYaw = Mathf.SmoothDampAngle(currentEuler, targetEuler, ref _turnVelocity, GroundedTurnSmoothTime);
+            _transform.rotation = Quaternion.Euler(0f, newYaw, 0f);
         }
 
         private void PlayAudio()
