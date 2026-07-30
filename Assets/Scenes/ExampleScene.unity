@@ -163297,26 +163297,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
-    - target: {fileID: 3129279076112330710, guid: f9915f7d87239a24291440ebca401a1b,
-        type: 3}
-      propertyPath: <AimTurnSpeed>k__BackingField
-      value: 100
-      objectReference: {fileID: 0}
-    - target: {fileID: 3129279076112330710, guid: f9915f7d87239a24291440ebca401a1b,
-        type: 3}
-      propertyPath: <MaxTurnSpeed>k__BackingField
-      value: 400
-      objectReference: {fileID: 0}
-    - target: {fileID: 3129279076112330710, guid: f9915f7d87239a24291440ebca401a1b,
-        type: 3}
-      propertyPath: <MinTurnSpeed>k__BackingField
-      value: 200
-      objectReference: {fileID: 0}
-    - target: {fileID: 3129279076112330710, guid: f9915f7d87239a24291440ebca401a1b,
-        type: 3}
-      propertyPath: <CombatTurnSpeed>k__BackingField
-      value: 50
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
