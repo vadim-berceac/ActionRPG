@@ -34,8 +34,10 @@ namespace Game
         [field: SerializeField] public float AimTurnSpeed { get; private set; } = 400f;
         [field: SerializeField] public float IdleTimeout { get; private set; } = 5f;
         [field: SerializeField] public float GroundedTurnSmoothTime { get; private set; } = 0.15f;
+        [field: SerializeField] public float CoyoteTime { get; private set; } = 0.15f;
+        [field: SerializeField] public float MinFallHeightForAirborneAnim { get; private set; } = 0.35f;
 
-        public bool IsGrounded => _charCtrl && _charCtrl.isGrounded;
+        public bool IsGrounded => _charCtrl && _charCtrl.isGrounded && _isGrounded;
         public bool HasPrimaryWeapon => _primaryWeaponInstance;
         public bool HasRangeWeapon => _rangedWeaponInstance;
         public bool HasAdditionalWeapon => _additionalWeaponInstance;
@@ -66,7 +68,12 @@ namespace Game
         private float _desiredForwardSpeed;
         private float _forwardSpeed;
         private float _verticalSpeed;
-        
+        private float _coyoteTimer;
+        private bool _isJumping;
+        private bool _fallOriginCaptured;
+        private float _fallOriginY;
+        private bool _animGrounded = true;
+
         private RangedAttackHandler _rangedAttackHandler;
         private bool _shootPressed;
         private bool _bowCameraOn;
@@ -91,14 +98,14 @@ namespace Game
         private int[] _comboHashes;
 
         private bool IsMoveInput => !Mathf.Approximately(_input.MoveInput.sqrMagnitude, 0f);
-        
+
 
         [Inject]
         private void Construct(DiContainer container, CameraSettings cameraSettings, HealthUI healthUI, PlayerInputHandlerService playerInputHandlerService)
         {
             _diContainer = container;
             _cameraSettings = cameraSettings;
-            
+
             if(IsPlayer)
             {
                 _input = playerInputHandlerService;
@@ -115,6 +122,7 @@ namespace Game
             _charCtrl = GetComponent<CharacterController>();
             _animCache = new AnimatorStateCache(GetComponent<Animator>(), RangeWeaponRoot);
             _transform = transform;
+            _coyoteTimer = CoyoteTime;
 
             if (ModelTransform)
             {
@@ -156,13 +164,13 @@ namespace Game
             ConnectWeaponToHands(_isMeleeWeaponEquipped, _primaryWeaponData,    _primaryWeaponInstance,    _animCache.HashAttack1);
             ConnectWeaponToHands(_isMeleeWeaponEquipped, _additionalWeaponData, _additionalWeaponInstance, _animCache.HashAttack2);
             ConnectWeaponToHands(_isRangeWeaponEquipped, _rangedWeaponData, _rangedWeaponInstance, _animCache.Shoot);
-            
+
             ProcessAttack();
             ProcessBlocking();
             ProcessShoot();
             CalcForwardMovement();
             CalcVerticalMovement();
-            
+
             TimeoutToIdle();
 
             _previouslyGrounded = _isGrounded;
@@ -204,7 +212,7 @@ namespace Game
         private void CreateWeapon(WeaponData fromData, ref WeaponData prevData, ref WeaponInstance weaponInstance, int trigger)
         {
             SetIsMeleeWeaponEquipped(false);
-            
+
             if (weaponInstance)
             {
                 weaponInstance.DestroyInstance();
@@ -240,7 +248,7 @@ namespace Game
         {
             CreateWeapon(fromData, ref _rangedWeaponData, ref _rangedWeaponInstance, _animCache.Shoot);
         }
-        
+
         public void CreateAmmunition(WeaponData fromData)
         {
             RangeWeaponRoot.SetData(fromData);
@@ -252,7 +260,7 @@ namespace Game
             _isMeleeWeaponEquipped = value;
             var index = value && _primaryWeaponData ? _primaryWeaponData.AnimationSetIndex : 0;
             _animCache.SetWeaponEquipped(value, index);
-            
+
             if(value) _isRangeWeaponEquipped = false;
         }
 
@@ -261,7 +269,7 @@ namespace Game
             _isRangeWeaponEquipped = value;
             var index = value && _rangedWeaponData ? _rangedWeaponData.AnimationSetIndex : 0;
             _animCache.SetWeaponEquipped(value, index);
-            
+
             if(value) _isMeleeWeaponEquipped = false;
         }
 
@@ -279,7 +287,7 @@ namespace Game
             {
                 return;
             }
-            
+
             if (_input.Attack1) _animCache.TriggerAttack1();
             if (_input.Attack2) _animCache.TriggerAttack2();
         }
@@ -323,16 +331,21 @@ namespace Game
                 _readyToJump = true;
             }
 
+            var canJump = _coyoteTimer > 0f;
+
+            if (_input.JumpInput && canJump && _readyToJump && !_inAttack && !IsBlocking)
+            {
+                _verticalSpeed = JumpSpeed;
+                _isGrounded    = false;
+                _coyoteTimer   = 0f;
+                _readyToJump   = false;
+                _isJumping     = true;
+                return;
+            }
+
             if (_isGrounded)
             {
                 _verticalSpeed = -Gravity * Constants.StickingGravityProportion;
-
-                if (_input.JumpInput && _readyToJump && !_inAttack && !IsBlocking)
-                {
-                    _verticalSpeed = JumpSpeed;
-                    _isGrounded    = false;
-                    _readyToJump   = false;
-                }
             }
             else
             {
@@ -406,7 +419,7 @@ namespace Game
 
         private void ApplyOrientation()
         {
-            if (_damageable.currentHitPoints < 1 || !IsOrientationUpdated() 
+            if (_damageable.currentHitPoints < 1 || !IsOrientationUpdated()
                 && !(IsMoveInput || IsBlocking || _shootPressed || _inAttack)) return;
 
             _animCache.SetAngleDeltaRad(_angleDiff * Mathf.Deg2Rad);
@@ -432,6 +445,11 @@ namespace Game
 
         private void PlayAudio()
         {
+            if (_damageable.currentHitPoints < 1)
+            {
+                return;
+            }
+            
             var footfall = _animCache.FootFall;
 
             if (footfall > 0.01f && !FootstepPlayer.playing)
@@ -494,9 +512,9 @@ namespace Game
             _shootPressed = _input.Shoot;
             _isShoot = _shootPressed;
             _animCache.SetShoot(_shootPressed);
-            
+
             if (!IsPlayer) return;
-            
+
             if (_shootPressed && !_bowCameraOn)
             {
                 _bowCameraOn = true;
@@ -507,9 +525,9 @@ namespace Game
                 _bowCameraOn = false;
                 _cameraSettings.SwitchCamera(CameraSettings.CameraType.Exploration);
             }
-               
+
             if (!ModelTransform) return;
-            
+
             var targetYaw = _bowCameraOn ? 30f : 0f;
             var currentYaw = ModelTransform.localEulerAngles.y;
             if (currentYaw > 180f) currentYaw -= 360f;
@@ -524,7 +542,7 @@ namespace Game
         public void CreateProjectile()
         {
             if(_projectileView) return;
-            
+
             _projectileView = Instantiate(_ammunitionWeaponData.ViewPrefab);
             _ammunitionWeaponData.ActiveProp.SetPropBone(_projectileView.transform, PropBones);
         }
@@ -532,7 +550,7 @@ namespace Game
         public void DestroyProjectile()
         {
             if (!_projectileView) return;
-            
+
             Destroy(_projectileView);
             _projectileView = null;
         }
@@ -597,7 +615,7 @@ namespace Game
 
             if (_isGrounded)
             {
-                var ray = new Ray(_transform.position + Vector3.up 
+                var ray = new Ray(_transform.position + Vector3.up
                     * Constants.GroundedRayDistance * 0.5f, -Vector3.up);
                 if (Physics.Raycast(ray, out var hit, Constants.GroundedRayDistance, Physics.AllLayers, QueryTriggerInteraction.Ignore))
                 {
@@ -616,7 +634,6 @@ namespace Game
                 movement = _forwardSpeed * _transform.forward * Time.deltaTime;
             }
 
-            //_transform.rotation *= _animCache.DeltaRotation;
             movement += _verticalSpeed * Vector3.up * Time.deltaTime;
             _charCtrl.Move(movement);
 
@@ -633,10 +650,39 @@ namespace Game
 
             _isGrounded = _charCtrl.isGrounded;
 
-            if (!_isGrounded)
+            if (_isGrounded)
+            {
+                _coyoteTimer        = CoyoteTime;
+                _isJumping          = false;
+                _fallOriginCaptured = false;
+                _animGrounded       = true;
+            }
+            else
+            {
+                _coyoteTimer -= Time.deltaTime;
                 _animCache.SetAirborneVerticalSpeed(_verticalSpeed);
 
-            _animCache.SetGrounded(_isGrounded);
+                if (_isJumping)
+                {
+                    _animGrounded = false;
+                }
+                else if (_animGrounded)
+                {
+                    if (!_fallOriginCaptured)
+                    {
+                        _fallOriginCaptured = true;
+                        _fallOriginY = _transform.position.y;
+                    }
+
+                    var fallDistance = _fallOriginY - _transform.position.y;
+                    if (fallDistance >= MinFallHeightForAirborneAnim)
+                    {
+                        _animGrounded = false;
+                    }
+                }
+            }
+
+            _animCache.SetGrounded(_animGrounded);
         }
 
         public void TriggerRangedAttack()
@@ -687,7 +733,7 @@ namespace Game
                 return false;
 
             if (_blockTriggeredThisFixedUpdate)
-                return true; 
+                return true;
 
             _blockTriggeredThisFixedUpdate = true;
             PlayBlockSound();
@@ -696,11 +742,11 @@ namespace Game
             if (damageMessage.knockbackForce > 0f)
             {
                 var knockbackDir = (_transform.position - damageMessage.damageSource).normalized;
-                knockbackDir.y = 0f;
                 if (knockbackDir.sqrMagnitude > 0.001f)
                 {
                     _knockbackVelocity = knockbackDir * (damageMessage.knockbackForce * 0.25f);
-                    _isGrounded = false;
+                    _isGrounded  = false;
+                    _coyoteTimer = 0f;
                 }
             }
 
@@ -710,7 +756,6 @@ namespace Game
                 if (attackerController)
                 {
                     var knockbackDir = (damageMessage.damageSource - _transform.position).normalized;
-                    knockbackDir.y = 0f;
                     if (knockbackDir.sqrMagnitude > 0.001f)
                     {
                         var returnForce = damageMessage.knockbackForce * 0.25f;
@@ -751,16 +796,16 @@ namespace Game
             {
                 return;
             }
-            
+
             var knockbackDir = (_transform.position - damageMessage.damageSource).normalized;
-            knockbackDir.y = 0f;
-            
+
             if (knockbackDir.sqrMagnitude <= 0.001f)
             {
                 return;
             }
             _knockbackVelocity = knockbackDir * damageMessage.knockbackForce;
-            _isGrounded = false;
+            _isGrounded  = false;
+            _coyoteTimer = 0f;
         }
 
         public void Die(Damageable.DamageMessage damageMessage)
@@ -775,7 +820,8 @@ namespace Game
         private void ApplyKnockback(Vector3 knockbackVelocity)
         {
             _knockbackVelocity = knockbackVelocity;
-            _isGrounded = false;
+            _isGrounded  = false;
+            _coyoteTimer = 0f;
         }
     }
 }

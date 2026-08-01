@@ -2227,7 +2227,7 @@ AnimatorController:
     m_Mask: {fileID: 31900000, guid: b1c71b3711f408c499fc98c05f5c99fa, type: 2}
     m_Motions: []
     m_Behaviours: []
-    m_BlendingMode: 0
+    m_BlendingMode: 1
     m_SyncedLayerIndex: -1
     m_DefaultWeight: 1
     m_IKPass: 1
@@ -3782,13 +3782,6 @@ AnimatorStateMachine:
     - {fileID: -7348476282837624735}
     - {fileID: 5938020830992466794}
     - {fileID: 6178264913961659509}
-  - first: {fileID: 1107516587743271850}
-    second:
-    - {fileID: 1109004608291311438}
-  - first: {fileID: 1107144586752185528}
-    second:
-    - {fileID: 1109481343770542484}
-    - {fileID: 1109093518041981768}
   - first: {fileID: 4783206171037792554}
     second: []
   - first: {fileID: 2129845315654601747}
@@ -3799,6 +3792,13 @@ AnimatorStateMachine:
   - first: {fileID: -4047926577530618882}
     second:
     - {fileID: -7075167887259965792}
+  - first: {fileID: 1107516587743271850}
+    second:
+    - {fileID: 1109004608291311438}
+  - first: {fileID: 1107144586752185528}
+    second:
+    - {fileID: 1109481343770542484}
+    - {fileID: 1109093518041981768}
   m_StateMachineBehaviours: []
   m_AnyStatePosition: {x: 110, y: -340, z: 0}
   m_EntryPosition: {x: -110, y: -340, z: 0}
@@ -6339,7 +6339,7 @@ AnimatorStateMachine:
   m_ChildStates:
   - serializedVersion: 1
     m_State: {fileID: -5827947627453169009}
-    m_Position: {x: 170, y: -20, z: 0}
+    m_Position: {x: -60, y: -110, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -1536950247686891856}
     m_Position: {x: 390, y: -20, z: 0}
@@ -6351,7 +6351,7 @@ AnimatorStateMachine:
   m_StateMachineBehaviours: []
   m_AnyStatePosition: {x: 410, y: -110, z: 0}
   m_EntryPosition: {x: 190, y: -110, z: 0}
-  m_ExitPosition: {x: 620, y: -110, z: 0}
+  m_ExitPosition: {x: 650, y: -10, z: 0}
   m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
   m_DefaultState: {fileID: -5827947627453169009}
 --- !u!1101 &8744881906070635731

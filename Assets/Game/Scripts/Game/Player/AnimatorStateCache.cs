@@ -39,7 +39,7 @@ namespace Game
         private readonly int _hashHasAdditionalWeapon   = Animator.StringToHash("HasAdditionalWeapon");
         private readonly int _hashRespawn               = Animator.StringToHash("Respawn");
         private readonly int _blockHitTrigger          = Animator.StringToHash("BlockHitTrigger");
-        private readonly int _hashVerticalAimAngle     =  Animator.StringToHash("VerticalAimAngle");
+        private readonly int _hashVerticalAimAngle     = Animator.StringToHash("VerticalAimAngle");
         
         private const string BlockInput = "BlockInput";
 
