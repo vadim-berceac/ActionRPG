@@ -9,7 +9,7 @@ public enum EnemyBehaviorMode
     Neutral
 }
 
-public enum PatrolMode
+public enum AIMode
 {
     Patrol,
     Guard
@@ -23,12 +23,12 @@ public class EnemyBrain : MonoBehaviour, IInput
     [SerializeField] private float rotationSpeed;
     [SerializeField] private Factions faction;
     [SerializeField] private EnemyBehaviorMode behaviorMode = EnemyBehaviorMode.Aggressive;
-    [SerializeField] private PatrolMode patrolMode = PatrolMode.Patrol;
+    [SerializeField] private AIMode aiMode = AIMode.Patrol;
     [SerializeField] private Transform[] patrolPoints;
 
     public AsyncStateMachine Fsm { get; private set; }
     public EnemyBehaviorMode BehaviorMode => behaviorMode;
-    public PatrolMode PatrolMode => patrolMode;
+    public AIMode AIMode => aiMode;
     public Factions Faction => faction;
     
     public bool InputBlocked { get; set; }
@@ -51,7 +51,7 @@ public class EnemyBrain : MonoBehaviour, IInput
             await InitializeFsm();
             Fsm.Ctx.SetFsm(Fsm);
             
-            if (patrolMode == PatrolMode.Guard)
+            if (aiMode == AIMode.Guard)
             {
                 await Fsm.TransitionTo(Fsm.GuardState);
             }
@@ -75,7 +75,7 @@ public class EnemyBrain : MonoBehaviour, IInput
     private UniTask InitializeFsm()
     {
         Fsm = new AsyncStateMachine(new StateMachineContext(this, visionSystem, damageable,
-            transform, humanoidController, rotationSpeed, patrolPoints, behaviorMode, patrolMode, faction));
+            transform, humanoidController, rotationSpeed, patrolPoints, behaviorMode, aiMode, faction));
         return UniTask.CompletedTask;
     }
 }

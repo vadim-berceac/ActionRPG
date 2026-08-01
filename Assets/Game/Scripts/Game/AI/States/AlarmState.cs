@@ -19,6 +19,10 @@ public class AlarmState : AsyncState
         // Сбрасываем флаг получения урона — AlarmState обработал его
         StateMachine.Ctx.DamageTakenRecently = false;
 
+        // Мёртвая цель не должна передаваться другим врагам и не должна
+        // удерживать текущего врага в боевом цикле
+        StateMachine.Ctx.ClearDeadTarget();
+
         var targetToShare = StateMachine.Ctx.GetLastSeenTarget();
 
         var colliderCount = Physics.OverlapSphereNonAlloc(
@@ -75,6 +79,9 @@ public class AlarmState : AsyncState
 
     protected override async UniTask HandleTransition()
     {
+        // Мёртвая цель не должна удерживать AI в боевом цикле
+        StateMachine.Ctx.ClearDeadTarget();
+
         if (StateMachine.Ctx.IsDead)
         {
             await StateMachine.TransitionTo(StateMachine.DeathState);
@@ -93,7 +100,7 @@ public class AlarmState : AsyncState
             return;
         }
 
-        if (StateMachine.Ctx.PatrolMode == PatrolMode.Guard)
+        if (StateMachine.Ctx.AIMode == AIMode.Guard)
         {
             await StateMachine.TransitionTo(StateMachine.GuardState);
         }

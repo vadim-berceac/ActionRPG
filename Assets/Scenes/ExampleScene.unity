@@ -12575,6 +12575,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9029614035798084516, guid: d3cf57dab44552c4b8ff211fb8e09742,
         type: 3}
+      propertyPath: aiMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9029614035798084516, guid: d3cf57dab44552c4b8ff211fb8e09742,
+        type: 3}
       propertyPath: faction
       value: 2
       objectReference: {fileID: 0}
@@ -13697,6 +13702,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: NewEnemyHumanoid
+      objectReference: {fileID: 0}
+    - target: {fileID: 9029614035798084516, guid: d3cf57dab44552c4b8ff211fb8e09742,
+        type: 3}
+      propertyPath: aiMode
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

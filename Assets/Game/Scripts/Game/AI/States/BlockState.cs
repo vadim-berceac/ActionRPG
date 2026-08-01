@@ -45,7 +45,9 @@ public class BlockState : AsyncState
             }
 
             // Если цель потеряна или умерла - выходим из блокирования
-            if (!StateMachine.Ctx.Target || StateMachine.Ctx.IsDead)
+            if (!StateMachine.Ctx.Target
+                || StateMachine.Ctx.Target.currentHitPoints <= 0
+                || StateMachine.Ctx.IsDead)
             {
                 break;
             }
@@ -88,10 +90,15 @@ public class BlockState : AsyncState
     }
 
     protected override bool ShouldInterrupt() =>
-        !StateMachine.Ctx.Target || !StateMachine.Ctx.IsTargetVisible(StateMachine.Ctx.Target);
+        !StateMachine.Ctx.Target
+        || StateMachine.Ctx.Target.currentHitPoints <= 0
+        || !StateMachine.Ctx.IsTargetVisible(StateMachine.Ctx.Target);
 
     protected override async UniTask HandleTransition()
     {
+        // Мёртвая цель не должна удерживать AI в боевом цикле
+        StateMachine.Ctx.ClearDeadTarget();
+
         if (StateMachine.Ctx.IsDead)
         {
             await StateMachine.TransitionTo(StateMachine.DeathState);

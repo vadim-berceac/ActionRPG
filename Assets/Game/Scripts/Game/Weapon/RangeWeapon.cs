@@ -21,11 +21,12 @@ namespace Game
         private ObjectPooler<Projectile> _projectilePool;
         private CancellationTokenSource _aimUpdateCts;
         private Vector3 _lastTarget;
+        private float _verticalAimAngle;
 
         public Damageable Owner { get; private set; }
         public Projectile LoadedProjectile { get; private set; }
         public Transform AimTarget { get; private set; }
-        public float VerticalAimAngle { get; private set; }
+        public float VerticalAimAngle => mode == Mode.ScreenCenter ? _verticalAimAngle : 0;
 
         private void Awake()
         {
@@ -34,12 +35,16 @@ namespace Game
             AimTarget.SetParent(transform, false);
             AimTarget.localPosition = Vector3.up + Vector3.forward * 10f;
             _lastTarget = AimTarget.position;
-
+            
             UpdateVerticalAimAngle();
         }
 
         private void OnEnable()
         {
+            if (mode != Mode.ScreenCenter)
+            {
+                return;
+            }
             _aimUpdateCts = new CancellationTokenSource();
             UpdateAimTargetLoop(_aimUpdateCts.Token).Forget();
         }
@@ -135,6 +140,11 @@ namespace Game
         
         private void UpdateVerticalAimAngle()
         {
+            if (mode != Mode.ScreenCenter)
+            {
+                return;
+            }
+            
             var muzzleWorldPos = transform.TransformPoint(muzzleOffset);
             var direction = AimTarget.position - muzzleWorldPos;
     
@@ -142,7 +152,7 @@ namespace Game
                 return;
 
             var localDir = transform.InverseTransformDirection(direction.normalized);
-            VerticalAimAngle = Mathf.Atan2(localDir.y, localDir.z) * Mathf.Rad2Deg;
+            _verticalAimAngle = Mathf.Atan2(localDir.y, localDir.z) * Mathf.Rad2Deg;
         }
     }
 }

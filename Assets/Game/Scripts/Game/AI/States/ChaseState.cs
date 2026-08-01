@@ -5,6 +5,13 @@ using UnityEngine;
 
 public class ChaseState : AsyncState
 {
+    // Сколько секунд суммарно AI пытается достроить путь до lastKnown позиции,
+    // прежде чем признать цель недостижимой и сбросить преследование.
+    private const float PathFailureTimeBudget = 4f;
+    private const float PathFailureRetryDelayMs = 250f;
+
+    private float _pathFailureTimer;
+
     public ChaseState(AsyncStateMachine stateMachine) : base(stateMachine)
     {
     }
@@ -12,6 +19,7 @@ public class ChaseState : AsyncState
     public override async UniTask OnEnter(CancellationToken ct)
     {
         await base.OnEnter(ct);
+        _pathFailureTimer = 0f;
         Debug.Log("Entering Chase State...");
     }
 
@@ -33,38 +41,69 @@ public class ChaseState : AsyncState
                 StateMachine.Ctx.Target.Transform.position);
         }
 
-        // Если цель в радиусе обнаружения — преследуем напрямую.
-        // Не ждём IsTargetVisible (line-of-sight + гистерезис),
-        // так как цель могла быть получена через AlarmState.
-        if (StateMachine.Ctx.Target != null && StateMachine.Ctx.IsTargetInRange(StateMachine.Ctx.Target))
+        // Если цель в радиусе обнаружения И видна — преследуем напрямую.
+        // Если цель скрыта препятствием — идём по NavMesh к lastKnown позиции,
+        // чтобы обойти препятствие и найти прямую видимость.
+        if (StateMachine.Ctx.Target != null
+            && StateMachine.Ctx.IsTargetInRange(StateMachine.Ctx.Target)
+            && StateMachine.Ctx.IsTargetVisible(StateMachine.Ctx.Target))
         {
             await DirectChase(ct);
             await HandleTransition();
             return;
         }
 
+        _pathFailureTimer = 0f;
+
         while (!IsCancelled
                && StateMachine.Ctx.TryGetLastKnownTargetPosition(out var destination)
                && !IsWithinStopDistance(destination))
         {
             // Пока идём к lastKnown позиции, проверяем, не появилась ли цель в радиусе триггера
-            if (StateMachine.Ctx.Target != null && StateMachine.Ctx.IsTargetInRange(StateMachine.Ctx.Target))
+            // и не стала ли она видимой (обошли препятствие)
+            if (StateMachine.Ctx.Target != null
+                && StateMachine.Ctx.IsTargetInRange(StateMachine.Ctx.Target)
+                && StateMachine.Ctx.IsTargetVisible(StateMachine.Ctx.Target))
             {
                 await DirectChase(ct);
                 await HandleTransition();
                 return;
             }
 
-            if (!StateMachine.Ctx.Transform.position.TryGetPathTo(
-                    destination, StateMachine.Ctx.WalkableAreaMask, out var corners))
+            var hasPath = StateMachine.Ctx.Transform.position.TryGetPathTo(
+                destination, StateMachine.Ctx.WalkableAreaMask, out var corners);
+
+            // Вырожденный путь (true, но только стартовая точка) трактуем как "путь не найден" —
+            // иначе for ниже не выполнится ни разу, не будет ни одного await, и мы получим
+            // синхронный бесконечный цикл (зависание редактора без единой ошибки).
+            var pathIsUsable = hasPath && corners.Length >= 2;
+
+            if (!pathIsUsable)
             {
+                // Путь до реальной lastKnown позиции пока не строится — не подменяем цель
+                // фейковой "ближайшей точкой" (это давало вырожденные пути в паре сантиметров
+                // от агента и AI зависал в микро-топтании на месте). Просто ждём: пока мы ждём,
+                // lastKnown позиция может обновиться (цель движется) и путь станет проходимым.
+                _pathFailureTimer += PathFailureRetryDelayMs / 1000f;
+
+                if (_pathFailureTimer >= PathFailureTimeBudget)
+                {
+                    // Бюджет исчерпан — осознанно теряем цель, а не зависаем
+                    // и не топчемся на месте бесконечно.
+                    StateMachine.Ctx.ClearLastKnownTargetPosition();
+                    StopInput();
+                    break;
+                }
+
                 StopInput();
-                
-                await UniTask.Delay(250, cancellationToken: CancellationTokenSource.Token)
+
+                await UniTask.Delay((int)PathFailureRetryDelayMs, cancellationToken: CancellationTokenSource.Token)
                     .Timeout(TimeSpan.FromSeconds(1))
                     .SuppressCancellationThrow();
                 continue;
             }
+
+            _pathFailureTimer = 0f;
 
             var moveResult = false;
             var needsRepath = false;
@@ -103,7 +142,7 @@ public class ChaseState : AsyncState
         }
 
         StopInput();
-        
+
         if (!StateMachine.Ctx.Target && StateMachine.Ctx.TryGetLastKnownTargetPosition(out var reachedPos)
             && IsWithinStopDistance(reachedPos))
         {
@@ -133,11 +172,7 @@ public class ChaseState : AsyncState
             var distance = toTarget.magnitude;
             if (distance <= 0.01f) break;
 
-            // Используем ту же stop distance что и IsWithinStopDistance, чтобы
-            // DirectChase остановился на правильной дистанции (35 для ranged оружия)
-            var stopDistance = StateMachine.Ctx.HasRangedWeapon
-                ? Constants.PreferredShootDistance
-                : StateMachine.Ctx.PreferredAttackDistance;
+            var stopDistance = GetStopDistance();
             var moveTarget = targetPosition - toTarget.normalized * stopDistance;
             var toMove = moveTarget - StateMachine.Ctx.Transform.position;
             toMove.y = 0f;
@@ -159,18 +194,37 @@ public class ChaseState : AsyncState
     {
         await base.OnExit(ct);
         StopInput();
+        _pathFailureTimer = 0f;
         Debug.Log("Interrupted chase routine.");
         await UniTask.CompletedTask;
     }
 
     private bool IsWithinStopDistance(Vector3 point)
     {
+        return IsWithinStopDistance(point, GetStopDistance());
+    }
+
+    private bool IsWithinStopDistance(Vector3 point, float stopDistance)
+    {
         var distance = Vector3.Distance(StateMachine.Ctx.Transform.position, point);
-        // Если есть дальнобойное оружие — останавливаемся на дистанции стрельбы
-        var stopDistance = StateMachine.Ctx.HasRangedWeapon
-            ? Constants.PreferredShootDistance
-            : StateMachine.Ctx.PreferredAttackDistance;
         return distance <= stopDistance;
+    }
+
+    private float GetStopDistance()
+    {
+        var hasLineOfSight = StateMachine.Ctx.Target != null
+            && StateMachine.Ctx.Target.currentHitPoints > 0
+            && StateMachine.Ctx.IsTargetVisible(StateMachine.Ctx.Target);
+
+        if (hasLineOfSight)
+        {
+            if (StateMachine.Ctx.HasRangedWeapon)
+                return Constants.PreferredShootDistance;
+
+            return StateMachine.Ctx.PreferredAttackDistance;
+        }
+
+        return Constants.ArriveThreshold;
     }
 
     private void StopInput()
@@ -205,7 +259,6 @@ public class ChaseState : AsyncState
         return firstIndex;
     }
 
-    
     private bool IsNarrowPassage(Vector3 navPosition, Vector3[] corners, int firstIndex, int areaMask)
     {
         if (firstIndex + 1 >= corners.Length)
@@ -234,6 +287,9 @@ public class ChaseState : AsyncState
 
     protected override async UniTask HandleTransition()
     {
+        // Мёртвая цель не должна удерживать AI в боевом цикле
+        StateMachine.Ctx.ClearDeadTarget();
+
         if (StateMachine.Ctx.IsDead)
         {
             await StateMachine.TransitionTo(StateMachine.DeathState);
@@ -244,20 +300,28 @@ public class ChaseState : AsyncState
         if (target != null && target.currentHitPoints > 0)
         {
             var distance = Vector3.Distance(StateMachine.Ctx.Transform.position, target.Transform.position);
+            var hasLineOfSight = StateMachine.Ctx.IsTargetVisible(target);
 
-            // Если цель в радиусе атаки или в радиусе обнаружения — атакуем.
-            // AttackState сам решит, когда наносить удар (AdjustApproach подведёт ближе).
-            if (IsWithinStopDistance(target.Transform.position) || StateMachine.Ctx.IsTargetInRange(target))
+            if (StateMachine.Ctx.IsTargetInRange(target))
             {
-                // Если есть дальнобойное оружие и цель дальше melee-дистанции — стреляем
-                if (StateMachine.Ctx.HasRangedWeapon && distance > StateMachine.Ctx.PreferredAttackDistance * 1.5f)
+                if (hasLineOfSight)
                 {
-                    await StateMachine.TransitionTo(StateMachine.ShootState);
+                    if (StateMachine.Ctx.HasRangedWeapon && distance > StateMachine.Ctx.PreferredAttackDistance * 1.5f)
+                    {
+                        await StateMachine.TransitionTo(StateMachine.ShootState);
+                        return;
+                    }
+
+                    if (IsWithinStopDistance(target.Transform.position))
+                    {
+                        await StateMachine.TransitionTo(StateMachine.AttackState);
+                        return;
+                    }
+                }
+                else
+                {
                     return;
                 }
-
-                await StateMachine.TransitionTo(StateMachine.AttackState);
-                return;
             }
         }
 

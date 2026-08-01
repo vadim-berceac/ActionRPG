@@ -96,6 +96,7 @@ namespace Game
         private GameObject _projectileView;
 
         private int[] _comboHashes;
+        private Vector3? _rangedTargetPosition;
 
         private bool IsMoveInput => !Mathf.Approximately(_input.MoveInput.sqrMagnitude, 0f);
 
@@ -555,13 +556,48 @@ namespace Game
             _projectileView = null;
         }
 
+        public void SetRangedTargetPosition(Vector3 position)
+        {
+            _rangedTargetPosition = position;
+        }
+
         public void Shoot()
         {
             if (_rangedAttackHandler == null || !_rangedAttackHandler.IsValid)
                 return;
 
-            var targetPosition = _transform.position + _transform.forward * 20f;
+            var targetPosition = ResolveShootTarget();
             _rangedAttackHandler.Shoot(targetPosition);
+        }
+
+        /// <summary>
+        /// Определяет точку, в которую полетит снаряд.
+        /// Приоритет:
+        /// 1) Raycast по TargetLayer в направлении взгляда — если впереди живая цель,
+        ///    стреляем в центр её коллайдера (всегда актуально, не зависит от кеша).
+        /// 2) Явно заданная позиция цели (AI через SetRangedTargetPosition).
+        /// 3) Точка перед ботом на уровне торса (не в пол).
+        /// </summary>
+        private Vector3 ResolveShootTarget()
+        {
+            // 1. Ищем цель в направлении взгляда бота (используется после преследования,
+            //    когда AI мог передать устаревшую позицию цели).
+            var ray = new Ray(_transform.position + Vector3.up * 1.2f, _transform.forward);
+            if (Physics.Raycast(ray, out var hit, 100f, TargetLayer, QueryTriggerInteraction.Ignore))
+            {
+                var targetDamageable = hit.collider.GetComponentInParent<Damageable>();
+                if (targetDamageable != null && targetDamageable.currentHitPoints > 0)
+                {
+                    return hit.collider.bounds.center;
+                }
+            }
+
+            // 2. Если AI явно задал позицию цели — используем её.
+            if (_rangedTargetPosition.HasValue)
+                return _rangedTargetPosition.Value;
+
+            // 3. Fallback — точка перед ботом на уровне торса.
+            return _transform.position + Vector3.up * 1.2f + _transform.forward * 20f;
         }
 
         private bool IsFacingDamageSource(Vector3 damageSource)

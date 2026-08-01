@@ -15,7 +15,11 @@ public class ShootState : AsyncState
     {
         await base.OnEnter(ct);
         Debug.Log("Entering Shoot State...");
+
+        StateMachine.Ctx.UpdateRangedTargetPosition();
+
         StateMachine.Ctx.Input.Shoot = true;
+        AimAtTarget();
     }
 
     public override async UniTask OnUpdate(CancellationToken ct)
@@ -26,6 +30,11 @@ public class ShootState : AsyncState
         {
             if (!StateMachine.Ctx.Target || StateMachine.Ctx.Target.currentHitPoints <= 0)
                 break;
+
+            if (!StateMachine.Ctx.IsTargetVisible(StateMachine.Ctx.Target))
+                break;
+
+            AimAtTarget();
 
             var distance = GetDistanceToTarget();
 
@@ -70,6 +79,18 @@ public class ShootState : AsyncState
     }
 
     private float _approachThrottle;
+
+    private void AimAtTarget()
+    {
+        if (!StateMachine.Ctx.Target) return;
+
+        var toTarget = StateMachine.Ctx.Target.Transform.position - StateMachine.Ctx.Transform.position;
+        toTarget.y = 0f;
+        if (toTarget.sqrMagnitude < 0.0001f) return;
+
+        var yaw = Mathf.Atan2(toTarget.x, toTarget.z) * Mathf.Rad2Deg;
+        StateMachine.Ctx.Input.RotationYaw = yaw;
+    }
 
     private void AdjustApproach()
     {
@@ -153,20 +174,27 @@ public class ShootState : AsyncState
 
     protected override async UniTask HandleTransition()
     {
+        StateMachine.Ctx.ClearDeadTarget();
+
         if (StateMachine.Ctx.IsDead)
         {
             await StateMachine.TransitionTo(StateMachine.DeathState);
             return;
         }
 
-        if (!StateMachine.Ctx.Target || StateMachine.Ctx.Target.currentHitPoints <= 0)
+        if (!StateMachine.Ctx.Target)
         {
-            StateMachine.Ctx.ClearLastKnownTargetPosition();
             await StateMachine.TransitionTo(StateMachine.IdleWaitState);
             return;
         }
 
         var distance = GetDistanceToTarget();
+
+        if (!StateMachine.Ctx.IsTargetVisible(StateMachine.Ctx.Target))
+        {
+            await StateMachine.TransitionTo(StateMachine.ChaseState);
+            return;
+        }
 
         if (distance <= StateMachine.Ctx.PreferredAttackDistance * 1.5f)
         {

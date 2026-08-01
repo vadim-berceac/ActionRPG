@@ -18,10 +18,29 @@ public class StateMachineContext : IDisposable
     public bool HasAdditionalWeapon => _humanoidController.HasAdditionalWeapon;
     public bool HasRangedWeapon => _humanoidController.HasRangeWeapon;
     public float LoadProgressCurve => _humanoidController.LoadProgressCurve;
-    public void TriggerRangedAttack() => _humanoidController.TriggerRangedAttack();
+    public void TriggerRangedAttack()
+    {
+        UpdateRangedTargetPosition();
+        _humanoidController.TriggerRangedAttack();
+    }
+
+    /// <summary>
+    /// Передаёт актуальную позицию цели (на уровне торса) в HumanoidController.
+    /// Вызывается до запуска анимации стрельбы, чтобы первый выстрел
+    /// (анимационное событие Shoot) уже имел корректную цель.
+    /// </summary>
+    public void UpdateRangedTargetPosition()
+    {
+        if (Target != null && Target.currentHitPoints > 0 && Target.Transform != null)
+        {
+            var targetPos = Target.Transform.position;
+            targetPos.y += 1.2f; // уровень торса/груди, а не ног
+            _humanoidController.SetRangedTargetPosition(targetPos);
+        }
+    }
     public float LastRangedFireTime { get; set; } = -10f;
     public EnemyBehaviorMode BehaviorMode { get; private set; }
-    public PatrolMode PatrolMode { get; private set; }
+    public AIMode AIMode { get; private set; }
 
     public Vector3 GuardPosition => _guardPointTransform != null
         ? _guardPointTransform.position
@@ -54,7 +73,7 @@ public class StateMachineContext : IDisposable
 
     public StateMachineContext(IInput input, VisionSystem visionSystem, Damageable self, Transform transform,
         HumanoidController humanoidController, float rotationSpeed, Transform[] patrolWaypoints,
-        EnemyBehaviorMode behaviorMode, PatrolMode patrolMode, Factions faction)
+        EnemyBehaviorMode behaviorMode, AIMode aiMode, Factions faction)
     {
         Input = input;
         _visionSystem = visionSystem;
@@ -63,7 +82,7 @@ public class StateMachineContext : IDisposable
         Transform = transform;
         RotationSpeed = rotationSpeed;
         BehaviorMode = behaviorMode;
-        PatrolMode = patrolMode;
+        AIMode = aiMode;
         Faction = faction;
         SetWaypoints(ConvertPath.ToVector(patrolWaypoints));
 
@@ -100,6 +119,16 @@ public class StateMachineContext : IDisposable
     /// </summary>
     private void SetTarget(Damageable newTarget)
     {
+        // Мёртвая цель никогда не назначается — иначе AI застревает в боевом
+        // цикле (IdleWait -> Alarm -> Chase -> IdleWait) вместо возврата к патрулю
+        if (newTarget != null && newTarget.currentHitPoints <= 0)
+        {
+            ClearLastKnownTargetPosition();
+            _lastSeenTarget = null;
+            Target = null;
+            return;
+        }
+
         // Никогда не сбрасываем живую цель
         if (newTarget == null && Target != null && Target.currentHitPoints > 0)
             return;
@@ -116,6 +145,13 @@ public class StateMachineContext : IDisposable
 
     private void OnTargetReached(Damageable damageable)
     {
+        // Мёртвые цели игнорируем
+        if (damageable != null && damageable.currentHitPoints <= 0)
+        {
+            SetTarget(null);
+            return;
+        }
+
         // В Neutral режиме игнорируем обнаружение целей, пока не вступили в бой
         if (BehaviorMode == EnemyBehaviorMode.Neutral
             && (_fsm == null || (_fsm.CurrentState != _fsm.ChaseState && _fsm.CurrentState != _fsm.AttackState && _fsm.CurrentState != _fsm.ShootState)))
@@ -276,6 +312,20 @@ public class StateMachineContext : IDisposable
         _visionSystem.ClearLastKnownPosition(_lastSeenTarget);
     }
 
+    /// <summary>
+    /// Очищает мёртвую цель. Используется, чтобы AI вернулся к патрулированию
+    /// после уничтожения цели, а не зацикливался между IdleWaitState, AlarmState
+    /// и ChaseState (мёртвый Target не позволяет перейти в PatrolState).
+    /// </summary>
+    public void ClearDeadTarget()
+    {
+        if (Target == null || Target.currentHitPoints > 0) return;
+
+        ClearLastKnownTargetPosition();
+        _lastSeenTarget = null;
+        Target = null;
+    }
+
     public Damageable GetLastSeenTarget()
     {
         return _lastSeenTarget;
@@ -287,6 +337,13 @@ public class StateMachineContext : IDisposable
     public void SetAlarmTarget(Damageable target)
     {
         if (target == null) return;
+        if (target.currentHitPoints <= 0) return;
+
+        if (Target != null && Target.currentHitPoints <= 0)
+        {
+            Target = null;
+            _lastSeenTarget = null;
+        }
 
         _lastSeenTarget = target;
         _visionSystem.SetLastKnownPosition(target, target.Transform.position);

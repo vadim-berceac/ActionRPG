@@ -26,7 +26,8 @@ public class IdleWaitState : AsyncState
       
         while (elapsed < waitDuration && !IsCancelled)
         {
-            if (StateMachine.Ctx.Target) break;
+            if (StateMachine.Ctx.Target != null && StateMachine.Ctx.Target.currentHitPoints > 0) break;
+            StateMachine.Ctx.ClearDeadTarget();
             
             var step = Mathf.Min(0.1f, waitDuration - elapsed);
             await UniTask.Delay((int)(step * 1000), cancellationToken: CancellationTokenSource.Token)
@@ -45,10 +46,17 @@ public class IdleWaitState : AsyncState
         await UniTask.CompletedTask;
     }
 
-    protected override bool ShouldInterrupt() => StateMachine.Ctx.Target || StateMachine.Ctx.IsDead;
+    protected override bool ShouldInterrupt() =>
+        (StateMachine.Ctx.Target != null && StateMachine.Ctx.Target.currentHitPoints > 0)
+        || StateMachine.Ctx.IsDead;
 
     protected override async UniTask HandleTransition()
     {
+        // Мёртвая цель не должна удерживать AI в боевом цикле — сбрасываем её,
+        // чтобы AI вернулся к патрулированию/охране, а не залипал между
+        // IdleWait -> Alarm -> Chase -> IdleWait.
+        StateMachine.Ctx.ClearDeadTarget();
+
         if (StateMachine.Ctx.IsDead)
         {
             await StateMachine.TransitionTo(StateMachine.DeathState);
@@ -61,7 +69,7 @@ public class IdleWaitState : AsyncState
             return;
         }
 
-        if (StateMachine.Ctx.PatrolMode == PatrolMode.Guard)
+        if (StateMachine.Ctx.AIMode == AIMode.Guard)
         {
             await StateMachine.TransitionTo(StateMachine.GuardState);
         }
