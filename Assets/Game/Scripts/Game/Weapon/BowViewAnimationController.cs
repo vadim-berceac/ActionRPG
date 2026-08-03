@@ -36,11 +36,11 @@ public class BowViewAnimationController : StateMachineBehaviour
                 
         if(bowAction == BowActions.Load)
         {
-            _bowView.LoadBow();
+            _bowView?.LoadBow();
         }
         else
         {
-            _bowView.ReleaseBow();
+            _bowView?.ReleaseBow();
         }
     }
 }

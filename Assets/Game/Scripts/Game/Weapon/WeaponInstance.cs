@@ -54,6 +54,11 @@ namespace Game
         protected Collider[] s_ColliderCache = new Collider[32];
         protected GameObject[] staticParts;
 
+        // Коллайдеры, уже получившие урон в рамках текущего BeginAttack()..EndAttack().
+        // Без этого свип SphereCast за несколько FixedUpdate-кадров бьёт (и спавнит партикл)
+        // по одной и той же цели многократно за один удар.
+        private readonly HashSet<Collider> m_HitTargetsThisAttack = new HashSet<Collider>();
+
         //whoever own the weapon is responsible for calling that. Allow to avoid "self harm"
         public void Initialize(GameObject owner, LayerMask layers)
         {
@@ -94,6 +99,7 @@ namespace Game
             throwingHit = thowingAttack;
 
             m_InAttack = true;
+            m_HitTargetsThisAttack.Clear();
 
             m_PreviousPos = new Vector3[attackPoints.Length];
 
@@ -113,7 +119,8 @@ namespace Game
         public void EndAttack()
         {
             m_InAttack = false;
-            
+            m_HitTargetsThisAttack.Clear();
+
             if (trail != null)
             {
                 trail.SetActive(false);
@@ -184,6 +191,13 @@ namespace Game
             {
                 //hit an object that is not in our layer, this end the attack. we "bounce" off it
                 return false;
+            }
+
+            // Эта цель уже получила урон в рамках текущего удара — не наносим повторно,
+            // не спавним партикл и не проигрываем звук снова, но и не "отбиваем" атаку от неё.
+            if (!m_HitTargetsThisAttack.Add(other))
+            {
+                return true;
             }
 
             if (hitAudio != null)

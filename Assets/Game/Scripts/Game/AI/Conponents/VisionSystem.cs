@@ -80,8 +80,10 @@ public class VisionSystem : MonoBehaviour
 
         if (other.transform == owner) return false;
         if (((1 << other.gameObject.layer) & humanoidController.TargetLayer.value) == 0) return false;
+        if (!other.TryGetComponent(out damageable)) return false;
+        if (damageable.currentHitPoints <= 0) return false;
 
-        return other.TryGetComponent(out damageable);
+        return true;
     }
 
     private async UniTaskVoid VisionLoop(CancellationToken token)
@@ -151,6 +153,17 @@ public class VisionSystem : MonoBehaviour
 
         foreach (var col in _candidates.Keys.ToArray())
         {
+            // Мёртвые цели не должны оставаться кандидатами — иначе мёртвый Damageable
+            // будет заново назначаться как Target, и AI никогда не вернётся к патрулированию
+            if (_candidates.TryGetValue(col, out var damageable)
+                && damageable != null
+                && damageable.currentHitPoints <= 0)
+            {
+                _inTriggerZone.Remove(col);
+                _pendingRemoval.Add(col);
+                continue;
+            }
+
             if (col != null && (_inTriggerZone.Contains(col) || _closeRangeThisTick.Contains(col)))
                 continue;
 
@@ -159,10 +172,20 @@ public class VisionSystem : MonoBehaviour
 
         foreach (var col in _pendingRemoval)
         {
-            if (col != null && (_inTriggerZone.Contains(col) || _closeRangeThisTick.Contains(col)))
-                continue;
+            _candidates.TryGetValue(col, out var damageable);
 
-            _candidates.Remove(col, out var damageable);
+            // Мёртвые цели удаляем безоговорочно, даже если их коллайдер всё ещё
+            // попадает в _closeRangeThisTick или _inTriggerZone в этом же тике.
+            if (damageable != null && damageable.currentHitPoints <= 0)
+            {
+                _inTriggerZone.Remove(col);
+            }
+            else if (col != null && (_inTriggerZone.Contains(col) || _closeRangeThisTick.Contains(col)))
+            {
+                continue;
+            }
+
+            _candidates.Remove(col);
 
             _visibleStreak.Remove(damageable);
             _hiddenStreak.Remove(damageable);

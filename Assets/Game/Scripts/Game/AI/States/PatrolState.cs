@@ -82,10 +82,13 @@ public class PatrolState : AsyncState
     }
 
     protected override bool ShouldInterrupt() =>
-        StateMachine.Ctx.Target;
+        StateMachine.Ctx.Target != null && StateMachine.Ctx.Target.currentHitPoints > 0;
 
     protected override async UniTask HandleTransition()
     {
+        // Мёртвая цель не должна удерживать AI в боевом цикле
+        StateMachine.Ctx.ClearDeadTarget();
+
         if (StateMachine.Ctx.IsDead)
         {
             await StateMachine.TransitionTo(StateMachine.DeathState);

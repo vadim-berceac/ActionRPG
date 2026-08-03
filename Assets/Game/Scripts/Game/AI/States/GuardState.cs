@@ -28,8 +28,15 @@ public class GuardState : AsyncState
     {
         await base.OnUpdate(ct);
 
+        // Защита от гонки: агент мог быть уничтожен между кадрами,
+        // пока update-loop ещё не успел отмениться через ct
+        if (!StateMachine.Ctx.Transform)
+        {
+            return;
+        }
+
         // Если появился враг — выходим, HandleTransition решит куда переключиться
-        if (StateMachine.Ctx.Target)
+        if (StateMachine.Ctx.Target != null && StateMachine.Ctx.Target.currentHitPoints > 0)
         {
             StopInput();
             await HandleTransition();
@@ -94,6 +101,11 @@ public class GuardState : AsyncState
     /// </summary>
     private Vector3? ResolveTargetPosition(Vector3 guardPosition)
     {
+        if (!StateMachine.Ctx.Transform)
+        {
+            return null;
+        }
+
         // Если guardPosition изменилась — сбрасываем fallback и пересчитываем
         if (guardPosition != _lastGuardPosition)
         {
@@ -146,6 +158,11 @@ public class GuardState : AsyncState
     /// </summary>
     private bool IsWithinStopDistance(Vector3 point)
     {
+        if (!StateMachine.Ctx.Transform)
+        {
+            return true; // некому двигаться — считаем цель достигнутой
+        }
+
         var stopDistance = StateMachine.Ctx.PreferredAttackDistance + GuardExtraStopDistance;
         var distance = Vector3.Distance(StateMachine.Ctx.Transform.position, point);
         return distance <= stopDistance;
@@ -173,10 +190,13 @@ public class GuardState : AsyncState
     }
 
     protected override bool ShouldInterrupt() =>
-        StateMachine.Ctx.Target;
+        StateMachine.Ctx.Target != null && StateMachine.Ctx.Target.currentHitPoints > 0;
 
     protected override async UniTask HandleTransition()
     {
+        // Мёртвая цель не должна удерживать AI в боевом цикле
+        StateMachine.Ctx.ClearDeadTarget();
+
         if (StateMachine.Ctx.IsDead)
         {
             await StateMachine.TransitionTo(StateMachine.DeathState);
@@ -187,6 +207,15 @@ public class GuardState : AsyncState
             && StateMachine.Ctx.TryGetLastKnownTargetPosition(out var destPos))
         {
             var distance = Vector3.Distance(StateMachine.Ctx.Transform.position, destPos);
+            var hasLineOfSight = StateMachine.Ctx.IsTargetVisible(StateMachine.Ctx.Target);
+
+            // Если цель скрыта препятствием — сближаемся в ChaseState,
+            // чтобы найти позицию с прямой видимостью для стрельбы/атаки.
+            if (!hasLineOfSight)
+            {
+                await StateMachine.TransitionTo(StateMachine.ChaseState);
+                return;
+            }
 
             // Если есть дальнобойное оружие и цель дальше melee-дистанции — стреляем
             if (StateMachine.Ctx.HasRangedWeapon && distance > StateMachine.Ctx.PreferredAttackDistance * 1.5f)

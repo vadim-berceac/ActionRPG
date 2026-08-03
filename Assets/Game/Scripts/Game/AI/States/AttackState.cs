@@ -147,6 +147,9 @@ public class AttackState : AsyncState
 
     protected override async UniTask HandleTransition()
     {
+        // Мёртвая цель не должна удерживать AI в боевом цикле
+        StateMachine.Ctx.ClearDeadTarget();
+
         if (StateMachine.Ctx.IsDead)
         {
             await StateMachine.TransitionTo(StateMachine.DeathState);
@@ -154,16 +157,23 @@ public class AttackState : AsyncState
         }
 
         // Если цель мертва — сбрасываем и переходим в ожидание
-        if (!StateMachine.Ctx.Target || StateMachine.Ctx.Target.currentHitPoints <= 0)
+        if (!StateMachine.Ctx.Target)
         {
-            StateMachine.Ctx.ClearLastKnownTargetPosition();
             await StateMachine.TransitionTo(StateMachine.IdleWaitState);
             return;
         }
 
         if (IsOutOfRange())
         {
-            // Если есть дальнобойное оружие и цель не слишком далеко — переключаемся на стрельбу
+            // Если цель скрыта препятствием — сближаемся в ChaseState,
+            // чтобы найти позицию с прямой видимостью для стрельбы.
+            if (!StateMachine.Ctx.IsTargetVisible(StateMachine.Ctx.Target))
+            {
+                await StateMachine.TransitionTo(StateMachine.ChaseState);
+                return;
+            }
+
+            // Если есть дальнобойное оружие и цель видна — переключаемся на стрельбу
             if (StateMachine.Ctx.HasRangedWeapon)
             {
                 await StateMachine.TransitionTo(StateMachine.ShootState);

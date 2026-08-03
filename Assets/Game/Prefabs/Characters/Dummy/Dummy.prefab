@@ -197,34 +197,8 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1110864380354248603}
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 8382477316637108303, guid: 2faa610713d3b3c439473daa55e8c60a,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 5231420355699995214}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
---- !u!1 &3906636620495535710 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 8382477316637108303, guid: 2faa610713d3b3c439473daa55e8c60a,
-    type: 3}
-  m_PrefabInstance: {fileID: 4783847531199567377}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &5231420355699995214
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3906636620495535710}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 73367497fed37b140a366d89e8cc6bc7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  effectTime: 1
-  EllenRespawnMaterials:
-  - {fileID: 2100000, guid: bd205874a3755d842a8f600a04b64902, type: 2}
-  respawnParticles: {fileID: 0}
 --- !u!4 &7651961610092484225 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -6317818615819501424, guid: 2faa610713d3b3c439473daa55e8c60a,

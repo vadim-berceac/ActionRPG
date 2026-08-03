@@ -39,4 +39,13 @@ public static class Constants
     public const float WallSlideProbeDistance = 1.0f;
     public const float PreferredShootDistance = 35f;
     public static readonly int ObstacleLayerMask = Physics.DefaultRaycastLayers;
+    
+    public const float AirborneTurnSpeedProportion = 5.4f;
+    public const float GroundedRayDistance = 1f;
+    public const float JumpAbortSpeed = 10f;
+    public const float InverseOneEighty = 1f / 180f;
+    public const float StickingGravityProportion = 0.3f;
+    public const float GroundAcceleration = 20f;
+    public const float GroundDeceleration = 25f;
+    public const float KnockbackDeceleration = 15f;
 }
