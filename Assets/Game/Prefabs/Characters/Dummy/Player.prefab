@@ -313,6 +313,14 @@ MonoBehaviour:
   <AimTurnSpeed>k__BackingField: 100
   <IdleTimeout>k__BackingField: 5
   <GroundedTurnSmoothTime>k__BackingField: 0.15
+  <CoyoteTime>k__BackingField: 0.15
+  <MinFallHeightForAirborneAnim>k__BackingField: 0.35
+  <Attack1StaminaCost>k__BackingField: 10
+  <Attack2StaminaCost>k__BackingField: 10
+  <BlockStaminaCost>k__BackingField: 15
+  <ShootStaminaCost>k__BackingField: 15
+  <BlockHoldStaminaCostPerSecond>k__BackingField: 10
+  <AimHoldStaminaCostPerSecond>k__BackingField: 10
 --- !u!114 &5555669641611656938
 MonoBehaviour:
   m_ObjectHideFlags: 0

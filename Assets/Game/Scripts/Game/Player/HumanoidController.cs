@@ -10,11 +10,14 @@ namespace Game
     [RequireComponent(typeof(Inventory))]
     public class HumanoidController : MonoBehaviour, IMessageReceiver
     {
+        #region Serialized Fields
+
         [field: SerializeField] public bool IsPlayer { get; private set; }
         [field: SerializeField] public Transform ModelTransform { get; private set; }
         [field: SerializeField] public LayerMask TargetLayer { get; private set; }
         [field: SerializeField] public RangeWeapon RangeWeaponRoot { get; private set; }
         [field: SerializeField] public PropBones PropBones { get; private set; }
+
         [field: Header("Sound")]
         [field: SerializeField] public RandomAudioPlayer FootstepPlayer { get; private set; }
         [field: SerializeField] public RandomAudioPlayer HurtAudioPlayer { get; private set; }
@@ -24,6 +27,7 @@ namespace Game
         [field: SerializeField] public RandomAudioPlayer EmoteAttackPlayer { get; private set; }
         [field: SerializeField] public RandomAudioPlayer EmoteJumpPlayer { get; private set; }
         [field: SerializeField] public AudioSource BlockAudioSource { get; private set; }
+
         [field: Header("Movement")]
         [field: SerializeField] public float MaxForwardSpeed { get; private set; } = 8f;
         [field: SerializeField] public float Gravity { get; private set; } = 20f;
@@ -37,6 +41,18 @@ namespace Game
         [field: SerializeField] public float CoyoteTime { get; private set; } = 0.15f;
         [field: SerializeField] public float MinFallHeightForAirborneAnim { get; private set; } = 0.35f;
 
+        [field: Header("Stamina Costs")]
+        [field: SerializeField] public float Attack1StaminaCost { get; private set; } = 10f;
+        [field: SerializeField] public float Attack2StaminaCost { get; private set; } = 10f;
+        [field: SerializeField] public float BlockStaminaCost { get; private set; } = 5f;
+        [field: SerializeField] public float ShootStaminaCost { get; private set; } = 8f;
+        [field: SerializeField] public float BlockHoldStaminaCostPerSecond { get; private set; } = 2f;
+        [field: SerializeField] public float AimHoldStaminaCostPerSecond { get; private set; } = 1.5f;
+
+        #endregion
+
+        #region Public Properties
+
         public bool IsGrounded => _charCtrl && _charCtrl.isGrounded && _isGrounded;
         public bool HasPrimaryWeapon => _primaryWeaponInstance;
         public bool HasRangeWeapon => _rangedWeaponInstance;
@@ -46,6 +62,11 @@ namespace Game
         public int RangeWeaponIndex => _rangedWeaponData ? _rangedWeaponData.AnimationSetIndex : 0;
         public float PrimaryWeaponPreferredAttackDistance => _primaryWeaponData.preferredDistance;
         public float LoadProgressCurve => _animCache.LoadProgressCurve;
+        public Stamina Stamina { get; private set; }
+
+        #endregion
+
+        #region Private Fields
 
         private CameraSettings _cameraSettings;
         private DiContainer _diContainer;
@@ -100,6 +121,9 @@ namespace Game
 
         private bool IsMoveInput => !Mathf.Approximately(_input.MoveInput.sqrMagnitude, 0f);
 
+        #endregion
+
+        #region Injection & Unity Lifecycle
 
         [Inject]
         private void Construct(DiContainer container, CameraSettings cameraSettings, HealthUI healthUI, PlayerInputHandlerService playerInputHandlerService)
@@ -140,6 +164,8 @@ namespace Game
             _damageable.isInvulnerable = true;
             _damageable.onDamageBlocked = OnDamageBlocked;
 
+            Stamina = new Stamina(_damageable);
+
             if (RangeWeaponRoot)
             {
                 _rangedAttackHandler = new RangedAttackHandler(RangeWeaponRoot, _damageable, TargetLayer);
@@ -150,6 +176,8 @@ namespace Game
         {
             _damageable.onDamageMessageReceivers.Remove(this);
             _damageable.onDamageBlocked = null;
+
+            Stamina.Dispose();
         }
 
         private void FixedUpdate()
@@ -184,6 +212,86 @@ namespace Game
             PlayAudio();
         }
 
+        private void OnAnimatorMove()
+        {
+            Vector3 movement;
+
+            if (_isGrounded)
+            {
+                var ray = new Ray(_transform.position + Vector3.up
+                    * Constants.GroundedRayDistance * 0.5f, -Vector3.up);
+                if (Physics.Raycast(ray, out var hit, Constants.GroundedRayDistance, Physics.AllLayers, QueryTriggerInteraction.Ignore))
+                {
+                    movement = Vector3.ProjectOnPlane(_animCache.DeltaPosition, hit.normal);
+                    var groundRenderer = hit.collider.GetComponentInChildren<Renderer>();
+                    _currentWalkingSurface = groundRenderer ? groundRenderer.sharedMaterial : null;
+                }
+                else
+                {
+                    movement = _animCache.DeltaPosition;
+                    _currentWalkingSurface = null;
+                }
+            }
+            else
+            {
+                movement = _forwardSpeed * _transform.forward * Time.deltaTime;
+            }
+
+            movement += _verticalSpeed * Vector3.up * Time.deltaTime;
+            _charCtrl.Move(movement);
+
+            if (_knockbackVelocity.sqrMagnitude > 0.01f)
+            {
+                var knockbackMovement = _knockbackVelocity * Time.deltaTime;
+                _charCtrl.Move(knockbackMovement);
+                _knockbackVelocity = Vector3.Lerp(_knockbackVelocity, Vector3.zero, Constants.KnockbackDeceleration * Time.deltaTime);
+            }
+            else
+            {
+                _knockbackVelocity = Vector3.zero;
+            }
+
+            _isGrounded = _charCtrl.isGrounded;
+
+            if (_isGrounded)
+            {
+                _coyoteTimer        = CoyoteTime;
+                _isJumping          = false;
+                _fallOriginCaptured = false;
+                _animGrounded       = true;
+            }
+            else
+            {
+                _coyoteTimer -= Time.deltaTime;
+                _animCache.SetAirborneVerticalSpeed(_verticalSpeed);
+
+                if (_isJumping)
+                {
+                    _animGrounded = false;
+                }
+                else if (_animGrounded)
+                {
+                    if (!_fallOriginCaptured)
+                    {
+                        _fallOriginCaptured = true;
+                        _fallOriginY = _transform.position.y;
+                    }
+
+                    var fallDistance = _fallOriginY - _transform.position.y;
+                    if (fallDistance >= MinFallHeightForAirborneAnim)
+                    {
+                        _animGrounded = false;
+                    }
+                }
+            }
+
+            _animCache.SetGrounded(_animGrounded);
+        }
+
+        #endregion
+
+        #region Weapon Setup
+
         private void ConnectCombo(WeaponData data)
         {
             _comboHashes = new int[data.ComboNames.Length];
@@ -203,11 +311,6 @@ namespace Game
             }
 
             return false;
-        }
-
-        private void UpdateInputBlocking()
-        {
-            _input.InputBlocked = _animCache.IsInputBlocked();
         }
 
         private void CreateWeapon(WeaponData fromData, ref WeaponData prevData, ref WeaponInstance weaponInstance, int trigger)
@@ -274,6 +377,30 @@ namespace Game
             if(value) _isMeleeWeaponEquipped = false;
         }
 
+        private void ConnectWeaponToHands(bool equip, WeaponData data, WeaponInstance weaponInstanceInstance, int trigger)
+        {
+            if (!data) return;
+
+            var settings = equip ? data.ActiveProp : data.UnActiveProp;
+
+            if (weaponInstanceInstance)
+            {
+                weaponInstanceInstance.SetViewParent(PropBones, settings);
+            }
+
+            if (!equip)
+                _animCache.ResetTrigger(trigger);
+        }
+
+        #endregion
+
+        #region Combat Processing
+
+        private void UpdateInputBlocking()
+        {
+            _input.InputBlocked = _animCache.IsInputBlocked();
+        }
+
         private void ProcessAttack()
         {
             if (_damageable.currentHitPoints < 1)
@@ -289,24 +416,116 @@ namespace Game
                 return;
             }
 
-            if (_input.Attack1) _animCache.TriggerAttack1();
-            if (_input.Attack2) _animCache.TriggerAttack2();
-        }
-
-        private void ConnectWeaponToHands(bool equip, WeaponData data, WeaponInstance weaponInstanceInstance, int trigger)
-        {
-            if (!data) return;
-
-            var settings = equip ? data.ActiveProp : data.UnActiveProp;
-
-            if (weaponInstanceInstance)
+            if (_input.Attack1 && Stamina.HasEnoughStamina(Attack1StaminaCost))
             {
-                weaponInstanceInstance.SetViewParent(PropBones, settings);
+                _animCache.TriggerAttack1();
             }
 
-            if (!equip)
-                _animCache.ResetTrigger(trigger);
+            if (_input.Attack2 && Stamina.HasEnoughStamina(Attack2StaminaCost))
+            {
+                _animCache.TriggerAttack2();
+            }
         }
+
+        private void ProcessBlocking()
+        {
+            if (_damageable.currentHitPoints < 1 || !_primaryWeaponInstance && !_additionalWeaponInstance)
+            {
+                IsBlocking = false;
+                _animCache.SetBlock(false);
+                return;
+            }
+
+            if (_input.Block)
+            {
+                var holdCost = BlockHoldStaminaCostPerSecond * Time.deltaTime;
+
+                if (holdCost > 0f && !Stamina.TryChangeStamina(-holdCost))
+                {
+                    IsBlocking = false;
+                    _animCache.SetBlock(false);
+                    return;
+                }
+
+                IsBlocking = true;
+            }
+            else
+            {
+                IsBlocking = false;
+            }
+
+            _animCache.SetBlock(IsBlocking);
+        }
+
+        private void ProcessShoot()
+        {
+            var canShoot = _damageable.currentHitPoints > 0 && _rangedWeaponInstance && _ammunitionWeaponInstance;
+
+            if (!canShoot || !Stamina.HasEnoughStamina(ShootStaminaCost))
+            {
+                _shootPressed = false;
+                _isShoot = false;
+                _animCache.SetShoot(false);
+
+                if (IsPlayer && _bowCameraOn)
+                {
+                    _bowCameraOn = false;
+                    _cameraSettings.SwitchCamera(CameraSettings.CameraType.Exploration);
+                }
+
+                return;
+            }
+
+            if (_input.Shoot)
+            {
+                var holdCost = AimHoldStaminaCostPerSecond * Time.deltaTime;
+
+                if (holdCost > 0f && !Stamina.TryChangeStamina(-holdCost))
+                {
+                    _shootPressed = false;
+                }
+                else
+                {
+                    _shootPressed = true;
+                }
+            }
+            else
+            {
+                _shootPressed = false;
+            }
+
+            _isShoot = _shootPressed;
+            _animCache.SetShoot(_shootPressed);
+
+            if (!IsPlayer) return;
+
+            if (_shootPressed && !_bowCameraOn)
+            {
+                _bowCameraOn = true;
+                _cameraSettings.SwitchCamera(CameraSettings.CameraType.Bow);
+            }
+            else if (!_shootPressed && _bowCameraOn)
+            {
+                _bowCameraOn = false;
+                _cameraSettings.SwitchCamera(CameraSettings.CameraType.Exploration);
+            }
+
+            if (!ModelTransform) return;
+
+            var targetYaw = _bowCameraOn ? 30f : 0f;
+            var currentYaw = ModelTransform.localEulerAngles.y;
+            if (currentYaw > 180f) currentYaw -= 360f;
+            var newYaw = Mathf.Lerp(currentYaw, targetYaw, Time.deltaTime * 10f);
+            ModelTransform.localRotation = Quaternion.Euler(
+                _modelOriginalLocalRotation.eulerAngles.x,
+                newYaw,
+                _modelOriginalLocalRotation.eulerAngles.z
+            );
+        }
+
+        #endregion
+
+        #region Movement & Orientation
 
         private void CalcForwardMovement()
         {
@@ -444,13 +663,39 @@ namespace Game
             _transform.rotation = Quaternion.Euler(0f, newYaw, 0f);
         }
 
+        private void TimeoutToIdle()
+        {
+            var inputDetected = IsMoveInput || IsBlocking || _shootPressed || _inAttack || _input.Attack1 || _input.Attack2 || _input.JumpInput;
+
+            if (_isGrounded && !inputDetected)
+            {
+                _idleTimer += Time.deltaTime;
+                if (_idleTimer >= IdleTimeout)
+                {
+                    _idleTimer = 0f;
+                    _animCache.TriggerTimeoutToIdle();
+                }
+            }
+            else
+            {
+                _idleTimer = 0f;
+                _animCache.ResetTimeoutToIdle();
+            }
+
+            _animCache.SetInputDetected(inputDetected);
+        }
+
+        #endregion
+
+        #region Audio
+
         private void PlayAudio()
         {
             if (_damageable.currentHitPoints < 1)
             {
                 return;
             }
-            
+
             var footfall = _animCache.FootFall;
 
             if (footfall > 0.01f && !FootstepPlayer.playing)
@@ -491,53 +736,62 @@ namespace Game
             }
         }
 
-        private void ProcessBlocking()
+        private void PlayBlockSound()
         {
-            if (_damageable.currentHitPoints < 1 || !_primaryWeaponInstance && !_additionalWeaponInstance)
-            {
-                IsBlocking = false;
-                return;
-            }
-            IsBlocking = _input.Block;
-            _animCache.SetBlock(_input.Block);
+            AudioClip clip = null;
+
+            if (_additionalWeaponData)
+                clip = _additionalWeaponData.blockSound;
+
+            if (!clip && _primaryWeaponData)
+                clip = _primaryWeaponData.blockSound;
+
+            if (!clip) return;
+
+            BlockAudioSource.clip = clip;
+            BlockAudioSource.Play();
         }
 
-        private void ProcessShoot()
+        #endregion
+
+        #region Ranged Attack Helpers
+
+        public void SetRangedTargetPosition(Vector3 position)
         {
-            if (_damageable.currentHitPoints < 1 || !_rangedWeaponInstance || !_ammunitionWeaponInstance)
+            _rangedTargetPosition = position;
+        }
+
+        /// <summary>
+        /// Определяет точку, в которую полетит снаряд.
+        /// Приоритет:
+        /// 1) Raycast по TargetLayer в направлении взгляда — если впереди живая цель,
+        ///    стреляем в центр её коллайдера (всегда актуально, не зависит от кеша).
+        /// 2) Явно заданная позиция цели (AI через SetRangedTargetPosition).
+        /// 3) Точка перед ботом на уровне торса (не в пол).
+        /// </summary>
+        private Vector3 ResolveShootTarget()
+        {
+            var ray = new Ray(_transform.position + Vector3.up * 1.2f, _transform.forward);
+            if (Physics.Raycast(ray, out var hit, 100f, TargetLayer, QueryTriggerInteraction.Ignore))
             {
-                _shootPressed = false;
-                _bowCameraOn = false;
-                return;
-            }
-            _shootPressed = _input.Shoot;
-            _isShoot = _shootPressed;
-            _animCache.SetShoot(_shootPressed);
-
-            if (!IsPlayer) return;
-
-            if (_shootPressed && !_bowCameraOn)
-            {
-                _bowCameraOn = true;
-                _cameraSettings.SwitchCamera(CameraSettings.CameraType.Bow);
-            }
-            else if (!_shootPressed && _bowCameraOn)
-            {
-                _bowCameraOn = false;
-                _cameraSettings.SwitchCamera(CameraSettings.CameraType.Exploration);
+                var targetDamageable = hit.collider.GetComponentInParent<Damageable>();
+                if (targetDamageable != null && targetDamageable.currentHitPoints > 0)
+                {
+                    return hit.collider.bounds.center;
+                }
             }
 
-            if (!ModelTransform) return;
+            if (_rangedTargetPosition.HasValue)
+                return _rangedTargetPosition.Value;
 
-            var targetYaw = _bowCameraOn ? 30f : 0f;
-            var currentYaw = ModelTransform.localEulerAngles.y;
-            if (currentYaw > 180f) currentYaw -= 360f;
-            var newYaw = Mathf.Lerp(currentYaw, targetYaw, Time.deltaTime * 10f);
-            ModelTransform.localRotation = Quaternion.Euler(
-                _modelOriginalLocalRotation.eulerAngles.x,
-                newYaw,
-                _modelOriginalLocalRotation.eulerAngles.z
-            );
+            return _transform.position + Vector3.up * 1.2f + _transform.forward * 20f;
+        }
+
+        private bool IsFacingDamageSource(Vector3 damageSource)
+        {
+            var toSource = (damageSource - _transform.position).normalized;
+            toSource.y = 0f;
+            return Vector3.Dot(_transform.forward, toSource) > 0f;
         }
 
         public void CreateProjectile()
@@ -556,9 +810,17 @@ namespace Game
             _projectileView = null;
         }
 
-        public void SetRangedTargetPosition(Vector3 position)
+        #endregion
+
+        #region Animation Events
+
+        // Списание стамины происходит здесь — эти методы вызываются аниматором
+        // ровно в момент начала конкретного действия, вне зависимости от того,
+        // сколько тиков зажата кнопка.
+
+        public void TriggerRangedAttack()
         {
-            _rangedTargetPosition = position;
+            _input.Attack1 = true;
         }
 
         public void Shoot()
@@ -566,169 +828,18 @@ namespace Game
             if (_rangedAttackHandler == null || !_rangedAttackHandler.IsValid)
                 return;
 
+            Stamina.TryChangeStamina(-ShootStaminaCost);
+
             var targetPosition = ResolveShootTarget();
             _rangedAttackHandler.Shoot(targetPosition);
-        }
-
-        /// <summary>
-        /// Определяет точку, в которую полетит снаряд.
-        /// Приоритет:
-        /// 1) Raycast по TargetLayer в направлении взгляда — если впереди живая цель,
-        ///    стреляем в центр её коллайдера (всегда актуально, не зависит от кеша).
-        /// 2) Явно заданная позиция цели (AI через SetRangedTargetPosition).
-        /// 3) Точка перед ботом на уровне торса (не в пол).
-        /// </summary>
-        private Vector3 ResolveShootTarget()
-        {
-            // 1. Ищем цель в направлении взгляда бота (используется после преследования,
-            //    когда AI мог передать устаревшую позицию цели).
-            var ray = new Ray(_transform.position + Vector3.up * 1.2f, _transform.forward);
-            if (Physics.Raycast(ray, out var hit, 100f, TargetLayer, QueryTriggerInteraction.Ignore))
-            {
-                var targetDamageable = hit.collider.GetComponentInParent<Damageable>();
-                if (targetDamageable != null && targetDamageable.currentHitPoints > 0)
-                {
-                    return hit.collider.bounds.center;
-                }
-            }
-
-            // 2. Если AI явно задал позицию цели — используем её.
-            if (_rangedTargetPosition.HasValue)
-                return _rangedTargetPosition.Value;
-
-            // 3. Fallback — точка перед ботом на уровне торса.
-            return _transform.position + Vector3.up * 1.2f + _transform.forward * 20f;
-        }
-
-        private bool IsFacingDamageSource(Vector3 damageSource)
-        {
-            var toSource = (damageSource - _transform.position).normalized;
-            toSource.y = 0f;
-            return Vector3.Dot(_transform.forward, toSource) > 0f;
-        }
-
-        private void PlayBlockSound()
-        {
-            AudioClip clip = null;
-
-            if (_additionalWeaponData)
-                clip = _additionalWeaponData.blockSound;
-
-            if (!clip && _primaryWeaponData)
-                clip = _primaryWeaponData.blockSound;
-
-            if (!clip) return;
-
-            BlockAudioSource.clip = clip;
-            BlockAudioSource.Play();
-        }
-
-        private void TimeoutToIdle()
-        {
-            var inputDetected = IsMoveInput || IsBlocking || _shootPressed || _inAttack || _input.Attack1 || _input.Attack2 || _input.JumpInput;
-
-            if (_isGrounded && !inputDetected)
-            {
-                _idleTimer += Time.deltaTime;
-                if (_idleTimer >= IdleTimeout)
-                {
-                    _idleTimer = 0f;
-                    _animCache.TriggerTimeoutToIdle();
-                }
-            }
-            else
-            {
-                _idleTimer = 0f;
-                _animCache.ResetTimeoutToIdle();
-            }
-
-            _animCache.SetInputDetected(inputDetected);
-        }
-
-        private void OnAnimatorMove()
-        {
-            Vector3 movement;
-
-            if (_isGrounded)
-            {
-                var ray = new Ray(_transform.position + Vector3.up
-                    * Constants.GroundedRayDistance * 0.5f, -Vector3.up);
-                if (Physics.Raycast(ray, out var hit, Constants.GroundedRayDistance, Physics.AllLayers, QueryTriggerInteraction.Ignore))
-                {
-                    movement = Vector3.ProjectOnPlane(_animCache.DeltaPosition, hit.normal);
-                    var groundRenderer = hit.collider.GetComponentInChildren<Renderer>();
-                    _currentWalkingSurface = groundRenderer ? groundRenderer.sharedMaterial : null;
-                }
-                else
-                {
-                    movement = _animCache.DeltaPosition;
-                    _currentWalkingSurface = null;
-                }
-            }
-            else
-            {
-                movement = _forwardSpeed * _transform.forward * Time.deltaTime;
-            }
-
-            movement += _verticalSpeed * Vector3.up * Time.deltaTime;
-            _charCtrl.Move(movement);
-
-            if (_knockbackVelocity.sqrMagnitude > 0.01f)
-            {
-                var knockbackMovement = _knockbackVelocity * Time.deltaTime;
-                _charCtrl.Move(knockbackMovement);
-                _knockbackVelocity = Vector3.Lerp(_knockbackVelocity, Vector3.zero, Constants.KnockbackDeceleration * Time.deltaTime);
-            }
-            else
-            {
-                _knockbackVelocity = Vector3.zero;
-            }
-
-            _isGrounded = _charCtrl.isGrounded;
-
-            if (_isGrounded)
-            {
-                _coyoteTimer        = CoyoteTime;
-                _isJumping          = false;
-                _fallOriginCaptured = false;
-                _animGrounded       = true;
-            }
-            else
-            {
-                _coyoteTimer -= Time.deltaTime;
-                _animCache.SetAirborneVerticalSpeed(_verticalSpeed);
-
-                if (_isJumping)
-                {
-                    _animGrounded = false;
-                }
-                else if (_animGrounded)
-                {
-                    if (!_fallOriginCaptured)
-                    {
-                        _fallOriginCaptured = true;
-                        _fallOriginY = _transform.position.y;
-                    }
-
-                    var fallDistance = _fallOriginY - _transform.position.y;
-                    if (fallDistance >= MinFallHeightForAirborneAnim)
-                    {
-                        _animGrounded = false;
-                    }
-                }
-            }
-
-            _animCache.SetGrounded(_animGrounded);
-        }
-
-        public void TriggerRangedAttack()
-        {
-            _input.Attack1 = true;
         }
 
         public void MeleeAttackStart(int throwing = 0)
         {
             if (!_primaryWeaponInstance) return;
+
+            Stamina.TryChangeStamina(-Attack1StaminaCost);
+
             _primaryWeaponInstance.BeginAttack(throwing != 0);
             _inAttack = true;
         }
@@ -743,6 +854,9 @@ namespace Game
         public void AdditionalAttackStart(int throwing = 0)
         {
             if (!_additionalWeaponInstance) return;
+
+            Stamina.TryChangeStamina(-Attack2StaminaCost);
+
             _additionalWeaponInstance.BeginAttack(throwing != 0);
             _inAttack = true;
         }
@@ -753,6 +867,10 @@ namespace Game
             _additionalWeaponInstance.EndAttack();
             _inAttack = false;
         }
+
+        #endregion
+
+        #region Damage & Death
 
         public void OnReceiveMessage(MessageType type, object sender, object data)
         {
@@ -770,6 +888,11 @@ namespace Game
 
             if (_blockTriggeredThisFixedUpdate)
                 return true;
+
+            // Само блокирование — дискретное действие (реакция на конкретный удар),
+            // поэтому стамина проверяется и тратится прямо здесь, в момент события.
+            if (!Stamina.TryChangeStamina(-BlockStaminaCost))
+                return false;
 
             _blockTriggeredThisFixedUpdate = true;
             PlayBlockSound();
@@ -859,5 +982,7 @@ namespace Game
             _isGrounded  = false;
             _coyoteTimer = 0f;
         }
+
+        #endregion
     }
 }
