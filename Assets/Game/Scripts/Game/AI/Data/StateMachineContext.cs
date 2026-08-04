@@ -17,6 +17,12 @@ public class StateMachineContext : IDisposable
     public bool HasPrimaryWeapon => _humanoidController.HasPrimaryWeapon;
     public bool HasAdditionalWeapon => _humanoidController.HasAdditionalWeapon;
     public bool HasRangedWeapon => _humanoidController.HasRangeWeapon;
+    public float RangeWeaponPreferredDistance => _humanoidController.RangeWeaponPreferredDistance;
+    public bool IsMeleeWeaponEquipped => _humanoidController.IsMeleeWeaponEquipped;
+    public bool IsRangedWeaponEquipped => _humanoidController.IsRangedWeaponEquipped;
+    public bool IsShootPressed => _humanoidController.IsShootPressed;
+    public void ForceEquipMeleeWeapon() => _humanoidController.ForceEquipMeleeWeapon();
+    public void ForceEquipRangedWeapon() => _humanoidController.ForceEquipRangedWeapon();
     public float LoadProgressCurve => _humanoidController.LoadProgressCurve;
     public void TriggerRangedAttack()
     {

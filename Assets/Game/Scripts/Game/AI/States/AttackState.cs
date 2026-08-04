@@ -13,35 +13,35 @@ public class AttackState : AsyncState
         await base.OnEnter(ct);
         StopInput();
         Debug.Log("Entering Attack State...");
-        // Запускаем первую атаку асинхронно, не блокируя вход в состояние
-        TryExecuteAttack(CancellationTokenSource.Token)
-            .SuppressCancellationThrow()
-            .Forget();
+
+        StateMachine.Ctx.ForceEquipMeleeWeapon();
     }
 
     public override async UniTask OnUpdate(CancellationToken ct)
     {
         await base.OnUpdate(ct);
 
+        var weaponSwitchTimeout = Time.time + Constants.WeaponSwitchTimeout;
+        while (!StateMachine.Ctx.IsMeleeWeaponEquipped && Time.time < weaponSwitchTimeout)
+        {
+            await UniTask.Yield(PlayerLoopTiming.FixedUpdate, ct);
+        }
+
         while (!IsCancelled && !StateMachine.Ctx.IsDead)
         {
-            // Если цель мертва или отсутствует — выходим
             if (!StateMachine.Ctx.Target || StateMachine.Ctx.Target.currentHitPoints <= 0)
                 break;
 
-            // Если цель вышла за радиус атаки — переходим в ChaseState
             if (IsOutOfRange())
                 break;
 
             AdjustApproach();
 
-            var attackResult = await TryExecuteAttack(CancellationTokenSource.Token)
+            await TryExecuteAttack(CancellationTokenSource.Token)
                 .SuppressCancellationThrow();
 
-            if (attackResult.Result) break;
             if (IsCancelled) break;
 
-            // Небольшая задержка между атаками, но с ранним выходом по условиям
             await UniTask.Delay(200, cancellationToken: CancellationTokenSource.Token)
                 .SuppressCancellationThrow();
         }
@@ -130,13 +130,13 @@ public class AttackState : AsyncState
         if (!StateMachine.Ctx.Target) return false;
 
         var distance = Vector3.Distance(StateMachine.Ctx.Transform.position, StateMachine.Ctx.Target.Transform.position);
-        return distance > StateMachine.Ctx.PreferredAttackDistance * 1.5f;
+        return distance > StateMachine.Ctx.PreferredAttackDistance;
     }
-
 
     private void StopInput()
     {
         StateMachine.Ctx.Input.MoveInput = Vector2.zero;
+        StateMachine.Ctx.Input.Shoot = false;
         StateMachine.Ctx.Input.Attack1 = false;
         StateMachine.Ctx.Input.Attack2 = false;
         StateMachine.Ctx.Input.JumpInput = false;
@@ -147,7 +147,6 @@ public class AttackState : AsyncState
 
     protected override async UniTask HandleTransition()
     {
-        // Мёртвая цель не должна удерживать AI в боевом цикле
         StateMachine.Ctx.ClearDeadTarget();
 
         if (StateMachine.Ctx.IsDead)
@@ -156,7 +155,6 @@ public class AttackState : AsyncState
             return;
         }
 
-        // Если цель мертва — сбрасываем и переходим в ожидание
         if (!StateMachine.Ctx.Target)
         {
             await StateMachine.TransitionTo(StateMachine.IdleWaitState);
@@ -165,16 +163,18 @@ public class AttackState : AsyncState
 
         if (IsOutOfRange())
         {
-            // Если цель скрыта препятствием — сближаемся в ChaseState,
-            // чтобы найти позицию с прямой видимостью для стрельбы.
+            var distance = Vector3.Distance(
+                StateMachine.Ctx.Transform.position,
+                StateMachine.Ctx.Target.Transform.position);
+
             if (!StateMachine.Ctx.IsTargetVisible(StateMachine.Ctx.Target))
             {
                 await StateMachine.TransitionTo(StateMachine.ChaseState);
                 return;
             }
 
-            // Если есть дальнобойное оружие и цель видна — переключаемся на стрельбу
-            if (StateMachine.Ctx.HasRangedWeapon)
+            if (StateMachine.Ctx.HasRangedWeapon
+                && distance <= StateMachine.Ctx.RangeWeaponPreferredDistance)
             {
                 await StateMachine.TransitionTo(StateMachine.ShootState);
                 return;

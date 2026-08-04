@@ -12,20 +12,19 @@ namespace Game
         public event Action<float> OnCurrentStaminaChanged;
 
         private readonly Damageable _damageable;
-
-        private float _maxStamina = 100f;
-        private float _regenSpeed = 10f;
-        private float _regenDelay = 2f;
+        private readonly CharacterParams  _characterParams;
+        
         private float _currentStamina;
         private float _regenDelayTimer;
 
         private CancellationTokenSource _cts;
         private bool _isDisposed;
 
-        public Stamina(Damageable damageable)
+        public Stamina(Damageable damageable, CharacterParams characterParams)
         {
             _damageable = damageable;
-            _currentStamina = _maxStamina;
+            _characterParams = characterParams;
+            _currentStamina = _characterParams.MaxStamina;
 
             _cts = new CancellationTokenSource();
             RegenLoopAsync(_cts.Token).Forget();
@@ -38,31 +37,7 @@ namespace Game
         
         public float GetMaxStamina()
         {
-            return _maxStamina;
-        }
-
-        public void SetMaxStamina(float maxStamina)
-        {
-            _maxStamina = Mathf.Max(0f, maxStamina);
-
-            if (_currentStamina > _maxStamina)
-            {
-                _currentStamina = _maxStamina;
-                OnCurrentStaminaChanged?.Invoke(_currentStamina);
-            }
-
-            OnMaxStaminaChanged?.Invoke(_maxStamina);
-        }
-
-        public void SetRegenSpeed(float regenSpeed)
-        {
-            _regenSpeed = Mathf.Max(0f, regenSpeed);
-            OnRegenSpeedChanged?.Invoke(_regenSpeed);
-        }
-
-        public void SetRegenDelay(float regenDelay)
-        {
-            _regenDelay = Mathf.Max(0f, regenDelay);
+            return _characterParams.MaxStamina;
         }
 
         public float GetCurrentStamina()
@@ -80,15 +55,13 @@ namespace Game
             if (amount < 0f)
             {
                 var spendAmount = -amount;
-                _regenDelayTimer = _regenDelay;
+                _regenDelayTimer = _characterParams.RegenDelay;
 
                 if (_currentStamina < spendAmount)
                 {
-                    //Debug.Log($"Недостаточно стамины: {_currentStamina} - нужно {spendAmount}");
                     return false;
                 }
 
-                //Debug.Log($"Потрачено: {_currentStamina} - {spendAmount}");
                 _currentStamina -= spendAmount;
                 OnCurrentStaminaChanged?.Invoke(_currentStamina);
                 return true;
@@ -96,12 +69,12 @@ namespace Game
 
             if (amount > 0f)
             {
-                if (Mathf.Approximately(_currentStamina, _maxStamina))
+                if (Mathf.Approximately(_currentStamina, _characterParams.MaxStamina))
                 {
                     return false;
                 }
 
-                _currentStamina = Mathf.Min(_currentStamina + amount, _maxStamina);
+                _currentStamina = Mathf.Min(_currentStamina + amount, _characterParams.MaxStamina);
                 OnCurrentStaminaChanged?.Invoke(_currentStamina);
                 return true;
             }
@@ -140,12 +113,12 @@ namespace Game
                     continue;
                 }
 
-                if (_regenSpeed <= 0f)
+                if (_characterParams.RegenSpeed <= 0f)
                 {
                     continue;
                 }
 
-                if (Mathf.Approximately(_currentStamina, _maxStamina))
+                if (Mathf.Approximately(_currentStamina, _characterParams.MaxStamina))
                 {
                     continue;
                 }
@@ -155,7 +128,7 @@ namespace Game
                     continue;
                 }
 
-                TryChangeStamina(_regenSpeed * Time.deltaTime);
+                TryChangeStamina(_characterParams.RegenSpeed * Time.deltaTime);
             }
         }
     }

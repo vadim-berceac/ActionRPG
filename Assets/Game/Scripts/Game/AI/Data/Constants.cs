@@ -38,6 +38,7 @@ public static class Constants
     public const float WallSlideStrength = 0.6f;
     public const float WallSlideProbeDistance = 1.0f;
     public const float PreferredShootDistance = 35f;
+    public const float WeaponSwitchTimeout = 0.5f;
     public static readonly int ObstacleLayerMask = Physics.DefaultRaycastLayers;
     
     public const float AirborneTurnSpeedProportion = 5.4f;

@@ -28,26 +28,7 @@ namespace Game
         [field: SerializeField] public RandomAudioPlayer EmoteJumpPlayer { get; private set; }
         [field: SerializeField] public AudioSource BlockAudioSource { get; private set; }
 
-        [field: Header("Movement")]
-        [field: SerializeField] public float MaxForwardSpeed { get; private set; } = 8f;
-        [field: SerializeField] public float Gravity { get; private set; } = 20f;
-        [field: SerializeField] public float JumpSpeed { get; private set; } = 10f;
-        [field: SerializeField] public float MinTurnSpeed { get; private set; } = 400f;
-        [field: SerializeField] public float MaxTurnSpeed { get; private set; } = 1200f;
-        [field: SerializeField] public float CombatTurnSpeed { get; private set; } = 100f;
-        [field: SerializeField] public float AimTurnSpeed { get; private set; } = 400f;
-        [field: SerializeField] public float IdleTimeout { get; private set; } = 5f;
-        [field: SerializeField] public float GroundedTurnSmoothTime { get; private set; } = 0.15f;
-        [field: SerializeField] public float CoyoteTime { get; private set; } = 0.15f;
-        [field: SerializeField] public float MinFallHeightForAirborneAnim { get; private set; } = 0.35f;
-
-        [field: Header("Stamina Costs")]
-        [field: SerializeField] public float Attack1StaminaCost { get; private set; } = 10f;
-        [field: SerializeField] public float Attack2StaminaCost { get; private set; } = 10f;
-        [field: SerializeField] public float BlockStaminaCost { get; private set; } = 5f;
-        [field: SerializeField] public float ShootStaminaCost { get; private set; } = 8f;
-        [field: SerializeField] public float BlockHoldStaminaCostPerSecond { get; private set; } = 2f;
-        [field: SerializeField] public float AimHoldStaminaCostPerSecond { get; private set; } = 1.5f;
+        [field: SerializeField] public CharacterParamsSettings Settings { get; private set; }
 
         #endregion
 
@@ -61,7 +42,11 @@ namespace Game
         public int PrimaryWeaponIndex => _primaryWeaponData ? _primaryWeaponData.AnimationSetIndex : 0;
         public int RangeWeaponIndex => _rangedWeaponData ? _rangedWeaponData.AnimationSetIndex : 0;
         public float PrimaryWeaponPreferredAttackDistance => _primaryWeaponData.preferredDistance;
+        public float RangeWeaponPreferredDistance => _rangedWeaponData ? _rangedWeaponData.preferredDistance : 35f;
         public float LoadProgressCurve => _animCache.LoadProgressCurve;
+        public bool IsMeleeWeaponEquipped => _isMeleeWeaponEquipped;
+        public bool IsRangedWeaponEquipped => _isRangeWeaponEquipped;
+        public bool IsShootPressed => _shootPressed;
         public Stamina Stamina { get; private set; }
 
         #endregion
@@ -126,7 +111,8 @@ namespace Game
         #region Injection & Unity Lifecycle
 
         [Inject]
-        private void Construct(DiContainer container, CameraSettings cameraSettings, HealthUI healthUI, PlayerInputHandlerService playerInputHandlerService)
+        private void Construct(DiContainer container, CameraSettings cameraSettings, HealthUI healthUI, 
+            PlayerInputHandlerService playerInputHandlerService)
         {
             _diContainer = container;
             _cameraSettings = cameraSettings;
@@ -147,7 +133,7 @@ namespace Game
             _charCtrl = GetComponent<CharacterController>();
             _animCache = new AnimatorStateCache(GetComponent<Animator>(), RangeWeaponRoot);
             _transform = transform;
-            _coyoteTimer = CoyoteTime;
+            _coyoteTimer = Settings.CharacterParams.CoyoteTime;
 
             if (ModelTransform)
             {
@@ -164,7 +150,7 @@ namespace Game
             _damageable.isInvulnerable = true;
             _damageable.onDamageBlocked = OnDamageBlocked;
 
-            Stamina = new Stamina(_damageable);
+            Stamina = new Stamina(_damageable, Settings.CharacterParams);
 
             if (RangeWeaponRoot)
             {
@@ -182,6 +168,8 @@ namespace Game
 
         private void FixedUpdate()
         {
+            if(!Settings) return;
+            
             _animCache.OnUpdate();
             _animCache.SetStateTime();
 
@@ -255,7 +243,7 @@ namespace Game
 
             if (_isGrounded)
             {
-                _coyoteTimer        = CoyoteTime;
+                _coyoteTimer        = Settings.CharacterParams.CoyoteTime;
                 _isJumping          = false;
                 _fallOriginCaptured = false;
                 _animGrounded       = true;
@@ -278,7 +266,7 @@ namespace Game
                     }
 
                     var fallDistance = _fallOriginY - _transform.position.y;
-                    if (fallDistance >= MinFallHeightForAirborneAnim)
+                    if (fallDistance >= Settings.CharacterParams.MinFallHeightForAirborneAnim)
                     {
                         _animGrounded = false;
                     }
@@ -377,6 +365,40 @@ namespace Game
             if(value) _isMeleeWeaponEquipped = false;
         }
 
+        /// <summary>
+        /// Переключает параметры аниматора (WeaponEquipped, WeaponIndex) на melee-оружие.
+        /// НЕ трогает _isMeleeWeaponEquipped/_isRangeWeaponEquipped — эти флаги ставит
+        /// SMB WeaponEqupped при фактическом входе в melee-состояние аниматора, и именно
+        /// они служат индикатором завершённого перехода. Вызывается AI при входе
+        /// в AttackState, чтобы аниматор начал переход в melee-ветку.
+        /// </summary>
+        public void ForceEquipMeleeWeapon()
+        {
+            var index = _primaryWeaponData ? _primaryWeaponData.AnimationSetIndex : 0;
+            _animCache.SetWeaponEquipped(true, index);
+
+            // Если триггер Shoot залип от предыдущего ranged-цикла — сбрасываем,
+            // чтобы он не выстрелил в момент переключения на melee.
+            _animCache.ResetTrigger(_animCache.Shoot);
+        }
+
+        /// <summary>
+        /// Переключает параметры аниматора (WeaponEquipped, WeaponIndex) на ranged-оружие.
+        /// НЕ трогает _isRangeWeaponEquipped/_isMeleeWeaponEquipped — эти флаги ставит
+        /// SMB WeaponEqupped при фактическом входе в ranged-состояние аниматора.
+        /// Вызывается AI при входе в ShootState.
+        /// </summary>
+        public void ForceEquipRangedWeapon()
+        {
+            var index = _rangedWeaponData ? _rangedWeaponData.AnimationSetIndex : 0;
+            _animCache.SetWeaponEquipped(true, index);
+
+            // Сбрасываем триггеры melee-атак, чтобы они не запустились
+            // в ranged-контексте.
+            _animCache.ResetTrigger(_animCache.HashAttack1);
+            _animCache.ResetTrigger(_animCache.HashAttack2);
+        }
+
         private void ConnectWeaponToHands(bool equip, WeaponData data, WeaponInstance weaponInstanceInstance, int trigger)
         {
             if (!data) return;
@@ -416,12 +438,12 @@ namespace Game
                 return;
             }
 
-            if (_input.Attack1 && Stamina.HasEnoughStamina(Attack1StaminaCost))
+            if (_input.Attack1 && Stamina.HasEnoughStamina(Settings.CharacterParams.Attack1StaminaCost))
             {
                 _animCache.TriggerAttack1();
             }
 
-            if (_input.Attack2 && Stamina.HasEnoughStamina(Attack2StaminaCost))
+            if (_input.Attack2 && Stamina.HasEnoughStamina(Settings.CharacterParams.Attack2StaminaCost))
             {
                 _animCache.TriggerAttack2();
             }
@@ -438,7 +460,7 @@ namespace Game
 
             if (_input.Block)
             {
-                var holdCost = BlockHoldStaminaCostPerSecond * Time.deltaTime;
+                var holdCost = Settings.CharacterParams.BlockHoldStaminaCostPerSecond * Time.deltaTime;
 
                 if (holdCost > 0f && !Stamina.TryChangeStamina(-holdCost))
                 {
@@ -461,7 +483,7 @@ namespace Game
         {
             var canShoot = _damageable.currentHitPoints > 0 && _rangedWeaponInstance && _ammunitionWeaponInstance;
 
-            if (!canShoot || !Stamina.HasEnoughStamina(ShootStaminaCost))
+            if (!canShoot || !Stamina.HasEnoughStamina(Settings.CharacterParams.ShootStaminaCost))
             {
                 _shootPressed = false;
                 _isShoot = false;
@@ -478,7 +500,7 @@ namespace Game
 
             if (_input.Shoot)
             {
-                var holdCost = AimHoldStaminaCostPerSecond * Time.deltaTime;
+                var holdCost = Settings.CharacterParams.AimHoldStaminaCostPerSecond * Time.deltaTime;
 
                 if (holdCost > 0f && !Stamina.TryChangeStamina(-holdCost))
                 {
@@ -533,7 +555,7 @@ namespace Game
             if (moveInput.sqrMagnitude > 1f)
                 moveInput.Normalize();
 
-            _desiredForwardSpeed = moveInput.magnitude * MaxForwardSpeed;
+            _desiredForwardSpeed = moveInput.magnitude * Settings.CharacterParams.MaxForwardSpeed;
             var acceleration    = IsMoveInput ? Constants.GroundAcceleration : Constants.GroundDeceleration;
             _forwardSpeed        = Mathf.MoveTowards(_forwardSpeed, _desiredForwardSpeed, acceleration * Time.deltaTime);
 
@@ -555,7 +577,7 @@ namespace Game
 
             if (_input.JumpInput && canJump && _readyToJump && !_inAttack && !IsBlocking)
             {
-                _verticalSpeed = JumpSpeed;
+                _verticalSpeed = Settings.CharacterParams.JumpSpeed;
                 _isGrounded    = false;
                 _coyoteTimer   = 0f;
                 _readyToJump   = false;
@@ -565,7 +587,7 @@ namespace Game
 
             if (_isGrounded)
             {
-                _verticalSpeed = -Gravity * Constants.StickingGravityProportion;
+                _verticalSpeed = -Settings.CharacterParams.Gravity * Constants.StickingGravityProportion;
             }
             else
             {
@@ -575,7 +597,7 @@ namespace Game
                 if (Mathf.Approximately(_verticalSpeed, 0f))
                     _verticalSpeed = 0f;
 
-                _verticalSpeed -= Gravity * Time.deltaTime;
+                _verticalSpeed -= Settings.CharacterParams.Gravity * Time.deltaTime;
             }
         }
 
@@ -646,20 +668,23 @@ namespace Game
 
             if (_shootPressed)
             {
-                _transform.rotation = Quaternion.RotateTowards(_transform.rotation, _targetRotation, AimTurnSpeed * Time.deltaTime);
+                _transform.rotation = Quaternion.RotateTowards(_transform.rotation, _targetRotation,
+                    Settings.CharacterParams.AimTurnSpeed * Time.deltaTime);
                 return;
             }
 
             if (IsBlocking || _inAttack)
             {
-                _transform.rotation = Quaternion.RotateTowards(_transform.rotation, _targetRotation, CombatTurnSpeed * Time.deltaTime);
+                _transform.rotation = Quaternion.RotateTowards(_transform.rotation, _targetRotation,
+                    Settings.CharacterParams.CombatTurnSpeed * Time.deltaTime);
                 return;
             }
 
             var currentEuler = _transform.rotation.eulerAngles.y;
             var targetEuler  = _targetRotation.eulerAngles.y;
 
-            var newYaw = Mathf.SmoothDampAngle(currentEuler, targetEuler, ref _turnVelocity, GroundedTurnSmoothTime);
+            var newYaw = Mathf.SmoothDampAngle(currentEuler, targetEuler, ref _turnVelocity,
+                Settings.CharacterParams.GroundedTurnSmoothTime);
             _transform.rotation = Quaternion.Euler(0f, newYaw, 0f);
         }
 
@@ -670,7 +695,7 @@ namespace Game
             if (_isGrounded && !inputDetected)
             {
                 _idleTimer += Time.deltaTime;
-                if (_idleTimer >= IdleTimeout)
+                if (_idleTimer >= Settings.CharacterParams.IdleTimeout)
                 {
                     _idleTimer = 0f;
                     _animCache.TriggerTimeoutToIdle();
@@ -761,14 +786,6 @@ namespace Game
             _rangedTargetPosition = position;
         }
 
-        /// <summary>
-        /// Определяет точку, в которую полетит снаряд.
-        /// Приоритет:
-        /// 1) Raycast по TargetLayer в направлении взгляда — если впереди живая цель,
-        ///    стреляем в центр её коллайдера (всегда актуально, не зависит от кеша).
-        /// 2) Явно заданная позиция цели (AI через SetRangedTargetPosition).
-        /// 3) Точка перед ботом на уровне торса (не в пол).
-        /// </summary>
         private Vector3 ResolveShootTarget()
         {
             var ray = new Ray(_transform.position + Vector3.up * 1.2f, _transform.forward);
@@ -814,10 +831,6 @@ namespace Game
 
         #region Animation Events
 
-        // Списание стамины происходит здесь — эти методы вызываются аниматором
-        // ровно в момент начала конкретного действия, вне зависимости от того,
-        // сколько тиков зажата кнопка.
-
         public void TriggerRangedAttack()
         {
             _input.Attack1 = true;
@@ -828,7 +841,7 @@ namespace Game
             if (_rangedAttackHandler == null || !_rangedAttackHandler.IsValid)
                 return;
 
-            Stamina.TryChangeStamina(-ShootStaminaCost);
+            Stamina.TryChangeStamina(-Settings.CharacterParams.ShootStaminaCost);
 
             var targetPosition = ResolveShootTarget();
             _rangedAttackHandler.Shoot(targetPosition);
@@ -838,7 +851,7 @@ namespace Game
         {
             if (!_primaryWeaponInstance) return;
 
-            Stamina.TryChangeStamina(-Attack1StaminaCost);
+            Stamina.TryChangeStamina(-Settings.CharacterParams.Attack1StaminaCost);
 
             _primaryWeaponInstance.BeginAttack(throwing != 0);
             _inAttack = true;
@@ -855,7 +868,7 @@ namespace Game
         {
             if (!_additionalWeaponInstance) return;
 
-            Stamina.TryChangeStamina(-Attack2StaminaCost);
+            Stamina.TryChangeStamina(-Settings.CharacterParams.Attack2StaminaCost);
 
             _additionalWeaponInstance.BeginAttack(throwing != 0);
             _inAttack = true;
@@ -889,9 +902,7 @@ namespace Game
             if (_blockTriggeredThisFixedUpdate)
                 return true;
 
-            // Само блокирование — дискретное действие (реакция на конкретный удар),
-            // поэтому стамина проверяется и тратится прямо здесь, в момент события.
-            if (!Stamina.TryChangeStamina(-BlockStaminaCost))
+            if (!Stamina.TryChangeStamina(-Settings.CharacterParams.BlockStaminaCost))
                 return false;
 
             _blockTriggeredThisFixedUpdate = true;
