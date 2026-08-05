@@ -5,11 +5,11 @@ using UnityEngine;
 
 namespace Game
 {
-    public class Stamina : IDisposable
+    public class Stamina : IUIUpdater, IDisposable
     {
-        public event Action<float> OnMaxStaminaChanged;
+        public event Action<float> OnMaxValueChanged;
         public event Action<float> OnRegenSpeedChanged;
-        public event Action<float> OnCurrentStaminaChanged;
+        public event Action<float> OnCurrentValueChanged;
 
         private readonly Damageable _damageable;
         private readonly CharacterParams  _characterParams;
@@ -35,12 +35,12 @@ namespace Game
             return _currentStamina >= amount;
         }
         
-        public float GetMaxStamina()
+        public float GetMaxValue()
         {
             return _characterParams.MaxStamina;
         }
 
-        public float GetCurrentStamina()
+        public float GetCurrentValue()
         {
             return _currentStamina;
         }
@@ -63,7 +63,7 @@ namespace Game
                 }
 
                 _currentStamina -= spendAmount;
-                OnCurrentStaminaChanged?.Invoke(_currentStamina);
+                OnCurrentValueChanged?.Invoke(_currentStamina);
                 return true;
             }
 
@@ -75,7 +75,7 @@ namespace Game
                 }
 
                 _currentStamina = Mathf.Min(_currentStamina + amount, _characterParams.MaxStamina);
-                OnCurrentStaminaChanged?.Invoke(_currentStamina);
+                OnMaxValueChanged?.Invoke(_currentStamina);
                 return true;
             }
 
@@ -132,4 +132,15 @@ namespace Game
             }
         }
     }
+}
+
+public interface IUIUpdater
+{
+    public event Action<float> OnMaxValueChanged;
+    public event Action<float> OnRegenSpeedChanged;
+    public event Action<float> OnCurrentValueChanged;
+
+    public float GetMaxValue();
+
+    public float GetCurrentValue();
 }

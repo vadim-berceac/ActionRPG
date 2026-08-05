@@ -111,7 +111,7 @@ namespace Game
         #region Injection & Unity Lifecycle
 
         [Inject]
-        private void Construct(DiContainer container, CameraSettings cameraSettings, HealthUI healthUI, 
+        private void Construct(DiContainer container, CameraSettings cameraSettings, 
             PlayerInputHandlerService playerInputHandlerService)
         {
             _diContainer = container;
