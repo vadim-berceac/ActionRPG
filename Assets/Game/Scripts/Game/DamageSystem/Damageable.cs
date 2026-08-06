@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using Game.Message;
 using UnityEngine;
@@ -7,8 +7,11 @@ using UnityEngine.Serialization;
 
 namespace Game
 {
-    public partial class Damageable : MonoBehaviour
+    public partial class Damageable : MonoBehaviour, IUIUpdater
     {
+        public event Action<float> OnMaxValueChanged;
+        public event Action<float> OnRegenSpeedChanged;
+        public event Action<float> OnCurrentValueChanged;
 
         public int maxHitPoints;
         [Tooltip("Time that this gameObject is invulnerable for, after receiving damage.")]
@@ -42,7 +45,7 @@ namespace Game
 
         System.Action schedule;
 
-        void Start()
+        void Awake()
         {
             ResetDamage();
             Transform = transform;
@@ -62,6 +65,16 @@ namespace Game
                 }
             }
         }
+        
+        public float GetMaxValue()
+        {
+            return maxHitPoints;
+        }
+
+        public float GetCurrentValue()
+        {
+            return currentHitPoints;
+        }
 
         public void ResetDamage()
         {
@@ -69,6 +82,7 @@ namespace Game
             isInvulnerable = false;
             m_timeSinceLastHit = 0.0f;
             OnResetDamage.Invoke();
+            OnCurrentValueChanged?.Invoke(currentHitPoints);
         }
 
         public void SetColliderState(bool enabled)
@@ -110,6 +124,8 @@ namespace Game
                 schedule += OnDeath.Invoke; 
             else
                 OnReceiveDamage.Invoke();
+            
+            OnCurrentValueChanged?.Invoke(currentHitPoints);
 
             var messageType = currentHitPoints <= 0 ? MessageType.DEAD : MessageType.DAMAGED;
 

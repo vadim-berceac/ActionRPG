@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d470ac84d24e8884b9efe1140ec0bd5e, type: 3}
+  m_Name: CharacterParamsSettings_bot
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterParamsSettings
+  <CharacterParams>k__BackingField:
+    <MaxForwardSpeed>k__BackingField: 8
+    <Gravity>k__BackingField: 20
+    <JumpSpeed>k__BackingField: 7
+    <MinTurnSpeed>k__BackingField: 200
+    <MaxTurnSpeed>k__BackingField: 400
+    <CombatTurnSpeed>k__BackingField: 50
+    <AimTurnSpeed>k__BackingField: 100
+    <IdleTimeout>k__BackingField: 5
+    <GroundedTurnSmoothTime>k__BackingField: 0.15
+    <CoyoteTime>k__BackingField: 0.15
+    <MinFallHeightForAirborneAnim>k__BackingField: 0.35
+    <Attack1StaminaCost>k__BackingField: 10
+    <Attack2StaminaCost>k__BackingField: 10
+    <BlockStaminaCost>k__BackingField: 15
+    <ShootStaminaCost>k__BackingField: 0
+    <BlockHoldStaminaCostPerSecond>k__BackingField: 10
+    <AimHoldStaminaCostPerSecond>k__BackingField: 0
+    <MaxStamina>k__BackingField: 100
+    <RegenSpeed>k__BackingField: 15
+    <RegenDelay>k__BackingField: 0.5

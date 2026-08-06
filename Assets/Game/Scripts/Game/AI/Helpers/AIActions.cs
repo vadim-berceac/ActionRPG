@@ -33,13 +33,10 @@ public static class AIActions
 
             _sampleTimer = 0f;
 
-            // Track absolute height difference to detect stepped/cliffed terrain
-            // where XZ is near destination but Y is blocked.
             var absHeightDelta = Mathf.Abs(heightDelta);
             if (absHeightDelta > _bestHeightDelta)
                 _bestHeightDelta = absHeightDelta;
 
-            // Detect "arrived on XZ but not on Y" — staircase deadlock
             if (distanceSq < Constants.StuckArriveXzThresholdSq && absHeightDelta > Constants.ArriveHeightThreshold)
             {
                 _stuckAtArriveCount++;

@@ -14,6 +14,7 @@ public class AlarmState : AsyncState
     public override async UniTask OnEnter(CancellationToken ct)
     {
         await base.OnEnter(ct);
+        
         Debug.Log("Entering Alarm State...");
 
         // Сбрасываем флаг получения урона — AlarmState обработал его
@@ -51,8 +52,10 @@ public class AlarmState : AsyncState
 
                         if (otherFsm.CurrentState != otherFsm.AlarmState && !otherFsm.IsTransitioning())
                         {
-                            // Запускаем переход асинхронно, не блокируя текущий AlarmState
                             TransitionWithErrorHandling(otherFsm, otherFsm.AlarmState).Forget();
+                            Debug.Log($"[Alarm] ally={otherEnemyBrain.name} Target={otherCtx.Target} " +
+                                      $"lastSeen={otherCtx.GetLastSeenTarget()} " +
+                                      $"hasKnownPos={otherCtx.TryGetLastKnownTargetPosition(out _)}");
                         }
                     }
                 }

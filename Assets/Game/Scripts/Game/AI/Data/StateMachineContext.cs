@@ -17,6 +17,10 @@ public class StateMachineContext : IDisposable
     public bool HasPrimaryWeapon => _humanoidController.HasPrimaryWeapon;
     public bool HasAdditionalWeapon => _humanoidController.HasAdditionalWeapon;
     public bool HasRangedWeapon => _humanoidController.HasRangeWeapon;
+    public float RangeWeaponPreferredDistance => _humanoidController.RangeWeaponPreferredDistance;
+    public bool IsMeleeWeaponEquipped => _humanoidController.IsMeleeWeaponEquipped;
+    public bool IsRangedWeaponEquipped => _humanoidController.IsRangedWeaponEquipped;
+    public bool IsShootPressed => _humanoidController.IsShootPressed;
     public float LoadProgressCurve => _humanoidController.LoadProgressCurve;
     public void TriggerRangedAttack()
     {
@@ -24,11 +28,6 @@ public class StateMachineContext : IDisposable
         _humanoidController.TriggerRangedAttack();
     }
 
-    /// <summary>
-    /// Передаёт актуальную позицию цели (на уровне торса) в HumanoidController.
-    /// Вызывается до запуска анимации стрельбы, чтобы первый выстрел
-    /// (анимационное событие Shoot) уже имел корректную цель.
-    /// </summary>
     public void UpdateRangedTargetPosition()
     {
         if (Target != null && Target.currentHitPoints > 0 && Target.Transform != null)

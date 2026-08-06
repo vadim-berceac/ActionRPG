@@ -133,7 +133,7 @@ namespace Game
         }
 
         public void TriggerHurt()      => _animator.SetTrigger(HashHurt);
-        public void TriggerDeath()     => _animator.SetTrigger(HashDeath);
+        public void TriggerDeath(bool value)  => _animator.SetBool(HashDeath, value);
         public void TriggerRespawn()   => _animator.SetTrigger(_hashRespawn);
         public void TriggerBlock() => _animator.SetTrigger(_blockHitTrigger);
 

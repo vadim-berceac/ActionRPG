@@ -151,7 +151,6 @@ GameObject:
   - component: {fileID: 1221178880529204029}
   - component: {fileID: 8221082309353826462}
   - component: {fileID: 3129279076112330710}
-  - component: {fileID: 5555669641611656938}
   - component: {fileID: 3077285747228589714}
   - component: {fileID: 4971361307042770288}
   m_Layer: 9
@@ -304,28 +303,8 @@ MonoBehaviour:
   <EmoteAttackPlayer>k__BackingField: {fileID: 922335842245678068}
   <EmoteJumpPlayer>k__BackingField: {fileID: 515608808743569430}
   <BlockAudioSource>k__BackingField: {fileID: 745819440771655263}
-  <MaxForwardSpeed>k__BackingField: 8
-  <Gravity>k__BackingField: 20
-  <JumpSpeed>k__BackingField: 7
-  <MinTurnSpeed>k__BackingField: 200
-  <MaxTurnSpeed>k__BackingField: 400
-  <CombatTurnSpeed>k__BackingField: 50
-  <AimTurnSpeed>k__BackingField: 100
-  <IdleTimeout>k__BackingField: 5
-  <GroundedTurnSmoothTime>k__BackingField: 0.15
---- !u!114 &5555669641611656938
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1125372579252015583}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b70e38a9fa67f2847b1f3e5b9f503260, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  arcsCount: 12
+  <Settings>k__BackingField: {fileID: 11400000, guid: 30de843bb5db0a5459a6224ca32ff466,
+    type: 2}
 --- !u!114 &3077285747228589714
 MonoBehaviour:
   m_ObjectHideFlags: 0

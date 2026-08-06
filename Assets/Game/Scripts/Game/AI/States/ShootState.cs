@@ -7,6 +7,9 @@ public class ShootState : AsyncState
     private const float AimDuration = 3f;
     private const float ShootCooldown = 0.5f;
 
+    private float _aimStartTime;
+    private float _approachThrottle;
+
     public ShootState(AsyncStateMachine stateMachine) : base(stateMachine)
     {
     }
@@ -19,12 +22,19 @@ public class ShootState : AsyncState
         StateMachine.Ctx.UpdateRangedTargetPosition();
 
         StateMachine.Ctx.Input.Shoot = true;
+        _aimStartTime = Time.time;
         AimAtTarget();
     }
 
     public override async UniTask OnUpdate(CancellationToken ct)
     {
         await base.OnUpdate(ct);
+
+        var weaponSwitchTimeout = Time.time + Constants.WeaponSwitchTimeout;
+        while (!StateMachine.Ctx.IsRangedWeaponEquipped && Time.time < weaponSwitchTimeout)
+        {
+            await UniTask.Yield(PlayerLoopTiming.FixedUpdate, ct);
+        }
 
         while (!IsCancelled && !StateMachine.Ctx.IsDead)
         {
@@ -41,7 +51,7 @@ public class ShootState : AsyncState
             if (IsOutOfRange())
                 break;
 
-            if (distance <= StateMachine.Ctx.PreferredAttackDistance * (StateMachine.Ctx.HasRangedWeapon ? 1f : 1.5f))
+            if (distance <= StateMachine.Ctx.PreferredAttackDistance)
                 break;
 
             AdjustApproach();
@@ -50,9 +60,15 @@ public class ShootState : AsyncState
 
             var now = Time.time;
 
-            if (now - StateMachine.Ctx.LastRangedFireTime >= ShootCooldown + AimDuration)
+            var aimReady = StateMachine.Ctx.IsRangedWeaponEquipped
+                && StateMachine.Ctx.IsShootPressed
+                && now - _aimStartTime >= AimDuration;
+            var cooldownReady = now - StateMachine.Ctx.LastRangedFireTime >= ShootCooldown;
+
+            if (aimReady && cooldownReady)
             {
                 StateMachine.Ctx.LastRangedFireTime = now;
+                _aimStartTime = now;
 
                 StateMachine.Ctx.TriggerRangedAttack();
                 await UniTask.Delay(50, cancellationToken: CancellationTokenSource.Token)
@@ -77,8 +93,6 @@ public class ShootState : AsyncState
         StopInput();
         await UniTask.CompletedTask;
     }
-
-    private float _approachThrottle;
 
     private void AimAtTarget()
     {
@@ -110,8 +124,9 @@ public class ShootState : AsyncState
 
         if (distance < 0.01f) return;
 
-        var deadZoneMin = Constants.PreferredShootDistance * 0.75f;
-        var deadZoneMax = Constants.PreferredShootDistance * 1.25f;
+        var preferredShootDistance = StateMachine.Ctx.RangeWeaponPreferredDistance;
+        var deadZoneMin = preferredShootDistance * 0.75f;
+        var deadZoneMax = preferredShootDistance * 1.25f;
 
         if (distance >= deadZoneMin && distance <= deadZoneMax)
         {
@@ -123,7 +138,7 @@ public class ShootState : AsyncState
             return;
         }
 
-        var moveTarget = targetPos - toTarget.normalized * Constants.PreferredShootDistance;
+        var moveTarget = targetPos - toTarget.normalized * preferredShootDistance;
         var toMove = myPos - moveTarget;
         toMove.y = 0f;
 
@@ -138,7 +153,7 @@ public class ShootState : AsyncState
         }
 
         var targetThrottle = Mathf.Lerp(0.3f, 0.7f,
-            Mathf.Clamp01(toMove.magnitude / Constants.PreferredShootDistance));
+            Mathf.Clamp01(toMove.magnitude / preferredShootDistance));
         _approachThrottle = Mathf.MoveTowards(_approachThrottle, targetThrottle, 3f * Time.deltaTime);
         StateMachine.Ctx.Input.MoveInput = new Vector2(0f, _approachThrottle);
     }
@@ -157,7 +172,7 @@ public class ShootState : AsyncState
 
         var distance = GetDistanceToTarget();
 
-        return distance > Constants.PreferredShootDistance;
+        return distance > StateMachine.Ctx.RangeWeaponPreferredDistance;
     }
 
     private void StopInput()
@@ -196,7 +211,7 @@ public class ShootState : AsyncState
             return;
         }
 
-        if (distance <= StateMachine.Ctx.PreferredAttackDistance * 1.5f)
+        if (distance <= StateMachine.Ctx.PreferredAttackDistance)
         {
             await StateMachine.TransitionTo(StateMachine.AttackState);
             return;

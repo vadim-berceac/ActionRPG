@@ -31,7 +31,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 7.2}
-  m_LocalScale: {x: 15, y: 15, z: 15}
+  m_LocalScale: {x: 20, y: 20, z: 0}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 3216455139773303069}
@@ -162,6 +162,7 @@ MonoBehaviour:
     m_Bits: 2147549200
   visionCheckInterval: 0.1
   hysteresisChecks: 2
+  triggerRadius: 10
   closeRangeRadius: 2
 --- !u!1 &5271335527276126248
 GameObject:
@@ -188,7 +189,7 @@ Transform:
   m_GameObject: {fileID: 5271335527276126248}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -0, y: 0.1425, z: -0.475}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
