@@ -82,6 +82,7 @@ namespace Game
             isInvulnerable = false;
             m_timeSinceLastHit = 0.0f;
             OnResetDamage.Invoke();
+            OnCurrentValueChanged?.Invoke(currentHitPoints);
         }
 
         public void SetColliderState(bool enabled)

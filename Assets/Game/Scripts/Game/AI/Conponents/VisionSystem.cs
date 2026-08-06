@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game;
@@ -34,8 +33,6 @@ public class VisionSystem : MonoBehaviour
     private readonly Dictionary<Damageable, Vector3> _lastKnownPositions = new();
 
     private readonly Collider[] _closeRangeBuffer = new Collider[8];
-    private readonly Collider[] _triggerCheckBuffer = new Collider[32];
-    private readonly Collider[] _rangeCheckBuffer = new Collider[32];
     private readonly List<Collider> _pendingRemoval = new();
     private readonly List<KeyValuePair<Collider, Damageable>> _candidatesSnapshot = new();
 
@@ -62,6 +59,14 @@ public class VisionSystem : MonoBehaviour
     }
 
     private void OnTriggerEnter(Collider other)
+    {
+        if (!IsValidTarget(other, out var damageable)) return;
+
+        _inTriggerZone.Add(other);
+        _candidates[other] = damageable;
+    }
+
+    private void OnTriggerStay(Collider other)
     {
         if (!IsValidTarget(other, out var damageable)) return;
 
@@ -105,26 +110,6 @@ public class VisionSystem : MonoBehaviour
         }
     }
 
-    private void SyncTriggerZone()
-    {
-        var count = Physics.OverlapSphereNonAlloc(owner.position, triggerRadius, _triggerCheckBuffer,
-            humanoidController.TargetLayer, QueryTriggerInteraction.Collide);
-
-        for (var i = 0; i < count; i++)
-        {
-            var col = _triggerCheckBuffer[i];
-            if (col == null) continue;
-            if (!IsValidTarget(col, out var damageable)) continue;
-
-            _inTriggerZone.Add(col);
-
-            if (!_candidates.ContainsKey(col))
-            {
-                _candidates[col] = damageable;
-            }
-        }
-    }
-
     private void UpdateCloseRangeCandidates()
     {
         _closeRangeThisTick.Clear();
@@ -147,45 +132,28 @@ public class VisionSystem : MonoBehaviour
 
     private void RemoveStaleCandidates()
     {
-        SyncTriggerZone();
-
         _pendingRemoval.Clear();
 
-        foreach (var col in _candidates.Keys.ToArray())
+        foreach (var kvp in _candidates)
         {
-            // Мёртвые цели не должны оставаться кандидатами — иначе мёртвый Damageable
-            // будет заново назначаться как Target, и AI никогда не вернётся к патрулированию
-            if (_candidates.TryGetValue(col, out var damageable)
-                && damageable != null
-                && damageable.currentHitPoints <= 0)
+            var col = kvp.Key;
+            var damageable = kvp.Value;
+
+            var isDead = damageable == null || damageable.currentHitPoints <= 0;
+            var isPresent = col != null && (_inTriggerZone.Contains(col) || _closeRangeThisTick.Contains(col));
+
+            if (isDead || !isPresent)
             {
-                _inTriggerZone.Remove(col);
                 _pendingRemoval.Add(col);
-                continue;
             }
-
-            if (col != null && (_inTriggerZone.Contains(col) || _closeRangeThisTick.Contains(col)))
-                continue;
-
-            _pendingRemoval.Add(col);
         }
 
         foreach (var col in _pendingRemoval)
         {
             _candidates.TryGetValue(col, out var damageable);
 
-            // Мёртвые цели удаляем безоговорочно, даже если их коллайдер всё ещё
-            // попадает в _closeRangeThisTick или _inTriggerZone в этом же тике.
-            if (damageable != null && damageable.currentHitPoints <= 0)
-            {
-                _inTriggerZone.Remove(col);
-            }
-            else if (col != null && (_inTriggerZone.Contains(col) || _closeRangeThisTick.Contains(col)))
-            {
-                continue;
-            }
-
             _candidates.Remove(col);
+            _inTriggerZone.Remove(col);
 
             _visibleStreak.Remove(damageable);
             _hiddenStreak.Remove(damageable);
@@ -252,18 +220,10 @@ public class VisionSystem : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Проверяет, находится ли цель в радиусе обнаружения.
-    /// В отличие от IsTargetVisible, не требует line-of-sight и гистерезиса.
-    /// Используется для определения, может ли враг начать преследование цели напрямую.
-    /// 
-    /// Использует Vector3.Distance с _triggerRadius — это надёжно и не зависит
-    /// от состояния триггер-коллайдера или _candidates.
-    /// </summary>
     public bool IsTargetInRange(Damageable target)
     {
-        if (target == null) return false;
-        if (target.Transform == null) return false;
+        if (!target) return false;
+        if (!target.Transform) return false;
 
         var distance = Vector3.Distance(owner.position, target.Transform.position);
         return distance <= triggerRadius;
@@ -271,7 +231,7 @@ public class VisionSystem : MonoBehaviour
 
     public bool IsTargetVisible(Damageable target)
     {
-        return target != null && _visibleTargets.Contains(target);
+        return target && _visibleTargets.Contains(target);
     }
 
     public bool HasCandidate(Collider col)
@@ -281,7 +241,7 @@ public class VisionSystem : MonoBehaviour
 
     public void AddCandidate(Collider col, Damageable damageable)
     {
-        if (col == null || damageable == null) return;
+        if (!col || !damageable) return;
         if (_candidates.ContainsKey(col)) return;
 
         _candidates[col] = damageable;

@@ -23,7 +23,7 @@ TagManager:
   - Vehicles
   - Navmesh
   - Environment
-  - 
+  - InteractCollider
   - Vegetation
   - Effects
   - Ragdoll

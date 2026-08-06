@@ -13,8 +13,6 @@ public class AttackState : AsyncState
         await base.OnEnter(ct);
         StopInput();
         Debug.Log("Entering Attack State...");
-
-        StateMachine.Ctx.ForceEquipMeleeWeapon();
     }
 
     public override async UniTask OnUpdate(CancellationToken ct)

@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using Game.Message;
 using Unity.Cinemachine;
@@ -48,6 +49,8 @@ namespace Game
         public bool IsRangedWeaponEquipped => _isRangeWeaponEquipped;
         public bool IsShootPressed => _shootPressed;
         public Stamina Stamina { get; private set; }
+
+        private bool IsDead => _damageable.currentHitPoints < 1;
 
         #endregion
 
@@ -168,10 +171,16 @@ namespace Game
 
         private void FixedUpdate()
         {
-            if(!Settings) return;
-            
+            if (!Settings) return;
+
             _animCache.OnUpdate();
             _animCache.SetStateTime();
+
+            if (IsDead)
+            {
+                _previouslyGrounded = _isGrounded;
+                return;
+            }
 
             _blockTriggeredThisFixedUpdate = false;
             _damageTriggeredThisFixedUpdate = false;
@@ -195,6 +204,8 @@ namespace Game
 
         private void LateUpdate()
         {
+            if (IsDead) return;
+
             CalcOrientation();
             ApplyOrientation();
             PlayAudio();
@@ -365,40 +376,6 @@ namespace Game
             if(value) _isMeleeWeaponEquipped = false;
         }
 
-        /// <summary>
-        /// Переключает параметры аниматора (WeaponEquipped, WeaponIndex) на melee-оружие.
-        /// НЕ трогает _isMeleeWeaponEquipped/_isRangeWeaponEquipped — эти флаги ставит
-        /// SMB WeaponEqupped при фактическом входе в melee-состояние аниматора, и именно
-        /// они служат индикатором завершённого перехода. Вызывается AI при входе
-        /// в AttackState, чтобы аниматор начал переход в melee-ветку.
-        /// </summary>
-        public void ForceEquipMeleeWeapon()
-        {
-            var index = _primaryWeaponData ? _primaryWeaponData.AnimationSetIndex : 0;
-            _animCache.SetWeaponEquipped(true, index);
-
-            // Если триггер Shoot залип от предыдущего ranged-цикла — сбрасываем,
-            // чтобы он не выстрелил в момент переключения на melee.
-            _animCache.ResetTrigger(_animCache.Shoot);
-        }
-
-        /// <summary>
-        /// Переключает параметры аниматора (WeaponEquipped, WeaponIndex) на ranged-оружие.
-        /// НЕ трогает _isRangeWeaponEquipped/_isMeleeWeaponEquipped — эти флаги ставит
-        /// SMB WeaponEqupped при фактическом входе в ranged-состояние аниматора.
-        /// Вызывается AI при входе в ShootState.
-        /// </summary>
-        public void ForceEquipRangedWeapon()
-        {
-            var index = _rangedWeaponData ? _rangedWeaponData.AnimationSetIndex : 0;
-            _animCache.SetWeaponEquipped(true, index);
-
-            // Сбрасываем триггеры melee-атак, чтобы они не запустились
-            // в ranged-контексте.
-            _animCache.ResetTrigger(_animCache.HashAttack1);
-            _animCache.ResetTrigger(_animCache.HashAttack2);
-        }
-
         private void ConnectWeaponToHands(bool equip, WeaponData data, WeaponInstance weaponInstanceInstance, int trigger)
         {
             if (!data) return;
@@ -425,10 +402,6 @@ namespace Game
 
         private void ProcessAttack()
         {
-            if (_damageable.currentHitPoints < 1)
-            {
-                return;
-            }
             _animCache.SetHasAdditionalWeapon(_additionalWeaponData);
             _animCache.ResetAttack1();
             _animCache.ResetAttack2();
@@ -451,7 +424,7 @@ namespace Game
 
         private void ProcessBlocking()
         {
-            if (_damageable.currentHitPoints < 1 || !_primaryWeaponInstance && !_additionalWeaponInstance)
+            if (!_primaryWeaponInstance && !_additionalWeaponInstance)
             {
                 IsBlocking = false;
                 _animCache.SetBlock(false);
@@ -481,7 +454,7 @@ namespace Game
 
         private void ProcessShoot()
         {
-            var canShoot = _damageable.currentHitPoints > 0 && _rangedWeaponInstance && _ammunitionWeaponInstance;
+            var canShoot = _rangedWeaponInstance && _ammunitionWeaponInstance;
 
             if (!canShoot || !Stamina.HasEnoughStamina(Settings.CharacterParams.ShootStaminaCost))
             {
@@ -564,11 +537,7 @@ namespace Game
 
         private void CalcVerticalMovement()
         {
-            if (_damageable.currentHitPoints < 1)
-            {
-                _readyToJump = false;
-            }
-            else if (!_input.JumpInput && _isGrounded)
+            if (!_input.JumpInput && _isGrounded)
             {
                 _readyToJump = true;
             }
@@ -661,8 +630,7 @@ namespace Game
 
         private void ApplyOrientation()
         {
-            if (_damageable.currentHitPoints < 1 || !IsOrientationUpdated()
-                && !(IsMoveInput || IsBlocking || _shootPressed || _inAttack)) return;
+            if (!IsOrientationUpdated() && !(IsMoveInput || IsBlocking || _shootPressed || _inAttack)) return;
 
             _animCache.SetAngleDeltaRad(_angleDiff * Mathf.Deg2Rad);
 
@@ -716,11 +684,6 @@ namespace Game
 
         private void PlayAudio()
         {
-            if (_damageable.currentHitPoints < 1)
-            {
-                return;
-            }
-
             var footfall = _animCache.FootFall;
 
             if (footfall > 0.01f && !FootstepPlayer.playing)
@@ -955,7 +918,9 @@ namespace Game
             _animCache.SetHurtDirection(localHurt.x, localHurt.z);
 
             if (HurtAudioPlayer)
+            {
                 HurtAudioPlayer.PlayRandomClipOneShot();
+            }
 
             if (IsPlayer)
             {
@@ -980,11 +945,23 @@ namespace Game
 
         public void Die(Damageable.DamageMessage damageMessage)
         {
-            _animCache.TriggerDeath();
+            _animCache.TriggerDeath(true);
             _forwardSpeed              = 0f;
             _verticalSpeed             = 0f;
             _knockbackVelocity         = Vector3.zero;
             _damageable.isInvulnerable = true;
+
+            _inAttack       = false;
+            IsBlocking      = false;
+            _shootPressed   = false;
+            _isShoot        = false;
+            _readyToJump    = false;
+            _isJumping      = false;
+            _bowCameraOn    = false;
+            _idleTimer      = 0f;
+
+            _animCache.SetBlock(false);
+            _animCache.SetShoot(false);
         }
 
         private void ApplyKnockback(Vector3 knockbackVelocity)

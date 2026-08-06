@@ -19,8 +19,6 @@ public class ShootState : AsyncState
         await base.OnEnter(ct);
         Debug.Log("Entering Shoot State...");
 
-        StateMachine.Ctx.ForceEquipRangedWeapon();
-
         StateMachine.Ctx.UpdateRangedTargetPosition();
 
         StateMachine.Ctx.Input.Shoot = true;
