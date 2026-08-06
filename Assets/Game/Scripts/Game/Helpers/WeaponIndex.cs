@@ -31,9 +31,9 @@ public class WeaponIndex : StateMachineBehaviour
 
     private void SetValue(Animator animator)
     {
-        if(_humanoid == null) _humanoid = animator.gameObject.GetComponent<HumanoidController>();
+        if(!_humanoid) _humanoid = animator.gameObject.GetComponent<HumanoidController>();
         
-        if(_humanoid == null) return;
+        if(!_humanoid) return;
         
         if (setMode == Mode.Zero)
         {

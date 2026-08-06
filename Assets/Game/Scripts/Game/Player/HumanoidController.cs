@@ -40,6 +40,7 @@ namespace Game
         public bool HasRangeWeapon => _rangedWeaponInstance;
         public bool HasAdditionalWeapon => _additionalWeaponInstance;
         public bool IsBlocking { get; private set; }
+        public bool IsInteracting { get; private set; }
         public int PrimaryWeaponIndex => _primaryWeaponData ? _primaryWeaponData.AnimationSetIndex : 0;
         public int RangeWeaponIndex => _rangedWeaponData ? _rangedWeaponData.AnimationSetIndex : 0;
         public float PrimaryWeaponPreferredAttackDistance => _primaryWeaponData.preferredDistance;
@@ -175,6 +176,7 @@ namespace Game
 
             _animCache.OnUpdate();
             _animCache.SetStateTime();
+            _animCache.SetInteract(IsInteracting);
 
             if (IsDead)
             {
@@ -184,13 +186,17 @@ namespace Game
 
             _blockTriggeredThisFixedUpdate = false;
             _damageTriggeredThisFixedUpdate = false;
-
-            UpdateInputBlocking();
-
+            
             ConnectWeaponToHands(_isMeleeWeaponEquipped, _primaryWeaponData,    _primaryWeaponInstance,    _animCache.HashAttack1);
             ConnectWeaponToHands(_isMeleeWeaponEquipped, _additionalWeaponData, _additionalWeaponInstance, _animCache.HashAttack2);
             ConnectWeaponToHands(_isRangeWeaponEquipped, _rangedWeaponData, _rangedWeaponInstance, _animCache.Shoot);
 
+            if (IsInteracting)
+            {
+                return;
+            }
+
+            UpdateInputBlocking();
             ProcessAttack();
             ProcessBlocking();
             ProcessShoot();
@@ -204,7 +210,7 @@ namespace Game
 
         private void LateUpdate()
         {
-            if (IsDead) return;
+            if (IsDead || IsInteracting) return;
 
             CalcOrientation();
             ApplyOrientation();
@@ -374,6 +380,11 @@ namespace Game
             _animCache.SetWeaponEquipped(value, index);
 
             if(value) _isMeleeWeaponEquipped = false;
+        }
+
+        public void SetInteracting(bool value)
+        {
+            IsInteracting = value;
         }
 
         private void ConnectWeaponToHands(bool equip, WeaponData data, WeaponInstance weaponInstanceInstance, int trigger)

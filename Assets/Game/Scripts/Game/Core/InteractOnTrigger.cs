@@ -6,7 +6,7 @@ namespace Game
     [RequireComponent(typeof(Collider))]
     public class InteractOnTrigger : MonoBehaviour
     {
-        public UnityEvent OnEnter, OnExit;
+        public UnityEvent<Collider> OnEnter, OnExit;
 
         private void OnTriggerEnter(Collider other)
         {
@@ -20,17 +20,17 @@ namespace Game
 
         protected virtual void ExecuteOnEnter(Collider other)
         {
-            OnEnter.Invoke();
+            OnEnter.Invoke(other);
         }
 
         protected virtual void ExecuteOnExit(Collider other)
         {
-            OnExit.Invoke();
+            OnExit.Invoke(other);
         }
-
+        
         protected virtual void OnDestroy()
         {
-            OnExit?.Invoke();
+            OnExit?.Invoke(null);
         }
     } 
 }

@@ -18,12 +18,6 @@ public class SceneInstaller : MonoInstaller
             .AsSingle()
             .NonLazy();
         
-        // Container
-        //     .Bind<HealthUI>()
-        //     .FromComponentInNewPrefabResource("UI/HealthCanvas")
-        //     .AsSingle()
-        //     .NonLazy();
-        
         Container
             .Bind<DialogueCanvasController>()
             .FromComponentInNewPrefabResource("UI/DialogueCanvas")

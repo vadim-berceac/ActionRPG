@@ -6,23 +6,23 @@ public class PickupItem : MonoBehaviour
 {
     [SerializeField] private GameObject root;
     [SerializeField] private InteractOnTrigger trigger;
+    [SerializeField] private InteractAnimation interactAnimation;
     [SerializeField] private WeaponData data;
+    [SerializeField] private DialogueAdapter dialogueAdapter;
+    [SerializeField] private string phraseKey;
+    [SerializeField] private float hideDelay = 0.1f;
 
-    private PlayerNewInput _playerInput;
-    private Inventory _inventory;
-    
     private PickupSelectionService _selectionService;
+    private bool _isBeingPicked;
 
     [Inject]
-    private void Construct(PlayerNewInput playerInput, PlayerTag player, PickupSelectionService selectionService)
+    private void Construct(PickupSelectionService selectionService)
     {
-        _playerInput = playerInput;
-        _inventory = player.PlayerInventory;
         _selectionService = selectionService;
 
         trigger.OnEnter.AddListener(OnEnter);
         trigger.OnExit.AddListener(OnExit);
-        _playerInput.Interact += OnInteract;
+        interactAnimation.onInteractEnter.AddListener(OnInteract);
     }
 
     private void OnDestroy()
@@ -33,42 +33,41 @@ public class PickupItem : MonoBehaviour
             trigger.OnExit.RemoveListener(OnExit);
         }
 
-        if (_playerInput != null)
-            _playerInput.Interact -= OnInteract;
+        interactAnimation.onInteractEnter.RemoveListener(OnInteract);
 
-        _selectionService?.Deselect(this);
+        _selectionService?.Exit(this);
+        _selectionService?.Release(this);
     }
 
-    private void OnEnter() => _selectionService.Select(this);
-    private void OnExit()  => _selectionService.Deselect(this);
+    private void OnEnter(Collider other) => _selectionService.Enter(this);
+    private void OnExit(Collider other) => _selectionService.Exit(this);
 
-    private void OnInteract()
+    public void ShowTooltip()
     {
-        if (!_selectionService.IsSelected(this)) return;
+        if (dialogueAdapter == null) return;
+        dialogueAdapter.ActivateCanvasWithTranslatedText(phraseKey);
+    }
 
-        // if (data.Wear == WeaponData.WearType.Additional)
-        // {
-        //     if (_humanoidController.primaryWeaponData == null ||
-        //         _humanoidController.primaryWeaponData.Wear == WeaponData.WearType.OneHanded)
-        //     {
-        //         _humanoidController.CreateAdditionalWeapon(data, true);
-        //         Destroy(root);
-        //     }
-        // }
-        // else
-        // {
-        //     if (data.Wear == WeaponData.WearType.OneHanded || _humanoidController.additionalWeaponData == null)
-        //     {
-        //         _humanoidController.CreatePrimaryWeapon(data, true);
-        //     }
-        //     else
-        //     {
-        //         _humanoidController.CreatePrimaryWeapon(data, true, true);
-        //     }
-        //     Destroy(root);
-        // }
-        
-        _inventory.Add(data);
+    public void HideTooltip()
+    {
+        if (dialogueAdapter == null) return;
+        dialogueAdapter.DeactivateCanvasWithDelay(hideDelay);
+    }
+
+    private void OnInteract(HumanoidController humanoidController)
+    {
+        if (_isBeingPicked) return;
+
+        var closest = _selectionService.GetClosest(humanoidController.transform.position);
+        if (closest != this) return;
+
+        if (!_selectionService.TryClaim(this)) return;
+
+        _isBeingPicked = true;
+
+        HideTooltip();
+        humanoidController.TryGetComponent<Inventory>(out var inventory);
+        inventory?.Add(data);
         Destroy(root);
     }
 }

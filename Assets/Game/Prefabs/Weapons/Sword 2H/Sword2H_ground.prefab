@@ -94,6 +94,7 @@ GameObject:
   - component: {fileID: 6357190924618518101}
   - component: {fileID: 1695524169328287833}
   - component: {fileID: 5215252936298855246}
+  - component: {fileID: 8773771519921703883}
   - component: {fileID: 781191016317657950}
   - component: {fileID: 363506956095827182}
   m_Layer: 16
@@ -181,6 +182,26 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &8773771519921703883
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8677333174409058571}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f303771768171c14697d6f3a1013be13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractAnimation
+  trigger: {fileID: 5215252936298855246}
+  time: 3
+  onInteractEnter:
+    m_PersistentCalls:
+      m_Calls: []
+  onInteractExit:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &781191016317657950
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -195,7 +216,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PickupItem
   root: {fileID: 8401756962499706326}
   trigger: {fileID: 5215252936298855246}
+  interactAnimation: {fileID: 8773771519921703883}
   data: {fileID: 11400000, guid: e578f9263cc7bd945904c890a7ad513a, type: 2}
+  dialogueAdapter: {fileID: 363506956095827182}
+  phraseKey: 2HSWORD
+  hideDelay: 0.3
 --- !u!114 &363506956095827182
 MonoBehaviour:
   m_ObjectHideFlags: 0

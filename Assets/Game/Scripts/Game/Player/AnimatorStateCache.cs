@@ -40,6 +40,7 @@ namespace Game
         private readonly int _hashRespawn               = Animator.StringToHash("Respawn");
         private readonly int _blockHitTrigger          = Animator.StringToHash("BlockHitTrigger");
         private readonly int _hashVerticalAimAngle     = Animator.StringToHash("VerticalAimAngle");
+        private readonly int _hashInteract             = Animator.StringToHash("Interact");
         
         private const string BlockInput = "BlockInput";
 
@@ -145,6 +146,7 @@ namespace Game
                 _animator.SetTrigger(HashAttack2);
             }
         }
+        public void SetInteract(bool value)   => _animator.SetBool(_hashInteract, value);
         public void ResetAttack1()     => _animator.ResetTrigger(HashAttack1);
         public void ResetAttack2()     => _animator.ResetTrigger(HashAttack2);
         public void ResetTrigger(int hash) => _animator.ResetTrigger(hash);
