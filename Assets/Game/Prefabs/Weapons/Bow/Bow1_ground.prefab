@@ -171,7 +171,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractAnimation
   trigger: {fileID: 5215252936298855246}
-  time: 3
+  test: {fileID: 3094330708855449807, guid: 3c6534270bd67874581576c3fd118251, type: 3}
   onInteractEnter:
     m_PersistentCalls:
       m_Calls: []

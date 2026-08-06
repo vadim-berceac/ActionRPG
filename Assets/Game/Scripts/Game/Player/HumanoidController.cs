@@ -50,6 +50,7 @@ namespace Game
         public bool IsRangedWeaponEquipped => _isRangeWeaponEquipped;
         public bool IsShootPressed => _shootPressed;
         public Stamina Stamina { get; private set; }
+        public PlayableGraphHandle Graph { get; private set; }
 
         private bool IsDead => _damageable.currentHitPoints < 1;
 
@@ -63,6 +64,7 @@ namespace Game
         private bool _isRangeWeaponEquipped;
 
         private AnimatorStateCache _animCache;
+        private Animator _animator;
 
         private WeaponData _primaryWeaponData;
         private WeaponData _additionalWeaponData;
@@ -135,7 +137,8 @@ namespace Game
         private void Awake()
         {
             _charCtrl = GetComponent<CharacterController>();
-            _animCache = new AnimatorStateCache(GetComponent<Animator>(), RangeWeaponRoot);
+            _animator = GetComponent<Animator>();
+            _animCache = new AnimatorStateCache(_animator, RangeWeaponRoot);
             _transform = transform;
             _coyoteTimer = Settings.CharacterParams.CoyoteTime;
 
@@ -160,6 +163,8 @@ namespace Game
             {
                 _rangedAttackHandler = new RangedAttackHandler(RangeWeaponRoot, _damageable, TargetLayer);
             }
+
+            Graph = PlayableGraphHandle.Create(_animator);
         }
 
         private void OnDisable()
@@ -168,6 +173,16 @@ namespace Game
             _damageable.onDamageBlocked = null;
 
             Stamina.Dispose();
+            Graph.Destroy();
+            Graph = null;
+        }
+
+        private void Update()
+        {
+            if (IsInteracting && Graph != null && Graph.IsValid)
+            {
+                Graph.Evaluate(Time.deltaTime);
+            }
         }
 
         private void FixedUpdate()
@@ -385,6 +400,20 @@ namespace Game
         public void SetInteracting(bool value)
         {
             IsInteracting = value;
+        }
+
+        public void PlayInteractClip(AnimationClip clip)
+        {
+            if (Graph == null || !Graph.IsValid || clip == null) return;
+
+            Graph.PlayClip(_animator, clip);
+        }
+
+        public void StopInteractClip()
+        {
+            if (Graph == null || !Graph.IsValid) return;
+
+            Graph.Stop();
         }
 
         private void ConnectWeaponToHands(bool equip, WeaponData data, WeaponInstance weaponInstanceInstance, int trigger)

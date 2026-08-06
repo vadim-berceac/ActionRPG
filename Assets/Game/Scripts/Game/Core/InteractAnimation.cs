@@ -7,7 +7,7 @@ using Zenject;
 public class InteractAnimation : MonoBehaviour
 {
    [SerializeField] private InteractOnTrigger  trigger;
-   [SerializeField] private float time = 3;
+   [SerializeField] private AnimationClip test;
    public UnityEvent<HumanoidController> onInteractEnter, onInteractExit;
    
    private ICharacterInput _input;
@@ -45,7 +45,10 @@ public class InteractAnimation : MonoBehaviour
 
    private void OnExit(Collider other)
    {
-      _currentCollider = null;
+      if (_currentCollider == other)
+      {
+         _currentCollider = null;
+      }
    }
    
    private void OnInteractEnter()
@@ -64,14 +67,27 @@ public class InteractAnimation : MonoBehaviour
       
       Debug.Log($"Interacting with {_currentController.name}");
       onInteractEnter?.Invoke(_currentController);
+
+      if (!test)
+      {
+         return;
+      }
+      
       _currentController.SetInteracting(true);
-      Timer(time).Forget();
+      _currentController.PlayInteractClip(test);
+      Timer(test.length).Forget();
    }
 
    private void OnInteractExit()
    {
+      if (!_currentController)
+      {
+         return;
+      }
+      
       Debug.Log($"Interacting with {_currentController.name} end!");
       onInteractExit?.Invoke(_currentController);
+      _currentController.StopInteractClip();
       _currentController.SetInteracting(false);
       _currentController = null;
    }

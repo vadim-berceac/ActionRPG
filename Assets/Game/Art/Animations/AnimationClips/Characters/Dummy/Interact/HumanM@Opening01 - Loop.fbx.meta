@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: c2487c70976ce4f4fb43e73efb5cc771
+guid: 3c6534270bd67874581576c3fd118251
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -32,10 +32,10 @@ ModelImporter:
     clipAnimations:
     - serializedVersion: 16
       name: Interact_default
-      takeName: HumanM@Dance01 - Loop
-      internalID: -8694131350697414543
+      takeName: Untitled
+      internalID: 3094330708855449807
       firstFrame: 0
-      lastFrame: 60
+      lastFrame: 43
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
