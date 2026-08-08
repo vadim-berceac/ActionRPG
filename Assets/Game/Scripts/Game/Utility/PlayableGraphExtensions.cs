@@ -15,6 +15,8 @@ namespace Game
         private AnimationPlayableOutput _output;
         private bool _isOutputActive;
         private bool _isPlaying;
+        private bool _isLoopingClip;
+        private double _clipLength;
 
         private PlayableGraphHandle()
         {
@@ -54,6 +56,8 @@ namespace Game
             _mixer.SetInputWeight(0, 0f);
             _mixer.SetInputWeight(1, 1f);
 
+            _isLoopingClip = clip.isLooping;
+            _clipLength = clip.length;
             _isPlaying = true;
         }
 
@@ -78,11 +82,22 @@ namespace Game
             }
 
             _isPlaying = false;
+            _isLoopingClip = false;
         }
 
         public void Evaluate(float deltaTime)
         {
             Graph.Evaluate(deltaTime);
+
+            if (_isPlaying && _isLoopingClip && _clipPlayable.IsValid() && _clipLength > 0d)
+            {
+                var time = _clipPlayable.GetTime();
+
+                if (time >= _clipLength)
+                {
+                    _clipPlayable.SetTime(time % _clipLength);
+                }
+            }
         }
 
         public void Destroy()
