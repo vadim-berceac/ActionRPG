@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Game;
 using UnityEngine;
@@ -7,9 +8,9 @@ using Zenject;
 public class InteractAnimation : MonoBehaviour
 {
    [SerializeField] private InteractOnTrigger trigger;
-   [SerializeField] private AnimationClip enterClip;
-   [SerializeField] private AnimationClip[] clips;
-   [SerializeField] private AnimationClip exitClip;
+   [SerializeField] private AnimationClipSettings enterClip;
+   [SerializeField] private AnimationClipSettings[] clips;
+   [SerializeField] private AnimationClipSettings exitClip;
    [SerializeField] private bool canBeInterrupted;
    public UnityEvent<HumanoidController> onInteractEnter, onInteractExit;
 
@@ -78,7 +79,7 @@ public class InteractAnimation : MonoBehaviour
       Debug.Log($"Interacting with {_currentController.name}");
       onInteractEnter?.Invoke(_currentController);
 
-      if ((clips == null || clips.Length == 0) && !enterClip && !exitClip)
+      if ((clips == null || clips.Length == 0) && !enterClip.Clip && !exitClip.Clip)
       {
          return;
       }
@@ -126,39 +127,40 @@ public class InteractAnimation : MonoBehaviour
 
    private async UniTask PlaySequence()
    {
-      if (enterClip)
-      {
-         await PlayClip(enterClip);
-      }
+      var mainSequence = BuildMainSequence();
+      var hasExitClip = exitClip.Clip;
+      AnimationClipSettings? lastPlayed = null;
 
-      if (clips != null)
+      for (var i = 0; i < mainSequence.Count; i++)
       {
-         foreach (var clip in clips)
+         var current = mainSequence[i];
+
+         var next = (i + 1 < mainSequence.Count)
+            ? mainSequence[i + 1]
+            : (hasExitClip ? exitClip : (AnimationClipSettings?)null);
+
+         var exitOverlap = GetBlendOverlap(current, next);
+
+         if (current.Clip.isLooping)
          {
-            if (!clip)
-            {
-               continue;
-            }
+            await PlayLoopedClip(current, exitOverlap);
+         }
+         else
+         {
+            await PlayBlendedClip(current, exitOverlap);
+         }
 
-            if (clip.isLooping)
-            {
-               await PlayLoopedClip(clip);
-            }
-            else
-            {
-               await PlayClip(clip);
-            }
+         lastPlayed = current;
 
-            if (_interruptRequested)
-            {
-               break;
-            }
+         if (_interruptRequested)
+         {
+            break;
          }
       }
 
-      if (exitClip)
+      if (hasExitClip)
       {
-         await PlayClip(exitClip);
+         await PlayBlendedClip(exitClip, 0f);
       }
 
       _isPlaying = false;
@@ -166,25 +168,84 @@ public class InteractAnimation : MonoBehaviour
       OnInteractExit();
    }
 
-   private async UniTask PlayClip(AnimationClip clip)
+   private List<AnimationClipSettings> BuildMainSequence()
    {
-      if (!clip)
+      var sequence = new List<AnimationClipSettings>();
+
+      if (enterClip.Clip)
       {
-         return;
+         sequence.Add(enterClip);
       }
 
-      _currentController.PlayInteractClip(clip);
-      await UniTask.WaitForSeconds(clip.length);
+      if (clips != null)
+      {
+         foreach (var clip in clips)
+         {
+            if (clip.Clip)
+            {
+               sequence.Add(clip);
+            }
+         }
+      }
+
+      return sequence;
    }
 
-   private async UniTask PlayLoopedClip(AnimationClip clip)
+   private static float GetBlendOverlap(AnimationClipSettings current, AnimationClipSettings? next)
    {
-      _currentController.PlayInteractClip(clip);
+      if (!next.HasValue)
+      {
+         return 0f;
+      }
+
+      var overlap = Mathf.Min(current.ExitBlendLength, next.Value.EnterBlendLength);
+
+      return Mathf.Clamp(overlap, 0f, current.Clip.length);
+   }
+
+   private async UniTask PlayBlendedClip(AnimationClipSettings settings, float exitOverlap)
+   {
+      _currentController.PlayInteractClip(settings.Clip, settings.EnterBlendLength);
+
+      var waitTime = settings.Clip.length - exitOverlap;
+
+      if (waitTime > 0f)
+      {
+         await UniTask.WaitForSeconds(waitTime);
+      }
+   }
+
+   private async UniTask PlayLoopedClip(AnimationClipSettings settings, float exitOverlap)
+   {
+      _currentController.PlayInteractClip(settings.Clip, settings.EnterBlendLength);
+
+      var mainWait = Mathf.Max(settings.Clip.length - exitOverlap, 0f);
 
       do
       {
-         await UniTask.WaitForSeconds(clip.length);
+         if (mainWait > 0f)
+         {
+            await UniTask.WaitForSeconds(mainWait);
+         }
+
+         if (_interruptRequested)
+         {
+            break;
+         }
+
+         if (exitOverlap > 0f)
+         {
+            await UniTask.WaitForSeconds(exitOverlap);
+         }
       }
       while (!_interruptRequested);
    }
+}
+
+[System.Serializable]
+public struct AnimationClipSettings
+{
+   [field: SerializeField] public AnimationClip Clip { get; private set; }
+   [field: SerializeField, Range(0, 1)] public float EnterBlendLength { get; private set; }
+   [field: SerializeField, Range(0, 1)] public float ExitBlendLength { get; private set; }
 }

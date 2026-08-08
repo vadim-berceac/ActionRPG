@@ -19,6 +19,7 @@ MonoBehaviour:
     type: 3}
   <Description>k__BackingField: '  Simple shield.'
   <CanBeEquipped>k__BackingField: 1
+  <Damage>k__BackingField: 0
   <ViewPrefab>k__BackingField: {fileID: 1205787345809761593, guid: e0a1b23e5a6e6624691c8ad1c3850eb9,
     type: 3}
   <ActiveProp>k__BackingField:
@@ -28,7 +29,7 @@ MonoBehaviour:
     <Scale>k__BackingField: 1
   <UnActiveProp>k__BackingField:
     <PropType>k__BackingField: 4
-    <Position>k__BackingField: {x: 0, y: 0.044, z: -0.096}
+    <Position>k__BackingField: {x: 0, y: 0.044, z: -0.156}
     <Rotation>k__BackingField: {x: 270, y: 0, z: 0}
     <Scale>k__BackingField: 1
   <ComboNames>k__BackingField:

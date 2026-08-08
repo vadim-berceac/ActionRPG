@@ -583,10 +583,10 @@ MonoBehaviour:
     MinimumOcclusionTime: 0
     CameraRadius: 0.4
     UseFollowTarget:
-      Enabled: 0
-      YOffset: 0
+      Enabled: 1
+      YOffset: 2
     Strategy: 0
-    MaximumEffort: 4
+    MaximumEffort: 10
     SmoothingTime: 0
     Damping: 0.4
     DampingWhenOccluded: 0.2
@@ -835,10 +835,10 @@ MonoBehaviour:
     MinimumOcclusionTime: 0
     CameraRadius: 0.4
     UseFollowTarget:
-      Enabled: 0
-      YOffset: 0
+      Enabled: 1
+      YOffset: 2
     Strategy: 0
-    MaximumEffort: 4
+    MaximumEffort: 10
     SmoothingTime: 0
     Damping: 0.4
     DampingWhenOccluded: 0.2

@@ -402,13 +402,13 @@ namespace Game
             IsInteracting = value;
         }
 
-        public void PlayInteractClip(AnimationClip clip)
+        public void PlayInteractClip(AnimationClip clip, float blendLength)
         {
             if (Graph == null || !Graph.IsValid || clip == null) return;
 
-            Graph.PlayClip(_animator, clip);
+            Graph.PlayClip(_animator, clip, blendLength);
         }
-
+        
         public void StopInteractClip()
         {
             if (Graph == null || !Graph.IsValid) return;
