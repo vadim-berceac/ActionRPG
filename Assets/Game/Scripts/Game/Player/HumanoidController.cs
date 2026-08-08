@@ -164,7 +164,7 @@ namespace Game
                 _rangedAttackHandler = new RangedAttackHandler(RangeWeaponRoot, _damageable, TargetLayer);
             }
 
-            Graph = PlayableGraphHandle.Create(_animator);
+            Graph = new PlayableGraphHandle(_animator);
         }
 
         private void OnDisable()
@@ -409,11 +409,11 @@ namespace Game
             Graph.PlayClip(_animator, clip, blendLength);
         }
         
-        public void StopInteractClip()
+        public void StopInteractClip(float blendLength = 0f)
         {
             if (Graph == null || !Graph.IsValid) return;
 
-            Graph.Stop();
+            Graph.Stop(blendLength);
         }
 
         private void ConnectWeaponToHands(bool equip, WeaponData data, WeaponInstance weaponInstanceInstance, int trigger)

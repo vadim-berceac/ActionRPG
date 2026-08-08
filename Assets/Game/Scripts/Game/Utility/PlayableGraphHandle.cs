@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -6,122 +7,100 @@ namespace Game
 {
     public class PlayableGraphHandle
     {
+        private class ClipLayer
+        {
+            public AnimationClipPlayable Playable;
+            public bool Connected;
+            public float Weight;
+            public bool IsLooping;
+            public double ClipLength;
+        }
+        
         private const int ControllerSlot = 0;
-        private const int ClipSlotA = 1;
-        private const int ClipSlotB = 2;
+        private const int ClipSlotCount = 4; 
+        private const float FullyFadedThreshold = 0.0001f;
+        
+        public bool IsValid => _graph.IsValid();
 
-        public PlayableGraph Graph { get; private set; }
-        public bool IsValid => Graph.IsValid();
-
-        private AnimationLayerMixerPlayable _mixer;
-        private AnimatorControllerPlayable _controllerPlayable;
+        private readonly AnimationLayerMixerPlayable _mixer;
+        private readonly PlayableGraph _graph;
         private AnimationPlayableOutput _output;
         private bool _isOutputActive;
 
-        private AnimationClipPlayable _clipPlayableA;
-        private AnimationClipPlayable _clipPlayableB;
-        private bool _clipAValid;
-        private bool _clipBValid;
+        private readonly ClipLayer[] _clipSlots = new ClipLayer[ClipSlotCount];
+        private float _controllerWeight = 1f;
 
-        private int _activeSlot; 
+        private ClipLayer _activeLayer;
         private bool _isPlaying;
-        private bool _isLoopingClip;
-        private double _clipLength;
 
         private bool _isBlending;
         private float _blendDuration;
         private float _blendElapsed;
-        private int _blendFromSlot;
-        private int _blendToSlot;
+        private readonly Dictionary<int, float> _fadeStartWeights = new(); 
+        private int _fadingInSlot;
 
-        private PlayableGraphHandle()
+        public PlayableGraphHandle(Animator animator)
         {
-        }
+            _graph = PlayableGraph.Create("AnimationGraph");
+            _graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
 
-        public static PlayableGraphHandle Create(Animator animator)
-        {
-            var handle = new PlayableGraphHandle();
+            _mixer = AnimationLayerMixerPlayable.Create(_graph, 1 + ClipSlotCount);
 
-            handle.Graph = PlayableGraph.Create("AnimationGraph");
-            handle.Graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
+            var controllerPlayable = AnimatorControllerPlayable.Create(_graph, animator.runtimeAnimatorController);
+            _mixer.ConnectInput(ControllerSlot, controllerPlayable, 0, 1f);
+            _controllerWeight = 1f;
 
-            handle._mixer = AnimationLayerMixerPlayable.Create(handle.Graph, 3);
-
-            handle._controllerPlayable = AnimatorControllerPlayable.Create(handle.Graph, animator.runtimeAnimatorController);
-            handle._mixer.ConnectInput(ControllerSlot, handle._controllerPlayable, 0, 1f);
-
-            handle.Graph.Play();
-
-            return handle;
+            _graph.Play();
         }
 
         public void PlayClip(Animator animator, AnimationClip clip, float blendLength)
         {
-            if (!Graph.IsValid() || clip == null)
+            if (!_graph.IsValid() || clip == null)
             {
                 return;
             }
 
             EnsureOutput(animator);
 
-            var targetSlot = _activeSlot == ClipSlotA ? ClipSlotB : ClipSlotA;
-            var fromSlot = _isPlaying ? _activeSlot : ControllerSlot;
+            var slot = AcquireFreeSlot();
+            var layer = ConnectClip(slot, clip);
 
-            ConnectClip(targetSlot, clip);
-
-            _activeSlot = targetSlot;
+            _activeLayer = layer;
             _isPlaying = true;
-            _isLoopingClip = clip.isLooping;
-            _clipLength = clip.length;
 
-            StartBlend(fromSlot, targetSlot, Mathf.Max(blendLength, 0f));
+            StartBlend(slot, Mathf.Max(blendLength, 0f));
         }
 
-        public void Stop()
+        public void Stop(float blendLength = 0f)
         {
             if (!_isPlaying)
             {
                 return;
             }
 
-            _isBlending = false;
-
-            _mixer.SetInputWeight(ControllerSlot, 1f);
-            _mixer.SetInputWeight(ClipSlotA, 0f);
-            _mixer.SetInputWeight(ClipSlotB, 0f);
-
-            DisconnectSlot(ClipSlotA);
-            DisconnectSlot(ClipSlotB);
-
-            if (_isOutputActive)
-            {
-                _output.SetSourcePlayable(Playable.Null);
-                Graph.DestroyOutput(_output);
-                _isOutputActive = false;
-            }
+            StartBlend(-1, Mathf.Max(blendLength, 0f)); 
 
             _isPlaying = false;
-            _isLoopingClip = false;
-            _activeSlot = 0;
+            _activeLayer = null;
         }
 
         public void Evaluate(float deltaTime)
         {
             UpdateBlend(deltaTime);
 
-            Graph.Evaluate(deltaTime);
+            _graph.Evaluate(deltaTime);
 
-            if (_isPlaying && _isLoopingClip && _clipLength > 0d)
+            if (_isPlaying && _activeLayer != null && _activeLayer.IsLooping && _activeLayer.ClipLength > 0d)
             {
-                var activeClip = GetActiveClipPlayable();
+                var clipPlayable = _activeLayer.Playable;
 
-                if (activeClip.IsValid())
+                if (clipPlayable.IsValid())
                 {
-                    var time = activeClip.GetTime();
+                    var time = clipPlayable.GetTime();
 
-                    if (time >= _clipLength)
+                    if (time >= _activeLayer.ClipLength)
                     {
-                        activeClip.SetTime(time % _clipLength);
+                        clipPlayable.SetTime(time % _activeLayer.ClipLength);
                     }
                 }
             }
@@ -129,11 +108,20 @@ namespace Game
 
         public void Destroy()
         {
-            Stop();
-
-            if (Graph.IsValid())
+            if (_graph.IsValid())
             {
-                Graph.Destroy();
+                for (var i = 0; i < ClipSlotCount; i++)
+                {
+                    DisconnectSlot(i);
+                }
+
+                if (_isOutputActive)
+                {
+                    _graph.DestroyOutput(_output);
+                    _isOutputActive = false;
+                }
+
+                _graph.Destroy();
             }
         }
 
@@ -144,88 +132,114 @@ namespace Game
                 return;
             }
 
-            _output = AnimationPlayableOutput.Create(Graph, "Animation", animator);
+            _output = AnimationPlayableOutput.Create(_graph, "Animation", animator);
             _output.SetSourcePlayable(_mixer);
             _isOutputActive = true;
         }
 
-        private void ConnectClip(int slot, AnimationClip clip)
+        private int AcquireFreeSlot()
+        {
+            var bestSlot = 0;
+            var bestWeight = float.MaxValue;
+
+            for (var i = 0; i < ClipSlotCount; i++)
+            {
+                var layer = _clipSlots[i];
+                var weight = layer?.Weight ?? 0f;
+
+                if (weight <= FullyFadedThreshold)
+                {
+                    return i;
+                }
+
+                if (weight < bestWeight)
+                {
+                    bestWeight = weight;
+                    bestSlot = i;
+                }
+            }
+
+            return bestSlot;
+        }
+
+        private ClipLayer ConnectClip(int slot, AnimationClip clip)
         {
             DisconnectSlot(slot);
 
-            var clipPlayable = AnimationClipPlayable.Create(Graph, clip);
+            var clipPlayable = AnimationClipPlayable.Create(_graph, clip);
             clipPlayable.SetDuration(clip.length);
             clipPlayable.SetTime(0);
             clipPlayable.Play();
 
-            _mixer.ConnectInput(slot, clipPlayable, 0, 0f);
+            var mixerSlot = 1 + slot; 
+            _mixer.ConnectInput(mixerSlot, clipPlayable, 0, 0f);
 
-            if (slot == ClipSlotA)
+            var layer = new ClipLayer
             {
-                _clipPlayableA = clipPlayable;
-                _clipAValid = true;
-            }
-            else
-            {
-                _clipPlayableB = clipPlayable;
-                _clipBValid = true;
-            }
+                Playable = clipPlayable,
+                Connected = true,
+                Weight = 0f,
+                IsLooping = clip.isLooping,
+                ClipLength = clip.length
+            };
+
+            _clipSlots[slot] = layer;
+
+            return layer;
         }
 
         private void DisconnectSlot(int slot)
         {
-            if (slot == ClipSlotA && _clipAValid)
+            var layer = _clipSlots[slot];
+
+            if (layer is not { Connected: true })
             {
-                _mixer.DisconnectInput(ClipSlotA);
-                _clipPlayableA.Destroy();
-                _clipAValid = false;
+                return;
             }
-            else if (slot == ClipSlotB && _clipBValid)
-            {
-                _mixer.DisconnectInput(ClipSlotB);
-                _clipPlayableB.Destroy();
-                _clipBValid = false;
-            }
+
+            var mixerSlot = 1 + slot;
+            _mixer.DisconnectInput(mixerSlot);
+            layer.Playable.Destroy();
+            layer.Connected = false;
+            _clipSlots[slot] = null;
         }
 
-        private AnimationClipPlayable GetActiveClipPlayable()
+        private void StartBlend(int fadingInSlot, float duration)
         {
-            if (_activeSlot == ClipSlotA)
+            _fadeStartWeights.Clear();
+
+            if (_controllerWeight > FullyFadedThreshold)
             {
-                return _clipPlayableA;
+                _fadeStartWeights[ControllerSlot] = _controllerWeight;
             }
 
-            if (_activeSlot == ClipSlotB)
+            for (var i = 0; i < ClipSlotCount; i++)
             {
-                return _clipPlayableB;
+                var layer = _clipSlots[i];
+
+                if (layer is { Connected: true } && layer.Weight > FullyFadedThreshold && i != fadingInSlot)
+                {
+                    _fadeStartWeights[1 + i] = layer.Weight;
+                }
             }
 
-            return default;
-        }
-
-        private void StartBlend(int fromSlot, int toSlot, float duration)
-        {
-            if (_isBlending)
-            {
-                _mixer.SetInputWeight(_blendToSlot, 1f);
-                _mixer.SetInputWeight(_blendFromSlot, 0f);
-            }
-
-            _blendFromSlot = fromSlot;
-            _blendToSlot = toSlot;
+            _fadingInSlot = fadingInSlot;
             _blendDuration = duration;
             _blendElapsed = 0f;
             _isBlending = true;
 
             if (duration <= 0f)
             {
-                _mixer.SetInputWeight(toSlot, 1f);
-                _mixer.SetInputWeight(fromSlot, 0f);
-                _isBlending = false;
+                UpdateBlend(0f, forceComplete: true);
             }
         }
 
         private void UpdateBlend(float deltaTime)
+        {
+            UpdateBlend(deltaTime, forceComplete: false);
+        }
+
+        private void UpdateBlend(float deltaTime, bool forceComplete)
         {
             if (!_isBlending)
             {
@@ -233,14 +247,66 @@ namespace Game
             }
 
             _blendElapsed += deltaTime;
-            var t = _blendDuration > 0f ? Mathf.Clamp01(_blendElapsed / _blendDuration) : 1f;
+            var t = forceComplete || _blendDuration <= 0f
+                ? 1f
+                : Mathf.Clamp01(_blendElapsed / _blendDuration);
 
-            _mixer.SetInputWeight(_blendToSlot, t);
-            _mixer.SetInputWeight(_blendFromSlot, 1f - t);
+            var growingMixerSlot = _fadingInSlot < 0 ? ControllerSlot : 1 + _fadingInSlot;
+            var growingWeight = t;
+
+            _controllerWeight = growingMixerSlot == ControllerSlot ? growingWeight : 0f;
+            _mixer.SetInputWeight(ControllerSlot, 0f); 
+
+            foreach (var kvp in _fadeStartWeights)
+            {
+                var mixerSlot = kvp.Key;
+                var startWeight = kvp.Value;
+                var fadedWeight = startWeight * (1f - t);
+
+                if (mixerSlot == ControllerSlot)
+                {
+                    _controllerWeight = fadedWeight;
+                    _mixer.SetInputWeight(ControllerSlot, fadedWeight);
+                }
+                else
+                {
+                    var slot = mixerSlot - 1;
+                    var layer = _clipSlots[slot];
+
+                    if (layer != null)
+                    {
+                        layer.Weight = fadedWeight;
+                        _mixer.SetInputWeight(mixerSlot, fadedWeight);
+
+                        if (fadedWeight <= FullyFadedThreshold)
+                        {
+                            DisconnectSlot(slot);
+                        }
+                    }
+                }
+            }
+
+            if (growingMixerSlot == ControllerSlot)
+            {
+                _controllerWeight = growingWeight;
+                _mixer.SetInputWeight(ControllerSlot, growingWeight);
+            }
+            else
+            {
+                var slot = growingMixerSlot - 1;
+                var layer = _clipSlots[slot];
+
+                if (layer != null)
+                {
+                    layer.Weight = growingWeight;
+                    _mixer.SetInputWeight(growingMixerSlot, growingWeight);
+                }
+            }
 
             if (t >= 1f)
             {
                 _isBlending = false;
+                _fadeStartWeights.Clear();
             }
         }
     }
