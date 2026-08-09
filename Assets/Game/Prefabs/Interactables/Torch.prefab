@@ -332,7 +332,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2bb9b1a9cfe26774c95169e401404280, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraSoundPlayer
-  audioClip: {fileID: 8300000, guid: ac4dc426e57178445b7bad3bb9bec93f, type: 3}
+  audioClip: {fileID: 8300000, guid: 7b01870a4078a5d4c8ce834b19d99b73, type: 3}
   volume: 1
   maxDistanceToCamera: 10
 --- !u!65 &8446998765247826087
