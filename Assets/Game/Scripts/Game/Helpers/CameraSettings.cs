@@ -114,11 +114,19 @@ namespace Game
             impulseSource.GenerateImpulse();
         }
 
-        public void PlayAudioByCamera(AudioClip audioClip, float volume)
+        public void PlayAudioByCamera(AudioClip audioClip, float volume, bool loop)
         {
             audioSource.clip = audioClip;
             audioSource.volume = volume;
+            audioSource.loop = loop;
             audioSource.Play();
+        }
+
+        public void StopAudioByCamera()
+        {
+            audioSource.Stop();
+            audioSource.loop = false;
+            audioSource.clip = null;
         }
         
         private void Awake()

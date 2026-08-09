@@ -29,6 +29,32 @@ public class CameraSoundPlayer : MonoBehaviour
             return;
         }
 
-        _cameraSettings.PlayAudioByCamera(audioClip, volume);
+        _cameraSettings.PlayAudioByCamera(audioClip, volume, false);
+    }
+
+    public void PlayLoopClipByCamera()
+    {
+        if (!audioClip || !_cameraSettings || !_cameraSettings.mainCamera)
+        {
+            return;
+        }
+
+        var sqrDistance = (transform.position - _cameraSettings.mainCamera.transform.position).sqrMagnitude;
+        if (sqrDistance > maxDistanceToCamera * maxDistanceToCamera)
+        {
+            return;
+        }
+
+        _cameraSettings.PlayAudioByCamera(audioClip, volume, true);
+    }
+
+    public void StopClipByCamera()
+    {
+        if (!audioClip || !_cameraSettings || !_cameraSettings.mainCamera)
+        {
+            return;
+        }
+        
+        _cameraSettings.StopAudioByCamera();
     }
 }
