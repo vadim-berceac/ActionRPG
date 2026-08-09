@@ -833,7 +833,7 @@ namespace Game
         #endregion
 
         #region Animation Events
-
+        
         public void TriggerRangedAttack()
         {
             _input.Attack1 = true;

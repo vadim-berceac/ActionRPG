@@ -44,13 +44,13 @@ public class PickupItem : MonoBehaviour
 
     public void ShowTooltip()
     {
-        if (dialogueAdapter == null) return;
+        if (!dialogueAdapter) return;
         dialogueAdapter.ActivateCanvasWithTranslatedText(phraseKey);
     }
 
     public void HideTooltip()
     {
-        if (dialogueAdapter == null) return;
+        if (!dialogueAdapter) return;
         dialogueAdapter.DeactivateCanvasWithDelay(hideDelay);
     }
 
@@ -68,6 +68,7 @@ public class PickupItem : MonoBehaviour
         HideTooltip();
         humanoidController.TryGetComponent<Inventory>(out var inventory);
         inventory?.Add(data);
-        Destroy(root);
+
+        Destroy(root, hideDelay);
     }
 }

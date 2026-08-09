@@ -76,7 +76,6 @@ public class InteractAnimation : MonoBehaviour
          return;
       }
 
-      Debug.Log($"Interacting with {_currentController.name}");
       onInteractEnter?.Invoke(_currentController);
 
       if ((clips == null || clips.Length == 0) && !enterClip.Clip && !exitClip.Clip)
@@ -102,8 +101,7 @@ public class InteractAnimation : MonoBehaviour
       {
          return;
       }
-
-      Debug.Log($"Interacting with {_currentController.name} end!");
+      
       onInteractExit?.Invoke(_currentController);
       _currentController.StopInteractClip();
       _currentController.SetInteracting(false);
