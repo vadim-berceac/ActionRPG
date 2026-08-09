@@ -4,6 +4,7 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using Game;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class InteractMotion : MonoBehaviour
 {
@@ -41,6 +42,9 @@ public class InteractMotion : MonoBehaviour
     private Collider[] _interactableColliders;
     private CharacterController _activeCharacterController;
     private bool _collisionDisabled;
+    
+    public UnityEvent onEnterMotionEnd;
+    public UnityEvent onExitMotionStart;
 
     private void Awake()
     {
@@ -86,9 +90,88 @@ public class InteractMotion : MonoBehaviour
 
         var rotation = GetEnterRotation(controller.transform);
 
-        Play(enterTime, footTarget.position, rotation, controller).Forget();
+        EnterAsync(rotation, controller).Forget();
     }
 
+    private async UniTaskVoid EnterAsync(Quaternion rotation, HumanoidController controller)
+    {
+        await Play(enterTime, footTarget.position, rotation, controller);
+
+        onEnterMotionEnd?.Invoke();
+    }
+    private void OnExit(HumanoidController controller)
+    {
+        ExitAsync(controller).Forget();
+        
+    }
+
+    private async UniTaskVoid ExitAsync(HumanoidController controller)
+    {
+        onExitMotionStart?.Invoke();
+        
+        try
+        {
+            switch (exitType)
+            {
+                case ExitType.ReturnToInitialPosition:
+                await Play(exitTime, _controllerInitialPosition, controller.transform.rotation, controller);
+                break;
+
+            case ExitType.ReturnToInitialPositionAndRotation:
+                await Play(exitTime, _controllerInitialPosition, _controllerInitialRotation, controller);
+                break;
+
+            case ExitType.StayOnFootPosition:
+                break;
+
+            case ExitType.MoveToExitPosition:
+                if (!exitTarget)
+                {
+                    break;
+                }
+                await Play(exitTime, exitTarget.position, exitTarget.rotation, controller);
+                break;
+            }
+        }
+        finally
+        {
+            SetCollisionIgnored(controller, false);
+        }
+    }
+
+    private async UniTask Play(float time, Vector3 position, Quaternion rotation, HumanoidController controller, UnityEvent onMotionStart = null)
+    {
+        Cancel(restoreCollision: false);
+
+        _cts = CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy());
+        var token = _cts.Token;
+
+        if (enterDelay > 0f)
+        {
+            await UniTask.Delay(TimeSpan.FromSeconds(enterDelay), cancellationToken: token);
+        }
+        onMotionStart?.Invoke();
+        var controllerTransform = controller.transform;
+        _sequence = DOTween.Sequence().SetTarget(controllerTransform);
+
+        switch (motionType)
+        {
+            case MotionType.RotateToFootTarget:
+            _sequence.Join(controllerTransform.DORotateQuaternion(rotation, time));
+            break;
+
+        case MotionType.MoveToFootTarget:
+            _sequence.Join(controllerTransform.DOMove(position, time));
+            break;
+
+        case MotionType.MoveToAndRotateToFootTarget:
+            _sequence.Join(controllerTransform.DOMove(position, time));
+            _sequence.Join(controllerTransform.DORotateQuaternion(rotation, time));
+            break;
+        }
+        await AwaitSequence(_sequence, token);
+    }
+    
     private Quaternion GetEnterRotation(Transform controllerTransform)
     {
         if (motionType != MotionType.RotateToFootTarget)
@@ -102,78 +185,6 @@ public class InteractMotion : MonoBehaviour
         return direction.sqrMagnitude > 0.0001f
             ? Quaternion.LookRotation(direction, controllerTransform.up)
             : controllerTransform.rotation;
-    }
-
-    private void OnExit(HumanoidController controller)
-    {
-        ExitAsync(controller).Forget();
-    }
-
-    private async UniTaskVoid ExitAsync(HumanoidController controller)
-    {
-        try
-        {
-            switch (exitType)
-            {
-                case ExitType.ReturnToInitialPosition:
-                    await Play(exitTime, _controllerInitialPosition, controller.transform.rotation, controller);
-                    break;
-
-                case ExitType.ReturnToInitialPositionAndRotation:
-                    await Play(exitTime,_controllerInitialPosition, _controllerInitialRotation, controller);
-                    break;
-
-                case ExitType.StayOnFootPosition:
-                    break;
-                
-                case ExitType.MoveToExitPosition:
-                    if (!exitTarget)
-                    {
-                        break;
-                    }
-                    await Play(exitTime,exitTarget.position, exitTarget.rotation, controller);
-                    break;
-            }
-        }
-        finally
-        {
-            SetCollisionIgnored(controller, false);
-        }
-    }
-
-    private async UniTask Play(float time, Vector3 position, Quaternion rotation, HumanoidController controller)
-    {
-        Cancel(restoreCollision: false);
-
-        _cts = CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy());
-        var token = _cts.Token;
-
-        if (enterDelay > 0f)
-        {
-            await UniTask.Delay(TimeSpan.FromSeconds(enterDelay), cancellationToken: token);
-        }
-
-        var controllerTransform = controller.transform;
-
-        _sequence = DOTween.Sequence().SetTarget(controllerTransform);
-
-        switch (motionType)
-        {
-            case MotionType.RotateToFootTarget:
-                _sequence.Join(controllerTransform.DORotateQuaternion(rotation, time));
-                break;
-
-            case MotionType.MoveToFootTarget:
-                _sequence.Join(controllerTransform.DOMove(position, time));
-                break;
-
-            case MotionType.MoveToAndRotateToFootTarget:
-                _sequence.Join(controllerTransform.DOMove(position, time));
-                _sequence.Join(controllerTransform.DORotateQuaternion(rotation, time));
-                break;
-        }
-
-        await AwaitSequence(_sequence, token);
     }
 
     private static UniTask AwaitSequence(Sequence sequence, CancellationToken token)

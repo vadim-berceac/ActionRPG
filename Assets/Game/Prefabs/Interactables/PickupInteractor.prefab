@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 3540746904152710682}
   - component: {fileID: 5890601841081540719}
   - component: {fileID: 6801466347604930527}
+  - component: {fileID: 6311720247512632364}
   m_Layer: 16
   m_Name: PickupInteractor
   m_TagString: Untagged
@@ -128,6 +129,12 @@ MonoBehaviour:
   interactableModel: {fileID: 0}
   motionType: 0
   exitType: 0
+  onEnterMotionEnd:
+    m_PersistentCalls:
+      m_Calls: []
+  onExitMotionStart:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &5890601841081540719
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -147,6 +154,21 @@ MonoBehaviour:
   dialogueAdapter: {fileID: 6801466347604930527}
   phraseKey: HAMMER1H
   hideDelay: 1
+  onPickup:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 6311720247512632364}
+        m_TargetAssemblyTypeName: CameraSoundPlayer, Assembly-CSharp
+        m_MethodName: PlayClipByCamera
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &6801466347604930527
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -159,3 +181,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56a51fdccb8d2d7478c5344b3a2445db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DialogueAdapter
+--- !u!114 &6311720247512632364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2523373349923920442}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2bb9b1a9cfe26774c95169e401404280, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraSoundPlayer
+  audioClip: {fileID: 8300000, guid: b2e11b5118f980e46b17a826657879c5, type: 3}
+  volume: 0.5
+  maxDistanceToCamera: 10

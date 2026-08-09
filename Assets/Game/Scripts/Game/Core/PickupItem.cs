@@ -1,5 +1,8 @@
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using Game;
 using UnityEngine;
+using UnityEngine.Events;
 using Zenject;
 
 public class PickupItem : MonoBehaviour
@@ -14,6 +17,9 @@ public class PickupItem : MonoBehaviour
 
     private PickupSelectionService _selectionService;
     private bool _isBeingPicked;
+    private CancellationTokenSource _cts;
+    
+    public UnityEvent onPickup;
 
     [Inject]
     private void Construct(PickupSelectionService selectionService)
@@ -23,11 +29,13 @@ public class PickupItem : MonoBehaviour
         trigger.OnEnter.AddListener(OnEnter);
         trigger.OnExit.AddListener(OnExit);
         interactAnimation.onInteractEnter.AddListener(OnInteract);
+
+        _cts = new CancellationTokenSource();
     }
 
     private void OnDestroy()
     {
-        if (trigger != null)
+        if (trigger)
         {
             trigger.OnEnter.RemoveListener(OnEnter);
             trigger.OnExit.RemoveListener(OnExit);
@@ -37,6 +45,9 @@ public class PickupItem : MonoBehaviour
 
         _selectionService?.Exit(this);
         _selectionService?.Release(this);
+
+        _cts?.Cancel();
+        _cts?.Dispose();
     }
 
     private void OnEnter(Collider other) => _selectionService.Enter(this);
@@ -68,7 +79,23 @@ public class PickupItem : MonoBehaviour
         HideTooltip();
         humanoidController.TryGetComponent<Inventory>(out var inventory);
         inventory?.Add(data);
+        
+        DestroyAndNotifyAsync(hideDelay, _cts.Token).Forget();
+    }
 
-        Destroy(root, hideDelay);
+    private async UniTaskVoid DestroyAndNotifyAsync(float delay, CancellationToken token)
+    {
+        try
+        {
+            await UniTask.Delay(System.TimeSpan.FromSeconds(delay), cancellationToken: token);
+        }
+        catch (System.OperationCanceledException)
+        {
+            return;
+        }
+        
+        onPickup?.Invoke();
+
+        Destroy(root);
     }
 }
