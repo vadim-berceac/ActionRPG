@@ -11,6 +11,8 @@ public interface ICharacterInput
     public bool Attack2 { get; set; }
     public bool Block { get; set; }
     public bool Shoot { get; set; }
+    
+    public event Action Interact;
 }
 
 public class PlayerNewInput : ICharacterInput, IDisposable

@@ -50,6 +50,8 @@ namespace Game
             public float time;
         }
 
+        public Camera mainCamera;
+
         public float CurrentYaw
         {
             get
@@ -74,6 +76,8 @@ namespace Game
 
         public CinemachineCamera Current => _currentCamera == CameraType.Bow ? bowCamera.controllerCamera : explorationCamera.controllerCamera;
         public CameraType ActiveCamera => _currentCamera;
+
+        [SerializeField] private AudioSource audioSource;
 
         [Header("Events")]
         public UnityEvent<CameraType> onCameraSwitched;
@@ -108,6 +112,21 @@ namespace Game
         public void Shake()
         {
             impulseSource.GenerateImpulse();
+        }
+
+        public void PlayAudioByCamera(AudioClip audioClip, float volume, bool loop)
+        {
+            audioSource.clip = audioClip;
+            audioSource.volume = volume;
+            audioSource.loop = loop;
+            audioSource.Play();
+        }
+
+        public void StopAudioByCamera()
+        {
+            audioSource.Stop();
+            audioSource.loop = false;
+            audioSource.clip = null;
         }
         
         private void Awake()

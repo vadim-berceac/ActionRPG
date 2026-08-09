@@ -40,6 +40,7 @@ namespace Game
         public bool HasRangeWeapon => _rangedWeaponInstance;
         public bool HasAdditionalWeapon => _additionalWeaponInstance;
         public bool IsBlocking { get; private set; }
+        public bool IsInteracting { get; private set; }
         public int PrimaryWeaponIndex => _primaryWeaponData ? _primaryWeaponData.AnimationSetIndex : 0;
         public int RangeWeaponIndex => _rangedWeaponData ? _rangedWeaponData.AnimationSetIndex : 0;
         public float PrimaryWeaponPreferredAttackDistance => _primaryWeaponData.preferredDistance;
@@ -49,6 +50,7 @@ namespace Game
         public bool IsRangedWeaponEquipped => _isRangeWeaponEquipped;
         public bool IsShootPressed => _shootPressed;
         public Stamina Stamina { get; private set; }
+        public PlayableGraphHandle Graph { get; private set; }
 
         private bool IsDead => _damageable.currentHitPoints < 1;
 
@@ -62,6 +64,7 @@ namespace Game
         private bool _isRangeWeaponEquipped;
 
         private AnimatorStateCache _animCache;
+        private Animator _animator;
 
         private WeaponData _primaryWeaponData;
         private WeaponData _additionalWeaponData;
@@ -134,7 +137,8 @@ namespace Game
         private void Awake()
         {
             _charCtrl = GetComponent<CharacterController>();
-            _animCache = new AnimatorStateCache(GetComponent<Animator>(), RangeWeaponRoot);
+            _animator = GetComponent<Animator>();
+            _animCache = new AnimatorStateCache(_animator, RangeWeaponRoot);
             _transform = transform;
             _coyoteTimer = Settings.CharacterParams.CoyoteTime;
 
@@ -159,6 +163,8 @@ namespace Game
             {
                 _rangedAttackHandler = new RangedAttackHandler(RangeWeaponRoot, _damageable, TargetLayer);
             }
+
+            Graph = new PlayableGraphHandle(_animator);
         }
 
         private void OnDisable()
@@ -167,6 +173,16 @@ namespace Game
             _damageable.onDamageBlocked = null;
 
             Stamina.Dispose();
+            Graph.Destroy();
+            Graph = null;
+        }
+
+        private void Update()
+        {
+            if (IsInteracting && Graph != null && Graph.IsValid)
+            {
+                Graph.Evaluate(Time.deltaTime);
+            }
         }
 
         private void FixedUpdate()
@@ -175,6 +191,7 @@ namespace Game
 
             _animCache.OnUpdate();
             _animCache.SetStateTime();
+            _animCache.SetInteract(IsInteracting);
 
             if (IsDead)
             {
@@ -184,13 +201,17 @@ namespace Game
 
             _blockTriggeredThisFixedUpdate = false;
             _damageTriggeredThisFixedUpdate = false;
-
-            UpdateInputBlocking();
-
+            
             ConnectWeaponToHands(_isMeleeWeaponEquipped, _primaryWeaponData,    _primaryWeaponInstance,    _animCache.HashAttack1);
             ConnectWeaponToHands(_isMeleeWeaponEquipped, _additionalWeaponData, _additionalWeaponInstance, _animCache.HashAttack2);
             ConnectWeaponToHands(_isRangeWeaponEquipped, _rangedWeaponData, _rangedWeaponInstance, _animCache.Shoot);
 
+            if (IsInteracting)
+            {
+                return;
+            }
+
+            UpdateInputBlocking();
             ProcessAttack();
             ProcessBlocking();
             ProcessShoot();
@@ -204,7 +225,7 @@ namespace Game
 
         private void LateUpdate()
         {
-            if (IsDead) return;
+            if (IsDead || IsInteracting) return;
 
             CalcOrientation();
             ApplyOrientation();
@@ -374,6 +395,25 @@ namespace Game
             _animCache.SetWeaponEquipped(value, index);
 
             if(value) _isMeleeWeaponEquipped = false;
+        }
+
+        public void SetInteracting(bool value)
+        {
+            IsInteracting = value;
+        }
+
+        public void PlayInteractClip(AnimationClip clip, float blendLength)
+        {
+            if (Graph == null || !Graph.IsValid || clip == null) return;
+
+            Graph.PlayClip(_animator, clip, blendLength);
+        }
+        
+        public void StopInteractClip(float blendLength = 0f)
+        {
+            if (Graph == null || !Graph.IsValid) return;
+
+            Graph.Stop(blendLength);
         }
 
         private void ConnectWeaponToHands(bool equip, WeaponData data, WeaponInstance weaponInstanceInstance, int trigger)
@@ -793,7 +833,7 @@ namespace Game
         #endregion
 
         #region Animation Events
-
+        
         public void TriggerRangedAttack()
         {
             _input.Attack1 = true;

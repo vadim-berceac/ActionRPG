@@ -59,14 +59,13 @@ public abstract class AsyncState : IAsyncState
     {
         try
         {
-            // Добавляем таймаут 30 секунд для предотвращения зависаний
             await UniTask.WaitUntil(shouldCancel, cancellationToken: ct)
                 .Timeout(TimeSpan.FromSeconds(30))
                 .SuppressCancellationThrow();
         }
         catch (TimeoutException)
         {
-            Debug.LogWarning("WatchAndCancelAsync timed out - ShouldInterrupt never returned true");
+            //Debug.LogWarning("WatchAndCancelAsync timed out - ShouldInterrupt never returned true");
         }
         catch (OperationCanceledException) { }
         catch (ObjectDisposedException) { }
