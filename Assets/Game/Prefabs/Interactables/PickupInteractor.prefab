@@ -92,13 +92,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InteractAnimation
   trigger: {fileID: 1371498733805353087}
   enterClip:
-    <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 83ce80eba9972044a83118cd1ae51ee3,
+    <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 8ebf95c3ebc92874da5cc3bc9456f32c,
       type: 3}
     <EnterBlendLength>k__BackingField: 0.1
     <ExitBlendLength>k__BackingField: 0.1
   clips: []
   exitClip:
-    <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 12c72a25f23fc174e969826340c5ea0c,
+    <Clip>k__BackingField: {fileID: -2389420229889480414, guid: 8ebf95c3ebc92874da5cc3bc9456f32c,
       type: 3}
     <EnterBlendLength>k__BackingField: 0.1
     <ExitBlendLength>k__BackingField: 0.1
@@ -126,7 +126,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InteractMotion
   trigger: {fileID: 5037401692089955208}
   enterDelay: 0
-  enterTime: 0.1
+  enterTime: 0.2
   exitTime: 0.1
   footTarget: {fileID: 239114417579691364}
   exitTarget: {fileID: 0}
@@ -157,7 +157,7 @@ MonoBehaviour:
   data: {fileID: 11400000, guid: 91752df81a8e3e147a40ec2656b85504, type: 2}
   dialogueAdapter: {fileID: 6801466347604930527}
   phraseKey: HAMMER1H
-  hideDelay: 0.85
+  hideDelay: 0.6
   onPickup:
     m_PersistentCalls:
       m_Calls:
@@ -214,7 +214,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InteractIK
   trigger: {fileID: 5037401692089955208}
   mappings:
-  - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 83ce80eba9972044a83118cd1ae51ee3,
+  - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 8ebf95c3ebc92874da5cc3bc9456f32c,
       type: 3}
     <Goals>k__BackingField:
     - <Goal>k__BackingField: 3

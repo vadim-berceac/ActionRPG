@@ -13,10 +13,6 @@ public class InteractAnimation : MonoBehaviour
    [SerializeField] private AnimationClipSettings exitClip;
    [SerializeField] private bool canBeInterrupted;
    public UnityEvent<HumanoidController> onInteractEnter, onInteractExit;
-
-   // ДОБАВЛЕНО: сигнал о старте конкретного клипа внутри последовательности,
-   // с длиной его enter-бленда — чтобы внешние компоненты (например IK)
-   // могли синхронно включаться/выключаться на тот же клип с тем же таймингом.
    public UnityEvent<AnimationClip, float> onClipStarted;
 
    private ICharacterInput _input;
@@ -208,8 +204,6 @@ public class InteractAnimation : MonoBehaviour
 
    private async UniTask PlayBlendedClip(AnimationClipSettings settings, float exitOverlap)
    {
-      // ДОБАВЛЕНО: сигнал перед стартом клипа, до PlayInteractClip —
-      // чтобы подписчики (IK) успели подготовить бленд с той же длиной enter-блендов.
       onClipStarted?.Invoke(settings.Clip, settings.EnterBlendLength);
 
       _currentController.PlayInteractClip(settings.Clip, settings.EnterBlendLength);
@@ -224,7 +218,6 @@ public class InteractAnimation : MonoBehaviour
 
    private async UniTask PlayLoopedClip(AnimationClipSettings settings, float exitOverlap)
    {
-      // ДОБАВЛЕНО: тот же сигнал для looping-клипов.
       onClipStarted?.Invoke(settings.Clip, settings.EnterBlendLength);
 
       _currentController.PlayInteractClip(settings.Clip, settings.EnterBlendLength);
