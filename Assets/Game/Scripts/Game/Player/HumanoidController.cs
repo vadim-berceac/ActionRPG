@@ -724,21 +724,9 @@ namespace Game
 
         private void PlayAudio()
         {
-            var footfall = _animCache.FootFall;
-
-            if (footfall > 0.01f && !FootstepPlayer.playing)
-            {
-                FootstepPlayer.playing = true;
-                FootstepPlayer.PlayRandomClip(_currentWalkingSurface, _forwardSpeed < 4 ? 0 : 1);
-            }
-            else if (FootstepPlayer.playing)
-            {
-                FootstepPlayer.playing = false;
-            }
-
             if (_isGrounded && !_previouslyGrounded)
             {
-                LandingPlayer.PlayRandomClipOneShot(_currentWalkingSurface, bankId: _forwardSpeed < 4 ? 0 : 1);
+                LandingPlayer.PlayRandomClipOneShot(_currentWalkingSurface, _forwardSpeed < 4 ? 0 : 1);
                 EmoteLandingPlayer.PlayRandomClipOneShot();
             }
 
