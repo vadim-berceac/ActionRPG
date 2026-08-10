@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 5890601841081540719}
   - component: {fileID: 6801466347604930527}
   - component: {fileID: 6311720247512632364}
+  - component: {fileID: 4918016129223910529}
   m_Layer: 16
   m_Name: PickupInteractor
   m_TagString: Untagged
@@ -108,6 +109,9 @@ MonoBehaviour:
   onInteractExit:
     m_PersistentCalls:
       m_Calls: []
+  onClipStarted:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &3540746904152710682
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -153,7 +157,7 @@ MonoBehaviour:
   data: {fileID: 11400000, guid: 91752df81a8e3e147a40ec2656b85504, type: 2}
   dialogueAdapter: {fileID: 6801466347604930527}
   phraseKey: HAMMER1H
-  hideDelay: 1
+  hideDelay: 0.85
   onPickup:
     m_PersistentCalls:
       m_Calls:
@@ -196,3 +200,27 @@ MonoBehaviour:
   audioClip: {fileID: 8300000, guid: b2e11b5118f980e46b17a826657879c5, type: 3}
   volume: 0.5
   maxDistanceToCamera: 10
+--- !u!114 &4918016129223910529
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2523373349923920442}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fcbc8038a3353848ab713cdf3149c77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractIK
+  trigger: {fileID: 5037401692089955208}
+  mappings:
+  - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 83ce80eba9972044a83118cd1ae51ee3,
+      type: 3}
+    <Goals>k__BackingField:
+    - <Goal>k__BackingField: 3
+      <Target>k__BackingField: {fileID: 239114417579691364}
+      <Hint>k__BackingField: {fileID: 0}
+      <Weight>k__BackingField: 1
+    <LookAtTarget>k__BackingField: {fileID: 239114417579691364}
+    <LookAtWeight>k__BackingField: 1
+  fallbackBlendTime: 0.15

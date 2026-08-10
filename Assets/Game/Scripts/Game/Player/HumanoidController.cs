@@ -109,6 +109,8 @@ namespace Game
 
         private int[] _comboHashes;
         private Vector3? _rangedTargetPosition;
+        private HumanoidIK _ik;
+
 
         private bool IsMoveInput => !Mathf.Approximately(_input.MoveInput.sqrMagnitude, 0f);
 
@@ -139,6 +141,7 @@ namespace Game
             _charCtrl = GetComponent<CharacterController>();
             _animator = GetComponent<Animator>();
             _animCache = new AnimatorStateCache(_animator, RangeWeaponRoot);
+            _ik = new HumanoidIK(_animator);
             _transform = transform;
             _coyoteTimer = Settings.CharacterParams.CoyoteTime;
 
@@ -230,6 +233,21 @@ namespace Game
             CalcOrientation();
             ApplyOrientation();
             PlayAudio();
+        }
+
+        private void OnAnimatorIK(int layerIndex)
+        {
+            _ik?.OnAnimatorIK();
+        }
+
+        public void SetLookAt(Transform target, float weight)
+        {
+            _ik?.SetLookAt(target, weight);
+        }
+
+        public void SetIKGoal(AvatarIKGoal goal, Transform target, Transform hint, float weight)
+        {
+            _ik?.SetIKGoal(goal, target, hint, weight);
         }
 
         private void OnAnimatorMove()
