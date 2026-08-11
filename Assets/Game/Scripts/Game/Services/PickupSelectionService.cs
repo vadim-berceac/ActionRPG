@@ -36,8 +36,10 @@ public class PickupSelectionService : IInitializable, IDisposable
     {
         while (!token.IsCancellationRequested)
         {
-            if (_playerTag != null)
+            if (_playerTag)
+            {
                 RefreshDisplay(_playerTag.transform.position);
+            }
 
             await UniTask.Delay(RefreshIntervalMs, cancellationToken: token);
         }
@@ -62,6 +64,7 @@ public class PickupSelectionService : IInitializable, IDisposable
         foreach (var candidate in _candidates)
         {
             if (candidate == null) continue;
+            if (!candidate.IsInTrigger) continue;
 
             var sqrDist = (candidate.transform.position - origin).sqrMagnitude;
             if (sqrDist >= bestSqrDist) continue;

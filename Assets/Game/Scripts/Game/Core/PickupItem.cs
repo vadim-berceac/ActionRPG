@@ -17,6 +17,8 @@ public class PickupItem : MonoBehaviour
 
     private PickupSelectionService _selectionService;
     private bool _isBeingPicked;
+    private bool _isInTrigger;
+    public bool IsInTrigger => _isInTrigger;
     private CancellationTokenSource _cts;
     
     public UnityEvent onPickup;
@@ -50,8 +52,21 @@ public class PickupItem : MonoBehaviour
         _cts?.Dispose();
     }
 
-    private void OnEnter(Collider other) => _selectionService.Enter(this);
-    private void OnExit(Collider other) => _selectionService.Exit(this);
+    private void OnEnter(Collider other)
+    {
+        if (other == null) return;
+        if (!other.TryGetComponent<PlayerTag>(out var playerTag)) return;
+        _isInTrigger = true;
+        _selectionService.Enter(this);
+    }
+    
+    private void OnExit(Collider other)
+    {
+        if (other == null) return;
+        if (!other.TryGetComponent<PlayerTag>(out var playerTag)) return;
+        _isInTrigger = false;
+        _selectionService.Exit(this);
+    }
 
     public void ShowTooltip()
     {

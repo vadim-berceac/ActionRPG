@@ -14,13 +14,13 @@ public class DialogueAdapter : MonoBehaviour
 
     public void ActivateCanvasWithTranslatedText(string phraseKey)
     {
-        if(_dialogueCanvasController == null) return;
+        if(!_dialogueCanvasController) return;
         _dialogueCanvasController.ActivateCanvasWithTranslatedText(phraseKey);
     }
 
     public void DeactivateCanvasWithDelay(float delay)
     {
-        if(_dialogueCanvasController == null) return;
+        if(!_dialogueCanvasController) return;
         _dialogueCanvasController.DeactivateCanvasWithDelay(delay);
     }
 }
