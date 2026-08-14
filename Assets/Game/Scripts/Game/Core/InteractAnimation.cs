@@ -104,8 +104,10 @@ public class InteractAnimation : MonoBehaviour
       }
       
       onInteractExit?.Invoke(_currentController);
-      _currentController.StopInteractClip();
+
       _currentController.SetInteracting(false);
+      var exitBlend = exitClip.Clip ? exitClip.EnterBlendLength : 0.2f;
+      _currentController.StopInteractClip(exitBlend);
       _currentController = null;
 
       if (canBeInterrupted)
@@ -206,7 +208,7 @@ public class InteractAnimation : MonoBehaviour
    {
       onClipStarted?.Invoke(settings.Clip, settings.EnterBlendLength);
 
-      _currentController.PlayInteractClip(settings.Clip, settings.EnterBlendLength);
+      _currentController.PlayInteractClip(settings.Clip, settings.EnterBlendLength, settings.Mask, settings.IsAdditive);
 
       var waitTime = settings.Clip.length - exitOverlap;
 
@@ -220,7 +222,7 @@ public class InteractAnimation : MonoBehaviour
    {
       onClipStarted?.Invoke(settings.Clip, settings.EnterBlendLength);
 
-      _currentController.PlayInteractClip(settings.Clip, settings.EnterBlendLength);
+      _currentController.PlayInteractClip(settings.Clip, settings.EnterBlendLength, settings.Mask, settings.IsAdditive);
 
       var mainWait = Mathf.Max(settings.Clip.length - exitOverlap, 0f);
 
@@ -251,4 +253,6 @@ public struct AnimationClipSettings
    [field: SerializeField] public AnimationClip Clip { get; private set; }
    [field: SerializeField, Range(0, 1)] public float EnterBlendLength { get; private set; }
    [field: SerializeField, Range(0, 1)] public float ExitBlendLength { get; private set; }
+   [field: SerializeField] public AvatarMask Mask { get; private set; }
+   [field: SerializeField] public bool IsAdditive { get; private set; }
 }

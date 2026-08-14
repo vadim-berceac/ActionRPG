@@ -681,16 +681,34 @@ PrefabInstance:
         type: 3}
     - target: {fileID: 6985791601978652670, guid: 81609b6f95166864a869be99af1c8804,
         type: 3}
+      propertyPath: exitClip.<Mask>k__BackingField
+      value: 
+      objectReference: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
+        type: 2}
+    - target: {fileID: 6985791601978652670, guid: 81609b6f95166864a869be99af1c8804,
+        type: 3}
       propertyPath: enterClip.<Clip>k__BackingField
       value: 
       objectReference: {fileID: 3094330708855449807, guid: 6db5228a0d92cd24a9c892e0bf4b22b1,
         type: 3}
     - target: {fileID: 6985791601978652670, guid: 81609b6f95166864a869be99af1c8804,
         type: 3}
+      propertyPath: enterClip.<Mask>k__BackingField
+      value: 
+      objectReference: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
+        type: 2}
+    - target: {fileID: 6985791601978652670, guid: 81609b6f95166864a869be99af1c8804,
+        type: 3}
       propertyPath: clips.Array.data[0].<Clip>k__BackingField
       value: 
       objectReference: {fileID: 3094330708855449807, guid: 9a6277174c2d49c458b84bf92829fc65,
         type: 3}
+    - target: {fileID: 6985791601978652670, guid: 81609b6f95166864a869be99af1c8804,
+        type: 3}
+      propertyPath: clips.Array.data[0].<Mask>k__BackingField
+      value: 
+      objectReference: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
+        type: 2}
     - target: {fileID: 6985791601978652670, guid: 81609b6f95166864a869be99af1c8804,
         type: 3}
       propertyPath: onClipStarted.m_PersistentCalls.m_Calls.Array.size

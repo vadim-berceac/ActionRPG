@@ -182,7 +182,7 @@ namespace Game
 
         private void Update()
         {
-            if (IsInteracting && Graph != null && Graph.IsValid)
+            if (Graph != null && Graph.IsValid && (IsInteracting || Graph.IsBlending))
             {
                 Graph.Evaluate(Time.deltaTime);
             }
@@ -418,13 +418,20 @@ namespace Game
         public void SetInteracting(bool value)
         {
             IsInteracting = value;
+
+            // Мгновенно переключаем контроллер в interact-состояние, чтобы избежать
+            // мигания при старте взаимодействия (до первого FixedUpdate).
+            if (_animCache != null)
+            {
+                _animCache.SetInteract(value);
+            }
         }
 
-        public void PlayInteractClip(AnimationClip clip, float blendLength)
+        public void PlayInteractClip(AnimationClip clip, float blendLength, AvatarMask mask = null, bool isAdditive = false)
         {
             if (Graph == null || !Graph.IsValid || clip == null) return;
 
-            Graph.PlayClip(_animator, clip, blendLength);
+            Graph.PlayClip(_animator, clip, blendLength, mask, isAdditive);
         }
         
         public void StopInteractClip(float blendLength = 0f)

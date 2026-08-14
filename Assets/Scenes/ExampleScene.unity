@@ -152922,12 +152922,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 368809667}
     m_Modifications:
-    - target: {fileID: 2197954647292080313, guid: 799717d20a503a9489e419064206b112,
-        type: 3}
-      propertyPath: enterClip.<Clip>k__BackingField
-      value: 
-      objectReference: {fileID: 3094330708855449807, guid: 1b76904669422104bb4fcb2d9ca83484,
-        type: 3}
     - target: {fileID: 3654015087007399930, guid: 799717d20a503a9489e419064206b112,
         type: 3}
       propertyPath: m_LocalPosition.x

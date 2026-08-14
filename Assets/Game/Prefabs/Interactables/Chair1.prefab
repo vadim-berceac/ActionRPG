@@ -449,21 +449,33 @@ MonoBehaviour:
       type: 3}
     <EnterBlendLength>k__BackingField: 0.1
     <ExitBlendLength>k__BackingField: 0.1
+    <Mask>k__BackingField: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
+      type: 2}
+    <IsAdditive>k__BackingField: 1
   clips:
   - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 3fb4081e9cf95da4d8886e6604b4d40c,
       type: 3}
     <EnterBlendLength>k__BackingField: 0.1
     <ExitBlendLength>k__BackingField: 0.1
+    <Mask>k__BackingField: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
+      type: 2}
+    <IsAdditive>k__BackingField: 0
   exitClip:
     <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 29d8ab44b1da24e48a1ce112e4b215ca,
       type: 3}
     <EnterBlendLength>k__BackingField: 0.1
     <ExitBlendLength>k__BackingField: 0.1
+    <Mask>k__BackingField: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
+      type: 2}
+    <IsAdditive>k__BackingField: 0
   canBeInterrupted: 1
   onInteractEnter:
     m_PersistentCalls:
       m_Calls: []
   onInteractExit:
+    m_PersistentCalls:
+      m_Calls: []
+  onClipStarted:
     m_PersistentCalls:
       m_Calls: []
 --- !u!114 &1792933313599940043

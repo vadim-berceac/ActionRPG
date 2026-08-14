@@ -14,6 +14,7 @@ namespace Game
             public float Weight;
             public bool IsLooping;
             public double ClipLength;
+            public bool HasMask;
         }
         
         private const int ControllerSlot = 0;
@@ -21,6 +22,7 @@ namespace Game
         private const float FullyFadedThreshold = 0.0001f;
         
         public bool IsValid => _graph.IsValid();
+        public bool IsBlending => _isBlending;
 
         private readonly AnimationLayerMixerPlayable _mixer;
         private readonly PlayableGraph _graph;
@@ -53,7 +55,7 @@ namespace Game
             _graph.Play();
         }
 
-        public void PlayClip(Animator animator, AnimationClip clip, float blendLength)
+        public void PlayClip(Animator animator, AnimationClip clip, float blendLength, AvatarMask mask = null, bool isAdditive = false)
         {
             if (!_graph.IsValid() || clip == null)
             {
@@ -63,7 +65,7 @@ namespace Game
             EnsureOutput(animator);
 
             var slot = AcquireFreeSlot();
-            var layer = ConnectClip(slot, clip);
+            var layer = ConnectClip(slot, clip, mask, isAdditive);
 
             _activeLayer = layer;
             _isPlaying = true;
@@ -162,7 +164,7 @@ namespace Game
             return bestSlot;
         }
 
-        private ClipLayer ConnectClip(int slot, AnimationClip clip)
+        private ClipLayer ConnectClip(int slot, AnimationClip clip, AvatarMask mask, bool isAdditive)
         {
             DisconnectSlot(slot);
 
@@ -174,13 +176,21 @@ namespace Game
             var mixerSlot = 1 + slot; 
             _mixer.ConnectInput(mixerSlot, clipPlayable, 0, 0f);
 
+            if (mask != null)
+            {
+                _mixer.SetLayerMaskFromAvatarMask((uint)mixerSlot, mask);
+            }
+
+            _mixer.SetLayerAdditive((uint)mixerSlot, isAdditive);
+
             var layer = new ClipLayer
             {
                 Playable = clipPlayable,
                 Connected = true,
                 Weight = 0f,
                 IsLooping = clip.isLooping,
-                ClipLength = clip.length
+                ClipLength = clip.length,
+                HasMask = mask != null
             };
 
             _clipSlots[slot] = layer;
@@ -207,11 +217,6 @@ namespace Game
         private void StartBlend(int fadingInSlot, float duration)
         {
             _fadeStartWeights.Clear();
-
-            if (_controllerWeight > FullyFadedThreshold)
-            {
-                _fadeStartWeights[ControllerSlot] = _controllerWeight;
-            }
 
             for (var i = 0; i < ClipSlotCount; i++)
             {
@@ -254,42 +259,32 @@ namespace Game
             var growingMixerSlot = _fadingInSlot < 0 ? ControllerSlot : 1 + _fadingInSlot;
             var growingWeight = t;
 
-            _controllerWeight = growingMixerSlot == ControllerSlot ? growingWeight : 0f;
-            _mixer.SetInputWeight(ControllerSlot, 0f); 
-
+            var hasMask = _fadingInSlot >= 0 && _clipSlots[_fadingInSlot] is { HasMask: true };
             foreach (var kvp in _fadeStartWeights)
             {
                 var mixerSlot = kvp.Key;
                 var startWeight = kvp.Value;
                 var fadedWeight = startWeight * (1f - t);
 
-                if (mixerSlot == ControllerSlot)
-                {
-                    _controllerWeight = fadedWeight;
-                    _mixer.SetInputWeight(ControllerSlot, fadedWeight);
-                }
-                else
-                {
-                    var slot = mixerSlot - 1;
-                    var layer = _clipSlots[slot];
+                var slot = mixerSlot - 1;
+                var layer = _clipSlots[slot];
 
-                    if (layer != null)
+                if (layer != null)
+                {
+                    layer.Weight = fadedWeight;
+                    _mixer.SetInputWeight(mixerSlot, fadedWeight);
+
+                    if (fadedWeight <= FullyFadedThreshold)
                     {
-                        layer.Weight = fadedWeight;
-                        _mixer.SetInputWeight(mixerSlot, fadedWeight);
-
-                        if (fadedWeight <= FullyFadedThreshold)
-                        {
-                            DisconnectSlot(slot);
-                        }
+                        DisconnectSlot(slot);
                     }
                 }
             }
 
             if (growingMixerSlot == ControllerSlot)
             {
-                _controllerWeight = growingWeight;
-                _mixer.SetInputWeight(ControllerSlot, growingWeight);
+                _controllerWeight = Mathf.Lerp(_controllerWeight, 1f, t);
+                _mixer.SetInputWeight(ControllerSlot, _controllerWeight);
             }
             else
             {
@@ -298,9 +293,13 @@ namespace Game
 
                 if (layer != null)
                 {
-                    layer.Weight = growingWeight;
-                    _mixer.SetInputWeight(growingMixerSlot, growingWeight);
+                    var clipWeight = hasMask ? growingWeight : 0f;
+                    layer.Weight = clipWeight;
+                    _mixer.SetInputWeight(growingMixerSlot, clipWeight);
                 }
+
+                _controllerWeight = Mathf.Lerp(_controllerWeight, 1f, t);
+                _mixer.SetInputWeight(ControllerSlot, _controllerWeight);
             }
 
             if (t >= 1f)

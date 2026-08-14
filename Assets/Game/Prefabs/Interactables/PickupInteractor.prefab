@@ -96,12 +96,18 @@ MonoBehaviour:
       type: 3}
     <EnterBlendLength>k__BackingField: 0.1
     <ExitBlendLength>k__BackingField: 0.1
+    <Mask>k__BackingField: {fileID: 31900000, guid: 742dda8cea256e347a5e36860b12ce91,
+      type: 2}
+    <IsAdditive>k__BackingField: 1
   clips: []
   exitClip:
     <Clip>k__BackingField: {fileID: -2389420229889480414, guid: 8ebf95c3ebc92874da5cc3bc9456f32c,
       type: 3}
     <EnterBlendLength>k__BackingField: 0.1
     <ExitBlendLength>k__BackingField: 0.1
+    <Mask>k__BackingField: {fileID: 31900000, guid: 742dda8cea256e347a5e36860b12ce91,
+      type: 2}
+    <IsAdditive>k__BackingField: 1
   canBeInterrupted: 0
   onInteractEnter:
     m_PersistentCalls:
