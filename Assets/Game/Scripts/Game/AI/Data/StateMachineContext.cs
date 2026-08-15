@@ -53,6 +53,8 @@ public class StateMachineContext : IDisposable
 
     public VisionSystem VisionSystem => _visionSystem;
     public Factions Faction { get; private set; }
+    public int DefaultLayer { get; private set; }
+    public void SetLayer(int layer) => _humanoidController.gameObject.layer = layer;
 
     private readonly VisionSystem _visionSystem;
     private readonly Damageable _self;
@@ -60,7 +62,6 @@ public class StateMachineContext : IDisposable
     private AsyncStateMachine _fsm;
 
     private Damageable _lastSeenTarget;
-    private int _defaultLayer;
     private Vector3 _fixedGuardPosition;
     private Transform _guardPointTransform;
 
@@ -83,6 +84,7 @@ public class StateMachineContext : IDisposable
         BehaviorMode = behaviorMode;
         AIMode = aiMode;
         Faction = faction;
+        DefaultLayer = humanoidController.gameObject.layer;
         SetWaypoints(ConvertPath.ToVector(patrolWaypoints));
 
         if (patrolWaypoints != null && patrolWaypoints.Length > 0 && patrolWaypoints[0] != null)
@@ -225,25 +227,14 @@ public class StateMachineContext : IDisposable
 
     private void OnDeath()
     {
-        _defaultLayer = _humanoidController.gameObject.layer;
-
         IsDead = true;
 
         _visionSystem.ClearAllLastKnownPositions();
         _lastSeenTarget = null;
         SetTarget(null);
         _visionSystem.enabled = false;
-        _humanoidController.gameObject.layer = 20;
         _humanoidController.AdditionalAttackEnd();
         _humanoidController.MeleeAttackEnd();
-    }
-
-    private void OnRevive()
-    {
-        IsDead = false;
-
-        _visionSystem.enabled = true;
-        _humanoidController.gameObject.layer = _defaultLayer;
     }
 
     public void SetWaypoints(Vector3[] waypoints)

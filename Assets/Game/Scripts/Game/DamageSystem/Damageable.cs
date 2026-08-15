@@ -7,8 +7,16 @@ using UnityEngine.Serialization;
 
 namespace Game
 {
-    public partial class Damageable : MonoBehaviour, IUIUpdater
+    public partial class Damageable : MonoBehaviour, IUIUpdater, ISaveable
     {
+        public class SaveState
+        {
+            public int Max { get; set; }
+            public int Current { get; set; }
+        }
+        
+        public string SaveKey => "Damageable";
+        
         public event Action<float> OnMaxValueChanged;
         public event Action<float> OnRegenSpeedChanged;
         public event Action<float> OnCurrentValueChanged;
@@ -135,8 +143,18 @@ namespace Game
                 receiver.OnReceiveMessage(messageType, this, data);
             }
         }
+        
+        public object CaptureState() => new SaveState { Max = maxHitPoints, Current = currentHitPoints };
 
-        void LateUpdate()
+        public void RestoreState(object state)
+        {
+            var s = (SaveState)state;
+            maxHitPoints = s.Max;
+            currentHitPoints = s.Current;
+            OnCurrentValueChanged?.Invoke(currentHitPoints);
+        }
+
+        private void LateUpdate()
         {
             if (schedule != null)
             {

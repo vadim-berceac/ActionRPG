@@ -1,10 +1,11 @@
 using System;
 using Game;
 using UnityEngine;
+using Zenject;
 
 [RequireComponent(typeof(Inventory))]
 [RequireComponent(typeof(HumanoidController))]
-public class Equipment : MonoBehaviour
+public class Equipment : MonoBehaviour, ISaveable
 {
     public enum EquipmentType
     {
@@ -13,25 +14,35 @@ public class Equipment : MonoBehaviour
         Ranged,
         Ammunition,
     }
+
     private Inventory _inventory;
     private HumanoidController _humanoidController;
+    private IItemDatabase _itemDatabase;
 
     private InventoryItemSlot _primaryWeapon;
     private InventoryItemSlot _additionalWeapon;
     private InventoryItemSlot _rangedWeapon;
     private InventoryItemSlot _ammunition;
-    
+
     public ItemData Primary => _primaryWeapon == null ? null : _primaryWeapon.ItemData;
     public ItemData Additional => _additionalWeapon == null ? null : _additionalWeapon.ItemData;
     public ItemData Ranged => _rangedWeapon == null ? null : _rangedWeapon.ItemData;
-    
+
     public event Action<ItemData, EquipmentType> OnEquip;
+
+    public string SaveKey => "equipment";
+
+    [Inject]
+    private void Construct(IItemDatabase itemDatabase)
+    {
+        _itemDatabase = itemDatabase;
+    }
 
     private void Awake()
     {
         _inventory = GetComponent<Inventory>();
         _humanoidController = GetComponent<HumanoidController>();
-        
+
         _inventory.OnTransfer += OnTransfer;
     }
 
@@ -58,11 +69,11 @@ public class Equipment : MonoBehaviour
             case WeaponData.WearType.Additional:
                 TryEquipAdditional(weapon, amount);
                 break;
-            
+
             case WeaponData.WearType.Ranged:
                 TryEquipRanged(weapon, amount);
                 break;
-            
+
             case WeaponData.WearType.Ammunition:
                 TryEquipAmmunition(weapon, amount);
                 break;
@@ -81,7 +92,7 @@ public class Equipment : MonoBehaviour
             return;
         }
 
-        _primaryWeapon = new InventoryItemSlot(weapon, amount);
+        _primaryWeapon = new InventoryItemSlot(weapon, false, amount);
         _humanoidController.CreatePrimaryWeapon(weapon);
 
         if (weapon.Wear == WeaponData.WearType.TwoHanded && _additionalWeapon != null)
@@ -103,7 +114,7 @@ public class Equipment : MonoBehaviour
             return;
         }
 
-        _additionalWeapon = new InventoryItemSlot(weapon, amount);
+        _additionalWeapon = new InventoryItemSlot(weapon, false, amount);
         _humanoidController.CreateAdditionalWeapon(weapon);
         OnEquip?.Invoke(weapon, EquipmentType.Additional);
     }
@@ -115,13 +126,13 @@ public class Equipment : MonoBehaviour
             ReturnToInventory(weapon, amount);
             return;
         }
-        
-        _rangedWeapon = new InventoryItemSlot(weapon, amount);
+
+        _rangedWeapon = new InventoryItemSlot(weapon, false, amount);
         _humanoidController.CreateRangedWeapon(weapon);
-        
+
         OnEquip?.Invoke(weapon, EquipmentType.Ranged);
     }
-    
+
     private void TryEquipAmmunition(WeaponData weapon, int amount)
     {
         if (_ammunition != null)
@@ -129,10 +140,10 @@ public class Equipment : MonoBehaviour
             ReturnToInventory(weapon, amount);
             return;
         }
-        
-        _ammunition = new InventoryItemSlot(weapon, amount);
+
+        _ammunition = new InventoryItemSlot(weapon, false, amount);
         _humanoidController.CreateAmmunition(weapon);
-        
+
         OnEquip?.Invoke(weapon, EquipmentType.Ammunition);
     }
 
@@ -183,5 +194,69 @@ public class Equipment : MonoBehaviour
     public void DestroyRanged()
     {
         DestroySlot(ref _rangedWeapon);
+    }
+
+    private class EquipmentState
+    {
+        public SlotState Primary { get; set; }
+        public SlotState Additional { get; set; }
+        public SlotState Ranged { get; set; }
+        public SlotState Ammunition { get; set; }
+    }
+
+    private class SlotState
+    {
+        public string ItemName { get; set; }
+        public int Amount { get; set; }
+    }
+
+    public object CaptureState()
+    {
+        return new EquipmentState
+        {
+            Primary = ToSlotState(_primaryWeapon),
+            Additional = ToSlotState(_additionalWeapon),
+            Ranged = ToSlotState(_rangedWeapon),
+            Ammunition = ToSlotState(_ammunition)
+        };
+    }
+
+    private static SlotState ToSlotState(InventoryItemSlot slot)
+    {
+        return slot == null ? null : new SlotState { ItemName = slot.ItemData.name, Amount = slot.Amount };
+    }
+
+    public void RestoreState(object state)
+    {
+        var s = (EquipmentState)state;
+
+        DestroySlot(ref _primaryWeapon);
+        DestroySlot(ref _additionalWeapon);
+        DestroySlot(ref _rangedWeapon);
+        DestroySlot(ref _ammunition);
+
+        RestoreSlot(s.Primary, ref _primaryWeapon, _humanoidController.CreatePrimaryWeapon, EquipmentType.Primary);
+        RestoreSlot(s.Additional, ref _additionalWeapon, _humanoidController.CreateAdditionalWeapon, EquipmentType.Additional);
+        RestoreSlot(s.Ranged, ref _rangedWeapon, _humanoidController.CreateRangedWeapon, EquipmentType.Ranged);
+        RestoreSlot(s.Ammunition, ref _ammunition, _humanoidController.CreateAmmunition, EquipmentType.Ammunition);
+    }
+
+    private void RestoreSlot(SlotState slotState, ref InventoryItemSlot slot, Action<WeaponData> createFn, EquipmentType type)
+    {
+        if (slotState == null || string.IsNullOrEmpty(slotState.ItemName))
+        {
+            return;
+        }
+
+        var itemData = _itemDatabase.GetByName(slotState.ItemName);
+        if (itemData is not WeaponData weapon)
+        {
+            Debug.LogWarning($"Item '{slotState.ItemName}' not found or not a WeaponData, skipping equip slot.");
+            return;
+        }
+
+        slot = new InventoryItemSlot(weapon, false, slotState.Amount);
+        createFn(weapon);
+        OnEquip?.Invoke(weapon, type);
     }
 }

@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using UnityEngine;
 using Game.Message;
 using Unity.Cinemachine;
@@ -9,8 +8,15 @@ namespace Game
     [RequireComponent(typeof(CharacterController))]
     [RequireComponent(typeof(Animator))]
     [RequireComponent(typeof(Inventory))]
-    public class HumanoidController : MonoBehaviour, IMessageReceiver
+    public class HumanoidController : MonoBehaviour, IMessageReceiver, ISaveable
     {
+        public class ControllerSaveState
+        {
+            public Stamina.SaveState StaminaSaveState { get; set; }
+            public Vector3 Position { get; set; }
+            public Quaternion Rotation { get; set; }
+        }
+        
         #region Serialized Fields
 
         [field: SerializeField] public bool IsPlayer { get; private set; }
@@ -35,6 +41,7 @@ namespace Game
 
         #region Public Properties
 
+        public string SaveKey => "Controller";
         public bool IsGrounded => _charCtrl && _charCtrl.isGrounded && _isGrounded;
         public bool HasPrimaryWeapon => _primaryWeaponInstance;
         public bool HasRangeWeapon => _rangedWeaponInstance;
@@ -43,7 +50,7 @@ namespace Game
         public bool IsInteracting { get; private set; }
         public int PrimaryWeaponIndex => _primaryWeaponData ? _primaryWeaponData.AnimationSetIndex : 0;
         public int RangeWeaponIndex => _rangedWeaponData ? _rangedWeaponData.AnimationSetIndex : 0;
-        public float PrimaryWeaponPreferredAttackDistance => _primaryWeaponData.preferredDistance;
+        public float PrimaryWeaponPreferredAttackDistance => _primaryWeaponData ? _primaryWeaponData.preferredDistance : 35f;
         public float RangeWeaponPreferredDistance => _rangedWeaponData ? _rangedWeaponData.preferredDistance : 35f;
         public float LoadProgressCurve => _animCache.LoadProgressCurve;
         public bool IsMeleeWeaponEquipped => _isMeleeWeaponEquipped;
@@ -415,16 +422,35 @@ namespace Game
             if(value) _isMeleeWeaponEquipped = false;
         }
 
+        public object CaptureState()
+        {
+            return new ControllerSaveState
+            {
+                Position = _transform.position,
+                Rotation = _transform.rotation,
+                StaminaSaveState = (Stamina.SaveState)Stamina.CaptureState()
+            };
+        }
+
+        public void RestoreState(object state)
+        {
+            var s = (ControllerSaveState)state;
+            Stamina.RestoreState(s.StaminaSaveState);
+            
+            _transform.SetPositionAndRotation(s.Position, s.Rotation);
+
+            if (_damageable.currentHitPoints < 1)
+            {
+                Die(new Damageable.DamageMessage());
+                return;
+            }
+            _animCache.TriggerDeath(false);
+        }
+
         public void SetInteracting(bool value)
         {
             IsInteracting = value;
-
-            // Мгновенно переключаем контроллер в interact-состояние, чтобы избежать
-            // мигания при старте взаимодействия (до первого FixedUpdate).
-            if (_animCache != null)
-            {
-                _animCache.SetInteract(value);
-            }
+            _animCache?.SetInteract(value);
         }
 
         public void PlayInteractClip(AnimationClip clip, float blendLength, AvatarMask mask = null, bool isAdditive = false)

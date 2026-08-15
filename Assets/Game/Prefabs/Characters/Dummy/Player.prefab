@@ -147,6 +147,7 @@ GameObject:
   m_Component:
   - component: {fileID: 919562152349746805}
   - component: {fileID: 8328305847013917851}
+  - component: {fileID: 5080385443506309497}
   - component: {fileID: 3589592028908676066}
   - component: {fileID: 1221178880529204029}
   - component: {fileID: 8221082309353826462}
@@ -197,6 +198,19 @@ MonoBehaviour:
   <PlayerInventory>k__BackingField: {fileID: 3077285747228589714}
   <PlayerEquipment>k__BackingField: {fileID: 4971361307042770288}
   <PlayerHealth>k__BackingField: {fileID: 8221082309353826462}
+--- !u!114 &5080385443506309497
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1125372579252015583}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59ec981199bc84e439174ae674fd45ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SaveableCharacter
+  <SaveKey>k__BackingField: 0001
 --- !u!95 &3589592028908676066
 Animator:
   serializedVersion: 7

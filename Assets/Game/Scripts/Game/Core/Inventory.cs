@@ -3,19 +3,35 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
-public class Inventory : MonoBehaviour
+public class Inventory : MonoBehaviour, ISaveable
 {
-    [field: SerializeField] public List<InventoryItemSlot> InventoryItemSlots { get; private set; }
+    public class InventoryState
+    {
+        public List<InventorySlotState> Slots { get; set; }
+    }
+
+    public class InventorySlotState
+    {
+        public string ItemName { get; set; }
+        public int Amount { get; set; }
+        public bool EquippedOnStart { get; set; }
+    }
     
+    [field: SerializeField] public List<InventoryItemSlot> InventoryItemSlots { get; private set; }
+
     public event Action<ItemData, int> OnTransfer;
     public event Action<InventoryItemSlot> OnSlotCreated;
-    
+
     private DiContainer _container;
+    private IItemDatabase _itemDatabase;
+
+    public string SaveKey => "inventory";
 
     [Inject]
-    private void Construct(DiContainer container)
+    private void Construct(DiContainer container, IItemDatabase itemDatabase)
     {
         _container = container;
+        _itemDatabase = itemDatabase;
     }
 
     private void Start()
@@ -33,6 +49,43 @@ public class Inventory : MonoBehaviour
             }
 
             TryTransfer(itemSlot.ItemData, 1);
+        }
+    }
+    
+    public object CaptureState()
+    {
+        var state = new InventoryState { Slots = new List<InventorySlotState>(InventoryItemSlots.Count) };
+
+        foreach (var slot in InventoryItemSlots)
+        {
+            state.Slots.Add(new InventorySlotState { ItemName = slot.ItemData.name, Amount = slot.Amount, EquippedOnStart = slot.EquippedOnStart });
+        }
+
+        return state;
+    }
+
+    public void RestoreState(object state)
+    {
+        var s = (InventoryState)state;
+
+        foreach (var slot in InventoryItemSlots)
+        {
+            slot.Dispose();
+        }
+        InventoryItemSlots.Clear();
+
+        foreach (var slotState in s.Slots)
+        {
+            var itemData = _itemDatabase.GetByName(slotState.ItemName);
+            if (itemData == null)
+            {
+                Debug.LogWarning($"Item with id '{slotState.ItemName}' not found in database, skipping.");
+                continue;
+            }
+
+            var slot = new InventoryItemSlot(itemData, slotState.EquippedOnStart, slotState.Amount);
+            InventoryItemSlots.Add(slot);
+            OnSlotCreated?.Invoke(slot);
         }
     }
     
@@ -71,7 +124,7 @@ public class Inventory : MonoBehaviour
 
         if (!slotFind)
         {
-            var newCell = new InventoryItemSlot(itemData, amount);
+            var newCell = new InventoryItemSlot(itemData, false, amount);
             InventoryItemSlots.Add(newCell);
             OnSlotCreated?.Invoke(newCell);
         }
@@ -136,11 +189,11 @@ public class InventoryItemSlot : IDisposable
     public event Action OnDestroy;
     public event Action<int> OnAmountChanged;
 
-    public InventoryItemSlot(ItemData itemData, int amount = 1)
+    public InventoryItemSlot(ItemData itemData, bool equippedOnStart, int amount = 1)
     {
         ItemData = itemData;
         Amount = amount;
-        EquippedOnStart = false;
+        EquippedOnStart = equippedOnStart;
     }
 
     public void SetAmount(int amount)

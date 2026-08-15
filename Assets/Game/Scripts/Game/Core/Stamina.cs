@@ -5,8 +5,14 @@ using UnityEngine;
 
 namespace Game
 {
-    public class Stamina : IUIUpdater, IDisposable
+    public class Stamina : IUIUpdater, IDisposable, ISaveable
     {
+        public class SaveState
+        {
+            public float Current { get; set; }
+        }
+        
+        public string SaveKey => "Stamina";
         public event Action<float> OnMaxValueChanged;
         public event Action<float> OnRegenSpeedChanged;
         public event Action<float> OnCurrentValueChanged;
@@ -30,6 +36,15 @@ namespace Game
             RegenLoopAsync(_cts.Token).Forget();
         }
 
+        public object CaptureState() => new SaveState { Current = _currentStamina };
+
+        public void RestoreState(object state)
+        {
+            var s = (SaveState)state;
+            _currentStamina = s.Current;
+            OnCurrentValueChanged?.Invoke(_currentStamina);
+        }
+        
         public bool HasEnoughStamina(float amount)
         {
             return _currentStamina >= amount;

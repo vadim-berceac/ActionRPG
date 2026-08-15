@@ -14,6 +14,8 @@ namespace Game
         public GameObject optionsCanvas;
         public GameObject controlsCanvas;
         public GameObject audioCanvas;
+        public GameObject saveCanvas;
+        public GameObject loadCanvas;
         public GameObject inventoryCanvas;
 
         protected bool m_InPause;
@@ -132,6 +134,12 @@ namespace Game
 
             if (audioCanvas)
                 audioCanvas.SetActive(false);
+            
+            if (saveCanvas)
+                saveCanvas.SetActive(false);
+            
+            if (loadCanvas)
+                loadCanvas.SetActive(false);
             
             if (pauseCanvas.activeInHierarchy && inventoryCanvas)
                 inventoryCanvas.SetActive(false);

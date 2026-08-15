@@ -15,8 +15,45 @@ public enum AIMode
     Guard
 }
 
-public class EnemyBrain : MonoBehaviour, IInput
+public class EnemyBrain : MonoBehaviour, IInput, ISaveable
 {
+    public class EnemyBrainState
+    {
+        public string StateName { get; set; }
+    }
+    
+    public string SaveKey => "EnemyBrain";
+    
+    public object CaptureState()
+    {
+        return new EnemyBrainState { StateName = Fsm?.CurrentState?.GetType().Name };
+    }
+    
+    public void RestoreState(object state)
+    {
+        var s = (EnemyBrainState)state;
+        if (Fsm == null || string.IsNullOrEmpty(s.StateName)) return;
+
+        IAsyncState target = s.StateName switch
+        {
+            nameof(PatrolState) => Fsm.PatrolState,
+            nameof(GuardState) => Fsm.GuardState,
+            nameof(ChaseState) => Fsm.ChaseState,
+            nameof(AttackState) => Fsm.AttackState,
+            nameof(ShootState) => Fsm.ShootState,
+            nameof(BlockState) => Fsm.BlockState,
+            nameof(DeathState) => Fsm.DeathState,
+            nameof(IdleWaitState) => Fsm.IdleWaitState,
+            nameof(AlarmState) => Fsm.AlarmState,
+            _ => null
+        };
+
+        if (target != null && Fsm.CurrentState != target)
+        {
+            Fsm.TransitionTo(target).Forget();
+        }
+    }
+    
     [SerializeField] private VisionSystem visionSystem;
     [SerializeField] private HumanoidController humanoidController;
     [SerializeField] private Damageable damageable;

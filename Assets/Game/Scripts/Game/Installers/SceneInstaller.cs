@@ -25,6 +25,23 @@ public class SceneInstaller : MonoInstaller
             .NonLazy();
         
         Container
+            .Bind<IItemDatabase>()
+            .To<ItemDatabase>()
+            .FromScriptableObjectResource("Items/ItemDatabase")
+            .AsSingle()
+            .NonLazy();
+        
+        Container
+            .Bind<SaveService>()
+            .AsSingle()
+            .NonLazy();
+        
+        Container
+            .Bind<SaveGameController>()
+            .AsSingle()
+            .NonLazy();
+        
+        Container
             .BindInterfacesAndSelfTo<PlayerNewInput>()
             .AsSingle()
             .NonLazy();

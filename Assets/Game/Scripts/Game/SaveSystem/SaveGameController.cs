@@ -1,0 +1,58 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
+using Zenject;
+using Object = UnityEngine.Object;
+
+public class SaveGameController
+{
+    [Inject] private readonly SaveService _saveService;
+
+    public void SaveGame(string slotName)
+    {
+        var characters = Object.FindObjectsByType<SaveableCharacter>(FindObjectsSortMode.None);
+        SaveGameAsync(slotName, characters).Forget();
+    }
+
+    public void LoadGame(string slotName)
+    {
+        var characters = Object.FindObjectsByType<SaveableCharacter>(FindObjectsSortMode.None);
+        var charactersById = characters.ToDictionary(c => c.SaveKey, c => c);
+
+        LoadGameAsync(slotName, charactersById).Forget();
+    }
+
+    public async UniTask<List<SaveSlotInfo>> GetAvailableSlots()
+    {
+        return await _saveService.GetAllSlotInfosAsync();
+    }
+
+    private async UniTask SaveGameAsync(string slotName, IEnumerable<SaveableCharacter> characters)
+    {
+        var saveFile = new SaveFile
+        {
+            Version = 1,
+            SlotInfo = new SaveSlotInfo { SlotName = slotName, SavedAt = DateTime.UtcNow, DisplayName = slotName },
+            Characters = characters.Select(c => c.Capture()).ToList()
+        };
+
+        await _saveService.SaveAsync(saveFile, _saveService.GetPath(slotName));
+        
+        Debug.Log(Application.persistentDataPath);
+    }
+
+    private async UniTask LoadGameAsync(string slotName, IReadOnlyDictionary<string, SaveableCharacter> charactersById)
+    {
+        var saveFile = await _saveService.LoadAsync(_saveService.GetPath(slotName));
+
+        foreach (var characterState in saveFile.Characters)
+        {
+            if (charactersById.TryGetValue(characterState.SaveKey, out var character))
+            {
+                character.Restore(characterState);
+            }
+        }
+    }
+}
