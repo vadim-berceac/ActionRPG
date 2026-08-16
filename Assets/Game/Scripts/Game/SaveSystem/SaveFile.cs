@@ -5,6 +5,7 @@ public class SaveFile
 {
     public int Version { get; set; }
     public SaveSlotInfo SlotInfo { get; set; }
+    public string SceneName { get; set; }
     public List<SaveableCharacter.CharacterState> Characters { get; set; }
 }
 
