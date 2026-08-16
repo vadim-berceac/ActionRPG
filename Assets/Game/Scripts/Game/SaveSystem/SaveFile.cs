@@ -7,6 +7,8 @@ public class SaveFile
     public SaveSlotInfo SlotInfo { get; set; }
     public string SceneName { get; set; }
     public List<SaveableCharacter.CharacterState> Characters { get; set; }
+    public List<string> PickedPickupKeys { get; set; }
+    public List<PickupItem.PickupState> RuntimeActivePickups { get; set; }
 }
 
 public class SaveSlotInfo

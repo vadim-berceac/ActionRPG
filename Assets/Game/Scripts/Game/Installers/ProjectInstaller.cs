@@ -22,6 +22,11 @@ public class ProjectInstaller : MonoInstaller
             .Bind<SaveService>()
             .AsSingle()
             .NonLazy();
+
+        Container
+            .Bind<PickupPersistenceService>()
+            .AsSingle()
+            .NonLazy();
         
         Container
             .Bind<SaveGameController>()

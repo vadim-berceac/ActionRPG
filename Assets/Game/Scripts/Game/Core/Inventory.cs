@@ -162,7 +162,13 @@ public class Inventory : MonoBehaviour, ISaveable
     {
         if (TryRemove(itemData, amount))
         {
-            itemData.GetGroundInstance(transform, _container);
+            var instance = itemData.GetGroundInstance(transform, _container);
+            var pickup = instance != null ? instance.GetComponentInChildren<PickupItem>() : null;
+            if (pickup != null)
+            {
+                pickup.MarkRuntimeSpawned();
+            }
+
             return true;
         }
         return false;
