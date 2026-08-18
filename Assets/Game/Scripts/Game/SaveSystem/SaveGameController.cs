@@ -75,6 +75,9 @@ public class SaveGameController
             {
                 await SceneManager.LoadSceneAsync(saveFile.SceneName);
 
+                var scene = SceneManager.GetActiveScene();
+                await UniTask.WaitUntil(() => _sceneContextRegistry.TryGetContainerForScene(scene) != null);
+
                 var characters = Object.FindObjectsByType<SaveableCharacter>(FindObjectsSortMode.None);
                 charactersById = characters.ToDictionary(c => c.SaveKey, c => c);
             }
