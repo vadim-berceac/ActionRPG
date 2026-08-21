@@ -6,8 +6,6 @@ namespace Game
 {
     public class WeaponInstance : MonoBehaviour
     {
-        public int damage = 1;
-
         [System.Serializable]
         public class AttackPoint
         {
@@ -226,7 +224,7 @@ namespace Game
 
             Damageable.DamageMessage data;
 
-            data.amount = damage;
+            data.amount = m_WeaponData.Damage;
             data.damager = this;
             data.direction = m_Direction.normalized;
             data.damageSource = m_Owner.transform.position;

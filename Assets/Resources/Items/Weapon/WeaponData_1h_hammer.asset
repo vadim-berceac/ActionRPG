@@ -19,6 +19,7 @@ MonoBehaviour:
     type: 3}
   <Description>k__BackingField: '  Robuster hammer.'
   <CanBeEquipped>k__BackingField: 1
+  <Damage>k__BackingField: 2
   <ViewPrefab>k__BackingField: {fileID: 1205787345809761593, guid: 2e053ec333bbce5438ff506432678c68,
     type: 3}
   <ActiveProp>k__BackingField:

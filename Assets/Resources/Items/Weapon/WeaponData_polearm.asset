@@ -19,6 +19,7 @@ MonoBehaviour:
     type: 3}
   <Description>k__BackingField: '  Simple polearm.'
   <CanBeEquipped>k__BackingField: 1
+  <Damage>k__BackingField: 3
   <ViewPrefab>k__BackingField: {fileID: 1205787345809761593, guid: 90f7696d74bd5ab41abc2f9876dadaec,
     type: 3}
   <ActiveProp>k__BackingField:
