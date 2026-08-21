@@ -12545,6 +12545,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8827665812064089943, guid: d3cf57dab44552c4b8ff211fb8e09742,
         type: 3}
+      propertyPath: <InventoryItemSlots>k__BackingField.Array.data[6].<EquippedOnStart>k__BackingField
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8827665812064089943, guid: d3cf57dab44552c4b8ff211fb8e09742,
+        type: 3}
       propertyPath: <InventoryItemSlots>k__BackingField.Array.data[7].<EquippedOnStart>k__BackingField
       value: 0
       objectReference: {fileID: 0}
@@ -152528,6 +152533,11 @@ PrefabInstance:
     - target: {fileID: 8827665812064089943, guid: d3cf57dab44552c4b8ff211fb8e09742,
         type: 3}
       propertyPath: <InventoryItemSlots>k__BackingField.Array.data[5].<EquippedOnStart>k__BackingField
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8827665812064089943, guid: d3cf57dab44552c4b8ff211fb8e09742,
+        type: 3}
+      propertyPath: <InventoryItemSlots>k__BackingField.Array.data[6].<EquippedOnStart>k__BackingField
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8827665812064089943, guid: d3cf57dab44552c4b8ff211fb8e09742,

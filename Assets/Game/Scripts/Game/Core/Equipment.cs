@@ -27,6 +27,7 @@ public class Equipment : MonoBehaviour, ISaveable
     public ItemData Primary => _primaryWeapon == null ? null : _primaryWeapon.ItemData;
     public ItemData Additional => _additionalWeapon == null ? null : _additionalWeapon.ItemData;
     public ItemData Ranged => _rangedWeapon == null ? null : _rangedWeapon.ItemData;
+    public ItemData Ammunition => _ammunition == null ? null : _ammunition.ItemData;
 
     public event Action<ItemData, EquipmentType> OnEquip;
 
@@ -194,6 +195,11 @@ public class Equipment : MonoBehaviour, ISaveable
     public void DestroyRanged()
     {
         DestroySlot(ref _rangedWeapon);
+    }
+
+    public void DestroyAmmunition()
+    {
+        DestroySlot(ref _ammunition);
     }
 
     private class EquipmentState

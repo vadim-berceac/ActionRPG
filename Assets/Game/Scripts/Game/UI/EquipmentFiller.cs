@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
@@ -21,23 +22,10 @@ public class EquipmentFiller : MonoBehaviour
 
    private void Awake()
    {
-      if (_equipment.Primary)
-      {
-         primary.sprite = _equipment.Primary.Icon;
-         primary.gameObject.SetActive(true);
-      }
-
-      if (_equipment.Additional)
-      {
-         additional.sprite = _equipment.Additional.Icon;
-         additional.gameObject.SetActive(true);
-      }
-
-      if (_equipment.Ranged)
-      {
-         ranged.sprite = _equipment.Ranged.Icon;
-         ranged.gameObject.SetActive(true);
-      }
+      UpdateIcon(ref primary, _equipment.Primary, ClearPrimary);
+      UpdateIcon(ref additional, _equipment.Additional, ClearAdditional);
+      UpdateIcon(ref ranged, _equipment.Ranged, ClearRanged);
+      UpdateIcon(ref ammunition, _equipment.Ammunition, ClearAmmunition);
    }
 
    private void OnEnable()
@@ -55,45 +43,37 @@ public class EquipmentFiller : MonoBehaviour
       switch (equipmentType)
       {
          case Equipment.EquipmentType.Primary:
-            if (itemData)
-            {
-               primary.sprite = itemData.Icon;
-               primary.gameObject.SetActive(true);
-            }
-            else
-            {
-               ClearPrimary();
-            }
-            
+            UpdateIcon(ref primary, itemData, ClearPrimary);
             break;
          
          case Equipment.EquipmentType.Additional:
-            if (itemData)
-            {
-               additional.sprite = itemData.Icon;
-               additional.gameObject.SetActive(true);
-            }
-            else
-            {
-               ClearAdditional();
-            }
-            
+            UpdateIcon(ref additional, itemData, ClearAdditional);
             break;
          
          case Equipment.EquipmentType.Ranged:
-            if (itemData)
-            {
-               ranged.sprite = itemData.Icon;
-               ranged.gameObject.SetActive(true);
-            }
-            else
-            {
-               ClearRanged();
-            }
-           
+            UpdateIcon(ref ranged, itemData, ClearRanged);
+            break;
+         
+         case Equipment.EquipmentType.Ammunition:
+            UpdateIcon(ref ammunition, itemData, ClearAmmunition);
             break;
       }
    }
+
+   private static void UpdateIcon(ref Image icon, ItemData itemData, Action clearAction)
+   {
+      if (itemData)
+      {
+         icon.sprite = itemData.Icon;
+         icon.gameObject.SetActive(true);
+      }
+      else
+      {
+         clearAction.Invoke();
+      }
+   }
+   
+   //buttons
 
    public void ClearPrimary()
    {
@@ -115,19 +95,19 @@ public class EquipmentFiller : MonoBehaviour
    
    public void ClearAmmunition()
    {
-      //_equipment.DestroyRanged();
+      _equipment.DestroyAmmunition();
       ammunition.gameObject.SetActive(false);
    }
    
    public void ClearArmor()
    {
       //_equipment.DestroyRanged();
-      armor.gameObject.SetActive(false);
+      //armor.gameObject.SetActive(false);
    }
    
    public void ClearHelmet()
    {
       //_equipment.DestroyRanged();
-      helmet.gameObject.SetActive(false);
+      //helmet.gameObject.SetActive(false);
    }
 }

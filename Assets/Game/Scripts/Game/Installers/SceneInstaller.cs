@@ -16,11 +16,6 @@ public class SceneInstaller : MonoInstaller
             .FromComponentInNewPrefabResource("UI/DialogueCanvas")
             .AsSingle()
             .NonLazy();
-     
-        // Container
-        //     .BindInterfacesAndSelfTo<PlayerNewInput>()
-        //     .AsSingle()
-        //     .NonLazy();
         
         Container
             .BindInterfacesAndSelfTo<PlayerInputHandlerService>()
