@@ -79,6 +79,8 @@ namespace Game
             staticParts = parts;
         }
 
+        public WeaponData WeaponData => m_WeaponData;
+
         public void SetWeaponData(WeaponData weaponData)
         {
             m_WeaponData = weaponData;

@@ -857,8 +857,8 @@ namespace Game
         {
             if(_projectileView) return;
 
-            _projectileView = Instantiate(_ammunitionWeaponData.ViewPrefab);
-            _ammunitionWeaponData.ActiveProp.SetPropBone(_projectileView.transform, PropBones);
+            _projectileView = Instantiate(_ammunitionWeaponInstance.WeaponData.ViewPrefab);
+            _ammunitionWeaponInstance.WeaponData.ActiveProp.SetPropBone(_projectileView.transform, PropBones);
         }
 
         public void DestroyProjectile()

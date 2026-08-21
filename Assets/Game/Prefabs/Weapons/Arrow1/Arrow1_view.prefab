@@ -45,7 +45,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdf93605f2b0c0246bbbf722e6208efb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 1
   view: {fileID: 4628936375136608706}
   trail: {fileID: 0}
   attackPoints: []

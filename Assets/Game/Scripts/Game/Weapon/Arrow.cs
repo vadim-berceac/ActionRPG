@@ -20,7 +20,8 @@ namespace Game
 
         [Header("Trail")] [SerializeField] private Trail trail;
 
-        private int _damageAmount;
+        private WeaponData _weaponData;
+        private GameObject _viewInstance;
         private ParticleSystem _hitVFX;
         private RangeWeapon _shooter;
         private Damageable _owner;
@@ -42,8 +43,17 @@ namespace Game
         public override void SetData(WeaponData data)
         {
             base.SetData(data);
-            _damageAmount  = data.Damage;
+            _weaponData = data;
             _hitVFX = data.hitParticlePrefab;
+
+            if (_viewInstance)
+                Destroy(_viewInstance);
+
+            if (data.ViewPrefab)
+            {
+                _viewInstance = Instantiate(data.ViewPrefab, transform);
+                _viewInstance.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+            }
         }
 
         public override void Shot(Vector3 target, RangeWeapon shooter)
@@ -138,7 +148,7 @@ namespace Game
 
             var message = new Damageable.DamageMessage
             {
-                amount = _damageAmount,
+                amount = _weaponData.Damage,
                 damageSource = _transform.position,
                 damager = _owner,
                 stopCamera = false,
