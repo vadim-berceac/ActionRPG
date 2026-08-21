@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Zenject;
 
 namespace Game
 {
-    /// <summary>
-    /// This class is used to transition between scenes. This includes triggering all the things that need to happen on transition such as data persistence.
-    /// </summary>
     public class SceneController : MonoBehaviour
     {
         public static SceneController Instance
@@ -49,16 +46,18 @@ namespace Game
 
         protected Scene m_CurrentZoneScene;
         protected SceneTransitionDestination.DestinationTag m_ZoneRestartDestinationTag;
-        protected IInput MCharacterInput;
+        protected PlayerNewInput MCharacterInput;
         protected bool m_Transitioning;
+        
+        CancellationTokenSource m_LifetimeCts;
 
         [Inject]
-        private void Construct(PlayerInputHandlerService mCharacterInput)
+        private void Construct(PlayerNewInput mCharacterInput)
         {
             MCharacterInput = mCharacterInput;
         }
 
-        void Awake()
+        private void Awake()
         {
             if (Instance != this)
             {
@@ -68,11 +67,13 @@ namespace Game
 
             DontDestroyOnLoad(gameObject);
 
+            m_LifetimeCts = new CancellationTokenSource();
+
             if (initialSceneTransitionDestination != null)
             {
                 SetEnteringGameObjectLocation(initialSceneTransitionDestination);
                 ScreenFader.SetAlpha(1f);
-                StartCoroutine(ScreenFader.FadeSceneIn());
+                InitialFadeIn().Forget();
                 initialSceneTransitionDestination.OnReachDestination.Invoke();
             }
             else
@@ -82,52 +83,97 @@ namespace Game
             }
         }
 
+        private async UniTaskVoid InitialFadeIn()
+        {
+            try
+            {
+                await ScreenFader.FadeSceneIn(m_LifetimeCts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+            }
+        }
+
+        void OnDestroy()
+        {
+            m_LifetimeCts?.Cancel();
+            m_LifetimeCts?.Dispose();
+            m_LifetimeCts = null;
+        }
+
         public static void RestartZone(bool resetHealth = true)
         {
-            // TODO:
-            // if(resetHealth && PlayerCharacter.PlayerInstance != null)
-            // {
-            //     PlayerCharacter.PlayerInstance.damageable.SetHealth(PlayerCharacter.PlayerInstance.damageable.startingHealth);
-            // }
-
-            Instance.StartCoroutine(Instance.Transition(Instance.m_CurrentZoneScene.name, Instance.m_ZoneRestartDestinationTag));
+            Instance.Transition(Instance.m_CurrentZoneScene.name, Instance.m_ZoneRestartDestinationTag).Forget();
         }
 
         public static void RestartZoneWithDelay(float delay, bool resetHealth = true)
         {
-            Instance.StartCoroutine(CallWithDelay(delay, RestartZone, resetHealth));
+            Instance.CallWithDelay(delay, RestartZone, resetHealth).Forget();
         }
 
         public static void TransitionToScene(TransitionPoint transitionPoint)
         {
-            Instance.StartCoroutine(Instance.Transition(transitionPoint.newSceneName, transitionPoint.transitionDestinationTag, transitionPoint.transitionType));
+            Instance.Transition(transitionPoint.newSceneName, transitionPoint.transitionDestinationTag, transitionPoint.transitionType).Forget();
         }
 
-        public static SceneTransitionDestination GetDestinationFromTag(SceneTransitionDestination.DestinationTag destinationTag)
+        protected async UniTaskVoid Transition(string newSceneName, SceneTransitionDestination.DestinationTag destinationTag, TransitionPoint.TransitionType transitionType = TransitionPoint.TransitionType.DifferentZone)
         {
-            return Instance.GetDestination(destinationTag);
-        }
+            var token = m_LifetimeCts.Token;
 
-        protected IEnumerator Transition(string newSceneName, SceneTransitionDestination.DestinationTag destinationTag, TransitionPoint.TransitionType transitionType = TransitionPoint.TransitionType.DifferentZone)
-        {
             m_Transitioning = true;
-            PersistentDataManager.SaveAllData();
 
-            //MCharacterInput.ReleaseControl();
-            yield return StartCoroutine(ScreenFader.FadeSceneOut(ScreenFader.FadeType.Loading));
-            PersistentDataManager.ClearPersisters();
-            yield return SceneManager.LoadSceneAsync(newSceneName);
-            //MCharacterInput.ReleaseControl();
-            PersistentDataManager.LoadAllData();
-            SceneTransitionDestination entrance = GetDestination(destinationTag);
-            SetEnteringGameObjectLocation(entrance);
-            SetupNewScene(transitionType, entrance);
-            if (entrance != null)
-                entrance.OnReachDestination.Invoke();
-            yield return StartCoroutine(ScreenFader.FadeSceneIn());
-            //MCharacterInput.GainControl();
+            try
+            {
+                //PersistentDataManager.SaveAllData();
 
-            m_Transitioning = false;
+                //MCharacterInput.Enable(false);
+                await ScreenFader.FadeSceneOut(ScreenFader.FadeType.Loading, token);
+
+                //PersistentDataManager.ClearPersisters();
+                await SceneManager.LoadSceneAsync(newSceneName).ToUniTask(cancellationToken: token);
+
+                //MCharacterInput.ReleaseControl();
+                //PersistentDataManager.LoadAllData();
+                var entrance = GetDestination(destinationTag);
+                SetEnteringGameObjectLocation(entrance);
+                SetupNewScene(transitionType, entrance);
+                if (entrance)
+                {
+                    entrance.OnReachDestination.Invoke();
+                }
+
+                await ScreenFader.FadeSceneIn(token);
+                //MCharacterInput.Enable(true);
+            }
+            finally
+            {
+                m_Transitioning = false;
+            }
+        }
+        
+        public static async UniTask RunWithLoadingFade(Func<UniTask> action, CancellationToken cancellationToken = default)
+        {
+            using CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
+                Instance.m_LifetimeCts.Token, cancellationToken);
+            var token = linkedCts.Token;
+
+            //Instance.MCharacterInput.Enable(false);
+            await ScreenFader.FadeSceneOut(ScreenFader.FadeType.Loading, token);
+
+            try
+            {
+                await action();
+            }
+            finally
+            {
+                await ScreenFader.FadeSceneIn(token);
+                //Instance.MCharacterInput.Enable(true);
+            }
         }
 
         protected SceneTransitionDestination GetDestination(SceneTransitionDestination.DestinationTag destinationTag)
@@ -149,8 +195,8 @@ namespace Game
                 Debug.LogWarning("Entering Transform's location has not been set.");
                 return;
             }
-            Transform entranceLocation = entrance.transform;
-            Transform enteringTransform = entrance.transitioningGameObject.transform;
+            var entranceLocation = entrance.transform;
+            var enteringTransform = entrance.transitioningGameObject.transform;
             enteringTransform.position = entranceLocation.position;
             enteringTransform.rotation = entranceLocation.rotation;
         }
@@ -173,9 +219,9 @@ namespace Game
             m_ZoneRestartDestinationTag = entrance.destinationTag;
         }
 
-        static IEnumerator CallWithDelay<T>(float delay, Action<T> call, T parameter)
+        async UniTaskVoid CallWithDelay<T>(float delay, Action<T> call, T parameter)
         {
-            yield return new WaitForSeconds(delay);
+            await UniTask.Delay(TimeSpan.FromSeconds(delay), cancellationToken: m_LifetimeCts.Token);
             call(parameter);
         }
     }

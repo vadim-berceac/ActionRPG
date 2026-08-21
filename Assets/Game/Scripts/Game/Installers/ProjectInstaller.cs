@@ -17,7 +17,12 @@ public class ProjectInstaller : MonoInstaller
             .FromScriptableObjectResource("Items/ItemDatabase")
             .AsSingle()
             .NonLazy();
-           
+        
+        Container
+            .BindInterfacesAndSelfTo<PlayerNewInput>()
+            .AsSingle()
+            .NonLazy();
+        
         Container
             .Bind<SaveService>()
             .AsSingle()

@@ -1,6 +1,6 @@
-﻿using System.Collections;
+﻿using Cysharp.Threading.Tasks;
+using System.Threading;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Game
 {
@@ -42,7 +42,6 @@ namespace Game
             s_Instance = Instantiate(controllerPrefab);
         }
 
-
         public CanvasGroup faderCanvasGroup;
         public CanvasGroup loadingCanvasGroup;
         public CanvasGroup gameOverCanvasGroup;
@@ -51,6 +50,9 @@ namespace Game
         protected bool m_IsFading;
 
         const int k_MaxSortingLayer = 32767;
+
+        // Токен, привязанный к жизни объекта — гасит все фейды при уничтожении/смене сцены
+        CancellationTokenSource m_LifetimeCts;
 
         void Awake()
         {
@@ -61,22 +63,52 @@ namespace Game
             }
 
             DontDestroyOnLoad(gameObject);
+
+            m_LifetimeCts = new CancellationTokenSource();
         }
 
-        protected IEnumerator Fade(float finalAlpha, CanvasGroup canvasGroup)
+        void OnDestroy()
         {
+            m_LifetimeCts?.Cancel();
+            m_LifetimeCts?.Dispose();
+            m_LifetimeCts = null;
+        }
+
+        protected async UniTask Fade(float finalAlpha, CanvasGroup canvasGroup, CancellationToken externalToken = default)
+        {
+            using CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
+                m_LifetimeCts.Token, externalToken);
+            CancellationToken token = linkedCts.Token;
+
             m_IsFading = true;
             canvasGroup.blocksRaycasts = true;
-            float fadeSpeed = Mathf.Abs(canvasGroup.alpha - finalAlpha) / fadeDuration;
-            while (!Mathf.Approximately(canvasGroup.alpha, finalAlpha))
+
+            try
             {
-                canvasGroup.alpha = Mathf.MoveTowards(canvasGroup.alpha, finalAlpha,
-                    fadeSpeed * Time.deltaTime);
-                yield return null;
+                float fadeSpeed = Mathf.Abs(canvasGroup.alpha - finalAlpha) / fadeDuration;
+
+                while (!Mathf.Approximately(canvasGroup.alpha, finalAlpha))
+                {
+                    token.ThrowIfCancellationRequested();
+
+                    canvasGroup.alpha = Mathf.MoveTowards(canvasGroup.alpha, finalAlpha,
+                        fadeSpeed * Time.deltaTime);
+
+                    await UniTask.Yield(PlayerLoopTiming.Update, token);
+                }
+
+                canvasGroup.alpha = finalAlpha;
             }
-            canvasGroup.alpha = finalAlpha;
-            m_IsFading = false;
-            canvasGroup.blocksRaycasts = false;
+            catch (System.OperationCanceledException)
+            {
+                // Объект уничтожен или фейд отменён — просто выходим,
+                // не бросаем исключение дальше и не оставляем m_IsFading = true.
+            }
+            finally
+            {
+                m_IsFading = false;
+                canvasGroup.blocksRaycasts = false;
+            }
         }
 
         public static void SetAlpha(float alpha)
@@ -84,7 +116,7 @@ namespace Game
             Instance.faderCanvasGroup.alpha = alpha;
         }
 
-        public static IEnumerator FadeSceneIn()
+        public static async UniTask FadeSceneIn(CancellationToken token = default)
         {
             CanvasGroup canvasGroup;
             if (Instance.faderCanvasGroup.alpha > 0.1f)
@@ -94,12 +126,13 @@ namespace Game
             else
                 canvasGroup = Instance.loadingCanvasGroup;
 
-            yield return Instance.StartCoroutine(Instance.Fade(0f, canvasGroup));
+            await Instance.Fade(0f, canvasGroup, token);
 
-            canvasGroup.gameObject.SetActive(false);
+            if (canvasGroup != null)
+                canvasGroup.gameObject.SetActive(false);
         }
 
-        public static IEnumerator FadeSceneOut(FadeType fadeType = FadeType.Black)
+        public static async UniTask FadeSceneOut(FadeType fadeType = FadeType.Black, CancellationToken token = default)
         {
             CanvasGroup canvasGroup;
             switch (fadeType)
@@ -117,7 +150,7 @@ namespace Game
 
             canvasGroup.gameObject.SetActive(true);
 
-            yield return Instance.StartCoroutine(Instance.Fade(1f, canvasGroup));
+            await Instance.Fade(1f, canvasGroup, token);
         }
     }
 }

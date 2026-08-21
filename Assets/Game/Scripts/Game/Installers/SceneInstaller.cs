@@ -17,10 +17,10 @@ public class SceneInstaller : MonoInstaller
             .AsSingle()
             .NonLazy();
      
-        Container
-            .BindInterfacesAndSelfTo<PlayerNewInput>()
-            .AsSingle()
-            .NonLazy();
+        // Container
+        //     .BindInterfacesAndSelfTo<PlayerNewInput>()
+        //     .AsSingle()
+        //     .NonLazy();
         
         Container
             .BindInterfacesAndSelfTo<PlayerInputHandlerService>()

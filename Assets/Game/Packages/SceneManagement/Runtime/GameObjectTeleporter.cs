@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Zenject;
 
@@ -82,12 +83,16 @@ namespace Game
             }
 
             if (fade)
-                yield return StartCoroutine(ScreenFader.FadeSceneOut());
+            {
+                ScreenFader.FadeSceneOut().Forget();
+            }
 
             transitioningGameObject.transform.position = destinationPosition;
 
             if (fade)
-                yield return StartCoroutine(ScreenFader.FadeSceneIn());
+            {
+                ScreenFader.FadeSceneIn().Forget();
+            }
 
             if (releaseControl)
             {
@@ -95,6 +100,8 @@ namespace Game
             }
 
             m_Transitioning = false;
+            
+            return  null;
         }
 
         protected SceneTransitionDestination GetDestination(SceneTransitionDestination.DestinationTag destinationTag)

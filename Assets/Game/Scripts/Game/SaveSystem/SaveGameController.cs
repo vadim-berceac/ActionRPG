@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using Game;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Zenject;
@@ -66,41 +67,44 @@ public class SaveGameController
             return;
         }
 
-        _pickupPersistence?.RestorePickedKeys(saveFile.PickedPickupKeys);
-
-        if (!string.IsNullOrEmpty(saveFile.SceneName))
+        await SceneController.RunWithLoadingFade(async () =>
         {
-            var currentScene = SceneManager.GetActiveScene();
-            if (currentScene.name != saveFile.SceneName)
+            _pickupPersistence?.RestorePickedKeys(saveFile.PickedPickupKeys);
+
+            if (!string.IsNullOrEmpty(saveFile.SceneName))
             {
-                await SceneManager.LoadSceneAsync(saveFile.SceneName);
+                var currentScene = SceneManager.GetActiveScene();
+                if (currentScene.name != saveFile.SceneName)
+                {
+                    await SceneManager.LoadSceneAsync(saveFile.SceneName).ToUniTask();
 
-                var scene = SceneManager.GetActiveScene();
-                await UniTask.WaitUntil(() => _sceneContextRegistry.TryGetContainerForScene(scene) != null);
+                    var scene = SceneManager.GetActiveScene();
+                    await UniTask.WaitUntil(() => _sceneContextRegistry.TryGetContainerForScene(scene) != null);
 
-                var characters = Object.FindObjectsByType<SaveableCharacter>(FindObjectsSortMode.None);
-                charactersById = characters.ToDictionary(c => c.SaveKey, c => c);
+                    var characters = Object.FindObjectsByType<SaveableCharacter>(FindObjectsSortMode.None);
+                    charactersById = characters.ToDictionary(c => c.SaveKey, c => c);
+                }
             }
-        }
 
-        var pickups = Object.FindObjectsByType<PickupItem>(FindObjectsSortMode.None);
-        foreach (var pickup in pickups)
-        {
-            if ((_pickupPersistence?.IsPicked(pickup.SaveKey) ?? false) || pickup.IsRuntimeSpawned)
+            var pickups = Object.FindObjectsByType<PickupItem>(FindObjectsSortMode.None);
+            foreach (var pickup in pickups)
             {
-                pickup.DestroySelf();
+                if ((_pickupPersistence?.IsPicked(pickup.SaveKey) ?? false) || pickup.IsRuntimeSpawned)
+                {
+                    pickup.DestroySelf();
+                }
             }
-        }
 
-        RestoreRuntimePickups(saveFile.RuntimeActivePickups);
+            RestoreRuntimePickups(saveFile.RuntimeActivePickups);
 
-        foreach (var characterState in saveFile.Characters)
-        {
-            if (charactersById.TryGetValue(characterState.SaveKey, out var character))
+            foreach (var characterState in saveFile.Characters)
             {
-                character.Restore(characterState);
+                if (charactersById.TryGetValue(characterState.SaveKey, out var character))
+                {
+                    character.Restore(characterState);
+                }
             }
-        }
+        });
     }
 
     private void RestoreRuntimePickups(List<PickupItem.PickupState> runtimePickups)

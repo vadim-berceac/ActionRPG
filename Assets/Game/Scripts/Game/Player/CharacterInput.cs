@@ -40,6 +40,8 @@ public class PlayerNewInput : ICharacterInput, IDisposable
     private readonly InputAction _inventoryAction;
     private readonly InputAction _shootAction;
 
+    private bool _subscribed;
+
     private PlayerNewInput(InputActionAsset actionAsset)
     {
         _moveAction = actionAsset.FindAction("Move");
@@ -58,8 +60,24 @@ public class PlayerNewInput : ICharacterInput, IDisposable
         actionAsset.Enable();
     }
 
+    public void Enable(bool enable)
+    {
+        if (enable)
+        {
+            Subscribe();
+            return;
+        }
+        
+        Unsubscribe();
+    }
+
     private void Subscribe()
     {
+        if (_subscribed)
+        {
+            return;
+        }
+        
         _moveAction.performed += OnMove;
         _moveAction.canceled += OnMoveCanceled;
         
@@ -84,10 +102,17 @@ public class PlayerNewInput : ICharacterInput, IDisposable
         _interactAction.started += OnInteract;
         _pauseAction.performed += OnPause;
         _inventoryAction.started += OnInventory;
+        
+        _subscribed = true;
     }
 
     private void Unsubscribe()
     {
+        if (!_subscribed)
+        {
+            return;
+        }
+        
         _moveAction.performed -= OnMove;
         _moveAction.canceled -= OnMoveCanceled;
         
@@ -112,6 +137,8 @@ public class PlayerNewInput : ICharacterInput, IDisposable
         _interactAction.started -= OnInteract;
         _pauseAction.performed -= OnPause;
         _inventoryAction.started -= OnInventory;
+        
+        _subscribed = false;
     }
 
     private void OnMove(InputAction.CallbackContext context)
