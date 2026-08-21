@@ -421,6 +421,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   audiosource: {fileID: 745819440771655263}
+  chanceToPlay: 40
   randomizePitch: 0
   pitchRandomRange: 0.2
   playDelay: 0
@@ -475,6 +476,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   audiosource: {fileID: 745819440771655263}
+  chanceToPlay: 40
   randomizePitch: 0
   pitchRandomRange: 0.2
   playDelay: 0
@@ -588,6 +590,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   audiosource: {fileID: 745819440771655263}
+  chanceToPlay: 60
   randomizePitch: 0
   pitchRandomRange: 0.2
   playDelay: 0
@@ -728,6 +731,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   audiosource: {fileID: 745819440771655263}
+  chanceToPlay: 100
   randomizePitch: 1
   pitchRandomRange: 0.2
   playDelay: 0
@@ -784,6 +788,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   audiosource: {fileID: 745819440771655263}
+  chanceToPlay: 100
   randomizePitch: 1
   pitchRandomRange: 0.2
   playDelay: 0
@@ -952,6 +957,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   audiosource: {fileID: 745819440771655263}
+  chanceToPlay: 30
   randomizePitch: 0
   pitchRandomRange: 0.2
   playDelay: 0.2
@@ -1009,6 +1015,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   audiosource: {fileID: 745819440771655263}
+  chanceToPlay: 35
   randomizePitch: 0
   pitchRandomRange: 0.2
   playDelay: 0

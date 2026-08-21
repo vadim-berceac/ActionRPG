@@ -9,6 +9,7 @@ namespace Game
     public class RandomAudioPlayer : MonoBehaviour
     {
         [SerializeField] private AudioSource audiosource;
+        [SerializeField][Range(1,100)] private int chanceToPlay = 100;
         
         [Serializable]
         public class MaterialAudioOverride
@@ -75,6 +76,11 @@ namespace Game
 
         private AudioClip InternalPlayRandomClip(Material overrideMaterial, int bankId)
         {
+            var roll = Random.Range(0, 100);
+            if (roll > chanceToPlay)
+            {
+                return null;
+            }
             var bank = defaultBank;
             if (overrideMaterial)
             {
