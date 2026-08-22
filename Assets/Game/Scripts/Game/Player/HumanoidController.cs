@@ -206,6 +206,7 @@ namespace Game
             if (IsDead)
             {
                 _previouslyGrounded = _isGrounded;
+                _animCache.SetForwardSpeed(0);
                 return;
             }
 
