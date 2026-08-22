@@ -2,10 +2,6 @@ using UnityEngine;
 
 namespace LegIK
 {
-    /// <summary>
-    /// Настройки одной ноги для системы Leg IK.
-    /// Всё, что тут — тюнится через инспектор, работает независимо для каждой ноги.
-    /// </summary>
     [System.Serializable]
     public class LegIKFootSettings
     {

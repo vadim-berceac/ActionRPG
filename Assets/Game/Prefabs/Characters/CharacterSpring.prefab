@@ -76,3 +76,4 @@ MonoBehaviour:
   bounciness: 0.1
   positionSmoothingHz: 6
   rotationSmoothingHz: 6
+  updateTiming: 8

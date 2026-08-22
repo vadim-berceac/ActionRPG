@@ -4,14 +4,7 @@ using UnityEngine;
 
 namespace LegIK
 {
-    /// <summary>
-    /// Система IK ног, работающая через Animator IK Goals (OnAnimatorIK), без прокидывания
-    /// трансформов костей напрямую. Требует Humanoid-риг с включённым "IK Pass" на слое Animator,
-    /// на котором вызывается этот компонент (Base Layer -> Animator Controller -> Layers -> IK Pass).
-    ///
-    /// Математика сглаживания/демпфирования считается в Burst job (FootIKSolverJob).
-    /// Raycast остаётся на главном потоке, т.к. Physics API не бёрстуется.
-    /// </summary>
+    [DefaultExecutionOrder(100)]
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Animator))]
     public class LegIKController : MonoBehaviour
@@ -54,6 +47,16 @@ namespace LegIK
         [Range(0f, 1f)]
         [SerializeField] private float maxPelvisRaise = 0.2f;
 
+        [Header("Character Spring (squash & stretch)")]
+        [Tooltip("Модель со скелетом (дочерний объект Character Transform) — на неё применяется squash&stretch деформация")]
+        [SerializeField] private Transform deformationBody;
+
+        [SerializeField] private CharacterSpringSolver characterSpring = new();
+
+        [Tooltip("Насколько наклон тела от пружины передаётся в таз/ноги через animator.bodyRotation. 0 = ноги не наклоняются вместе с телом (только верх тела через анимацию/другие средства), 1 = полный наклон, как посчитала пружина.")]
+        [Range(0f, 1f)]
+        [SerializeField] private float bodyLeanWeight = 1f;
+
         [Header("Debug / Gizmos")]
         [SerializeField] private bool drawGizmos = true;
         [SerializeField] private Color gizmoRayColor = new Color(1f, 0.85f, 0f);
@@ -65,15 +68,15 @@ namespace LegIK
         private NativeArray<FootIKJobState> _states;
         private NativeArray<FootIKJobOutput> _outputs;
 
-        // Кэш для гизмо — не бёрстовое, чисто для отладки в редакторе.
         private Vector3[] _debugRayOrigin;
         private Vector3[] _debugHitPoint;
         private bool[] _debugHasHit;
 
+        private float[] _unleanedFootY;
+
         private float _pelvisOffsetCurrent;
         private float _pelvisOffsetVelocity;
 
-        /// <summary>Позволяет извне плавно включать/выключать IK (например, DOTween.To(() => GlobalWeight, ...)).</summary>
         public float GlobalWeight
         {
             get => globalWeight;
@@ -97,18 +100,27 @@ namespace LegIK
         private void OnEnable()
         {
             AllocateNative();
+
+            if (deformationBody != null)
+                characterSpring.Initialize(transform, deformationBody);
         }
 
         private void OnDisable()
         {
             DisposeNative();
+            characterSpring.Dispose();
+        }
+
+        private void OnAnimatorMove()
+        {
+            characterSpring.Tick(Time.deltaTime);
         }
 
         private void AllocateNative()
         {
             DisposeNative();
 
-            int count = feet?.Length ?? 0;
+            var count = feet?.Length ?? 0;
             if (count == 0)
             {
                 return;
@@ -118,7 +130,7 @@ namespace LegIK
             _states = new NativeArray<FootIKJobState>(count, Allocator.Persistent);
             _outputs = new NativeArray<FootIKJobOutput>(count, Allocator.Persistent);
 
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 _states[i] = FootIKJobState.Default();
             }
@@ -126,6 +138,7 @@ namespace LegIK
             _debugRayOrigin = new Vector3[count];
             _debugHitPoint = new Vector3[count];
             _debugHasHit = new bool[count];
+            _unleanedFootY = new float[count];
         }
 
         private void DisposeNative()
@@ -151,18 +164,31 @@ namespace LegIK
                 }
             }
 
-            float dt = Time.deltaTime;
-
-            // 1. Raycast на главном потоке (не бёрстуется) + заполнение входа для job.
-            for (int i = 0; i < feet.Length; i++)
+            for (var i = 0; i < feet.Length; i++)
             {
-                LegIKFootSettings foot = feet[i];
+                _unleanedFootY[i] = animator.GetIKPosition(feet[i].ikGoal).y;
+            }
 
-                Vector3 animatedPos = animator.GetIKPosition(foot.ikGoal);
-                Quaternion animatedRot = animator.GetIKRotation(foot.ikGoal);
+            if (bodyLeanWeight > 0f)
+            {
+                var lean = characterSpring.LeanEulerAngles * (globalWeight * bodyLeanWeight);
+                if (lean != Vector3.zero)
+                {
+                    animator.bodyRotation *= Quaternion.Euler(lean);
+                }
+            }
 
-                Vector3 rayOrigin = animatedPos + Vector3.up * foot.raycastUpOffset;
-                float rayLength = foot.raycastUpOffset + foot.raycastDownDistance;
+            var dt = Time.deltaTime;
+
+            for (var i = 0; i < feet.Length; i++)
+            {
+                var foot = feet[i];
+
+                var animatedPos = animator.GetIKPosition(foot.ikGoal);
+                var animatedRot = animator.GetIKRotation(foot.ikGoal);
+
+                var rayOrigin = animatedPos + Vector3.up * foot.raycastUpOffset;
+                var rayLength = foot.raycastUpOffset + foot.raycastDownDistance;
 
                 bool hasHit;
                 RaycastHit hit;
@@ -186,6 +212,7 @@ namespace LegIK
                 {
                     animatedPosition = animatedPos,
                     animatedRotation = animatedRot,
+                    unleanedAnimatedPositionY = _unleanedFootY[i],
                     hitPoint = hasHit ? hit.point : animatedPos,
                     hitNormal = hasHit ? hit.normal : Vector3.up,
                     hasHit = (byte)(hasHit ? 1 : 0),
@@ -204,9 +231,6 @@ namespace LegIK
                 };
             }
 
-            // 2. Burst job — вся математика сглаживания/выравнивания.
-            // Ног обычно 2 (реже 4), поэтому Schedule+Complete в тот же кадр — это дёшево
-            // и снимает необходимость городить двухфреймовую задержку ради джобы на 2 элемента.
             var job = new FootIKSolverJob
             {
                 inputs = _inputs,
@@ -215,14 +239,13 @@ namespace LegIK
             };
             job.Schedule(feet.Length, 4).Complete();
 
-            // 3. Применение результата к Animator + подстройка таза.
-            float lowestOffset = 0f;
-            float highestOffset = 0f;
+            var lowestOffset = 0f;
+            var highestOffset = 0f;
 
-            for (int i = 0; i < feet.Length; i++)
+            for (var i = 0; i < feet.Length; i++)
             {
-                LegIKFootSettings foot = feet[i];
-                FootIKJobOutput output = _outputs[i];
+                var foot = feet[i];
+                var output = _outputs[i];
 
                 animator.SetIKPositionWeight(foot.ikGoal, output.positionWeight);
                 animator.SetIKRotationWeight(foot.ikGoal, output.rotationWeight);
@@ -231,29 +254,30 @@ namespace LegIK
 
                 if (foot.useHint)
                 {
-                    Vector3 hintPos = animator.GetIKHintPosition(foot.ikHint) + transform.forward * foot.kneeForwardOffset;
+                    var hintPos = animator.GetIKHintPosition(foot.ikHint) + transform.forward * foot.kneeForwardOffset;
                     animator.SetIKHintPosition(foot.ikHint, hintPos);
                     animator.SetIKHintPositionWeight(foot.ikHint, foot.hintWeight * globalWeight * output.positionWeight);
                 }
-
-                lowestOffset = Mathf.Min(lowestOffset, output.heightOffset);
-                highestOffset = Mathf.Max(highestOffset, output.heightOffset);
+                
+                var weightedOffset = output.heightOffset * output.positionWeight;
+                lowestOffset = Mathf.Min(lowestOffset, weightedOffset);
+                highestOffset = Mathf.Max(highestOffset, weightedOffset);
             }
 
-            if (adjustPelvis)
+            if (!adjustPelvis)
             {
-                // Приоритет — опускание таза (безопаснее, чем пропороть ногой землю снизу);
-                // подъём применяется, только если ни одна нога не просит опускания.
-                float targetPelvisOffset = lowestOffset < 0f ? lowestOffset : highestOffset;
-                targetPelvisOffset = Mathf.Clamp(targetPelvisOffset, -maxPelvisLower, maxPelvisRaise);
-
-                _pelvisOffsetCurrent = Mathf.SmoothDamp(_pelvisOffsetCurrent, targetPelvisOffset,
-                    ref _pelvisOffsetVelocity, Mathf.Max(pelvisSmoothTime, 0.0001f));
-
-                Vector3 bodyPos = animator.bodyPosition;
-                bodyPos.y += _pelvisOffsetCurrent * pelvisWeight * globalWeight;
-                animator.bodyPosition = bodyPos;
+               return;
             }
+            
+            var targetPelvisOffset = lowestOffset < 0f ? lowestOffset : highestOffset;
+            targetPelvisOffset = Mathf.Clamp(targetPelvisOffset, -maxPelvisLower, maxPelvisRaise);
+
+            _pelvisOffsetCurrent = Mathf.SmoothDamp(_pelvisOffsetCurrent, targetPelvisOffset,
+                ref _pelvisOffsetVelocity, Mathf.Max(pelvisSmoothTime, 0.0001f));
+
+            var bodyPos = animator.bodyPosition;
+            bodyPos.y += _pelvisOffsetCurrent * pelvisWeight * globalWeight;
+            animator.bodyPosition = bodyPos;
         }
 
         private void OnDrawGizmosSelected()
@@ -263,11 +287,11 @@ namespace LegIK
                 return;
             }
 
-            for (int i = 0; i < _debugRayOrigin.Length; i++)
+            for (var i = 0; i < _debugRayOrigin.Length; i++)
             {
-                Vector3 origin = _debugRayOrigin[i];
-                bool hasHit = _debugHasHit[i];
-                Vector3 point = _debugHitPoint[i];
+                var origin = _debugRayOrigin[i];
+                var hasHit = _debugHasHit[i];
+                var point = _debugHitPoint[i];
 
                 Gizmos.color = gizmoRayColor;
                 Gizmos.DrawLine(origin, point);

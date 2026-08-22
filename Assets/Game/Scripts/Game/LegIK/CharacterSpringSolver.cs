@@ -1,16 +1,15 @@
-using UnityEngine;
-using Unity.Jobs;
+using System;
 using Unity.Burst;
-using Unity.Mathematics;
 using Unity.Collections;
+using Unity.Jobs;
+using Unity.Mathematics;
+using UnityEngine;
 
-public class CharacterSpring : MonoBehaviour
+[Serializable]
+public class CharacterSpringSolver : IDisposable
 {
-    private Transform _character;
-    private Transform _deformationBody;
-
-    [SerializeField] private Vector3 upScale = new (0.8f, 1.2f, 0.8f);
-    [SerializeField] private Vector3 downScale = new (1.2f, 0.8f, 1.2f);
+    [SerializeField] private Vector3 upScale = new(0.8f, 1.2f, 0.8f);
+    [SerializeField] private Vector3 downScale = new(1.2f, 0.8f, 1.2f);
 
     [SerializeField] private float scaleFactor = 1f;
     [SerializeField] private float rotationFactor = 1f;
@@ -29,32 +28,45 @@ public class CharacterSpring : MonoBehaviour
     [Tooltip("Частота сглаживания поворота персонажа. Убирает дрожание от поворота.")]
     [SerializeField, Range(1f, 30f)] private float rotationSmoothingHz = 6f;
 
-    private Transform _springTransform;
+    private Transform _character;
+    private Transform _springColliderTransform; 
+    private Transform _deformationBody;        
     private float3 _restLocalOffset;
+    private bool _initialized;
+
+    public Vector3 LeanEulerAngles { get; private set; }
 
     private NativeArray<SpringState> _state;
     private NativeArray<float3> _resultSpringPosition;
     private NativeArray<float3> _resultScale;
     private NativeArray<float3> _resultRotation;
 
-    public void Initialize(Transform character, Transform deformationBody)
+  
+    public void Initialize(Transform character, Transform deformationBody, Transform springColliderTransform = null)
     {
-        _springTransform = transform;
+        Dispose();
+
         _character = character;
         _deformationBody = deformationBody;
+        _springColliderTransform = springColliderTransform;
 
-        name = _character.name + "_Spring";
+        var startPos = (float3)_character.position;
+        var startRot = (quaternion)_character.rotation;
 
-        var invCharRot = math.inverse((quaternion)_character.rotation);
-        _restLocalOffset = math.mul(invCharRot, (float3)_springTransform.position - (float3)_character.position);
+        if (_springColliderTransform != null)
+        {
+            var invCharRot = math.inverse(startRot);
+            _restLocalOffset = math.mul(invCharRot, (float3)_springColliderTransform.position - startPos);
+        }
+        else
+        {
+            _restLocalOffset = float3.zero;
+        }
 
         _state = new NativeArray<SpringState>(1, Allocator.Persistent);
         _resultSpringPosition = new NativeArray<float3>(1, Allocator.Persistent);
         _resultScale = new NativeArray<float3>(1, Allocator.Persistent);
         _resultRotation = new NativeArray<float3>(1, Allocator.Persistent);
-
-        var startPos = (float3)_character.position;
-        var startRot = (quaternion)_character.rotation;
 
         _state[0] = new SpringState
         {
@@ -67,16 +79,20 @@ public class CharacterSpring : MonoBehaviour
         _resultSpringPosition[0] = _state[0].currentPosition;
         _resultScale[0] = new float3(1f, 1f, 1f);
         _resultRotation[0] = float3.zero;
+
+        _initialized = true;
     }
 
-    private void LateUpdate()
+    public void Tick(float dt)
     {
+        if (!_initialized) return;
+
         var job = new SpringUpdateJob
         {
             rawCharacterPosition = _character.position,
             rawCharacterRotation = _character.rotation,
             restLocalOffset = _restLocalOffset,
-            dt = Time.deltaTime,
+            dt = dt,
 
             positionSmoothingHz = positionSmoothingHz,
             rotationSmoothingHz = rotationSmoothingHz,
@@ -99,17 +115,21 @@ public class CharacterSpring : MonoBehaviour
 
         job.Run();
 
-        _springTransform.position = _resultSpringPosition[0];
+        if (_springColliderTransform != null)
+            _springColliderTransform.position = _resultSpringPosition[0];
+
         _deformationBody.localScale = _resultScale[0];
-        _deformationBody.localEulerAngles = _resultRotation[0];
+
+        LeanEulerAngles = (Vector3)_resultRotation[0];
     }
 
-    private void OnDisable()
+    public void Dispose()
     {
         if (_state.IsCreated) _state.Dispose();
         if (_resultSpringPosition.IsCreated) _resultSpringPosition.Dispose();
         if (_resultScale.IsCreated) _resultScale.Dispose();
         if (_resultRotation.IsCreated) _resultRotation.Dispose();
+        _initialized = false;
     }
 
     private struct SpringState
