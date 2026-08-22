@@ -197,7 +197,7 @@ namespace LegIK
                     liftHeight = foot.liftHeightThreshold,
                     positionSmoothTime = foot.positionSmoothTime,
                     rotationSmoothTime = foot.rotationSmoothTime,
-                    weightBlendSpeed = foot.weightBlendSpeed,
+                    weightSmoothTime = foot.weightSmoothTime,
                     maxPositionWeight = foot.maxPositionWeight * globalWeight,
                     maxRotationWeight = foot.maxRotationWeight * globalWeight,
                     deltaTime = dt

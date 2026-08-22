@@ -29,7 +29,7 @@ namespace LegIK
 
         public float positionSmoothTime;
         public float rotationSmoothTime;
-        public float weightBlendSpeed;
+        public float weightSmoothTime;
 
         public float maxPositionWeight;
         public float maxRotationWeight;
@@ -115,10 +115,11 @@ namespace LegIK
                     desiredRot = math.mul(normalRot, input.animatedRotation);
 
                     // Вес IK зависит от того, насколько анимированная стопа сейчас приподнята над землёй.
-                    // Близко к земле (опорная фаза) — вес к 1, доворачиваем точно по рельефу.
-                    // Высоко поднята (фаза переноса) — вес к 0, отдаём стопу анимации, чтобы она свободно
-                    // отрывалась от земли и не "скользила" прижатой к поверхности.
-                    float heightAboveGround = input.animatedPosition.y - input.hitPoint.y;
+                    // Сравниваем не с сырой точкой луча, а с точкой, где стопа окажется в состоянии полного
+                    // контакта с землёй (с учётом footOffset и soleThickness) — иначе пороги groundedHeight/
+                    // liftHeight означали бы разное в зависимости от того, какой offset задан на ноге.
+                    float restY = input.hitPoint.y + input.footOffset.y + input.soleThickness;
+                    float heightAboveGround = input.animatedPosition.y - restY;
                     float liftRange = math.max(input.liftHeight - input.groundedHeight, 0.0001f);
                     float liftT = math.saturate((heightAboveGround - input.groundedHeight) / liftRange);
                     targetWeight = 1f - liftT;
@@ -146,7 +147,8 @@ namespace LegIK
                 float rotT = 1f - math.exp(-input.deltaTime / math.max(input.rotationSmoothTime, 0.0001f));
                 newRot = math.nlerp(state.currentRotation, desiredRot, rotT);
 
-                newWeight = MoveTowards(state.currentWeight, targetWeight, input.weightBlendSpeed * input.deltaTime);
+                float weightT = 1f - math.exp(-input.deltaTime / math.max(input.weightSmoothTime, 0.0001f));
+                newWeight = math.lerp(state.currentWeight, targetWeight, weightT);
             }
 
             state.currentPosition = newPos;
@@ -204,16 +206,6 @@ namespace LegIK
             float3 temp = (velocity + omega * change) * dt;
             velocity = (velocity - omega * temp) * exp;
             return target + (change + temp) * exp;
-        }
-
-        private static float MoveTowards(float current, float target, float maxDelta)
-        {
-            if (math.abs(target - current) <= maxDelta)
-            {
-                return target;
-            }
-
-            return current + math.sign(target - current) * maxDelta;
         }
     }
 }

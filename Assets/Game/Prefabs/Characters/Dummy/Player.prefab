@@ -398,7 +398,7 @@ MonoBehaviour:
     useHint: 1
     ikHint: 0
     raycastUpOffset: 0.3
-    raycastDownDistance: 0.6
+    raycastDownDistance: 0.4
     groundMask:
       serializedVersion: 2
       m_Bits: 2147549185
@@ -409,19 +409,19 @@ MonoBehaviour:
     maxPositionWeight: 1
     maxRotationWeight: 1
     hintWeight: 0.5
-    positionSmoothTime: 0.08
-    rotationSmoothTime: 0.08
-    weightBlendSpeed: 8
-    maxRotationAngle: 45
+    positionSmoothTime: 0.03
+    rotationSmoothTime: 0.03
+    weightSmoothTime: 0.03
+    maxRotationAngle: 40
     groundedHeightThreshold: 0.02
-    liftHeightThreshold: 0.15
+    liftHeightThreshold: 0.02
     maxSlopeAngle: 60
     kneeForwardOffset: 0.05
   - ikGoal: 1
     useHint: 1
     ikHint: 1
     raycastUpOffset: 0.3
-    raycastDownDistance: 0.6
+    raycastDownDistance: 0.4
     groundMask:
       serializedVersion: 2
       m_Bits: 2147549185
@@ -432,12 +432,12 @@ MonoBehaviour:
     maxPositionWeight: 1
     maxRotationWeight: 1
     hintWeight: 0.5
-    positionSmoothTime: 0.08
-    rotationSmoothTime: 0.08
-    weightBlendSpeed: 8
-    maxRotationAngle: 45
+    positionSmoothTime: 0.03
+    rotationSmoothTime: 0.03
+    weightSmoothTime: 0.03
+    maxRotationAngle: 40
     groundedHeightThreshold: 0.02
-    liftHeightThreshold: 0.15
+    liftHeightThreshold: 0.02
     maxSlopeAngle: 60
     kneeForwardOffset: 0.05
   adjustPelvis: 1
@@ -1002,7 +1002,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2465221901780179750
 Transform:
   m_ObjectHideFlags: 0
