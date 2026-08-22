@@ -154,6 +154,7 @@ GameObject:
   - component: {fileID: 3129279076112330710}
   - component: {fileID: 3077285747228589714}
   - component: {fileID: 4971361307042770288}
+  - component: {fileID: 7218132420122536269}
   m_Layer: 9
   m_Name: Player
   m_TagString: Player
@@ -377,6 +378,78 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98d3c431e10c98643820e68ad77790a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Equipment
+--- !u!114 &7218132420122536269
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1125372579252015583}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76835f56a72f2424894812c4e6290f58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LegIK.LegIKController
+  animator: {fileID: 3589592028908676066}
+  enableIK: 1
+  globalWeight: 1
+  feet:
+  - ikGoal: 0
+    useHint: 1
+    ikHint: 0
+    raycastUpOffset: 0.3
+    raycastDownDistance: 0.6
+    groundMask:
+      serializedVersion: 2
+      m_Bits: 2147549185
+    useSphereCast: 0
+    sphereCastRadius: 0.08
+    footOffset: {x: 0, y: 0.13, z: 0}
+    soleThickness: 0.02
+    maxPositionWeight: 1
+    maxRotationWeight: 1
+    hintWeight: 0.5
+    positionSmoothTime: 0.08
+    rotationSmoothTime: 0.08
+    weightBlendSpeed: 8
+    maxRotationAngle: 45
+    groundedHeightThreshold: 0.02
+    liftHeightThreshold: 0.15
+    maxSlopeAngle: 60
+    kneeForwardOffset: 0.05
+  - ikGoal: 1
+    useHint: 1
+    ikHint: 1
+    raycastUpOffset: 0.3
+    raycastDownDistance: 0.6
+    groundMask:
+      serializedVersion: 2
+      m_Bits: 2147549185
+    useSphereCast: 0
+    sphereCastRadius: 0.08
+    footOffset: {x: 0, y: 0.13, z: 0}
+    soleThickness: 0.02
+    maxPositionWeight: 1
+    maxRotationWeight: 1
+    hintWeight: 0.5
+    positionSmoothTime: 0.08
+    rotationSmoothTime: 0.08
+    weightBlendSpeed: 8
+    maxRotationAngle: 45
+    groundedHeightThreshold: 0.02
+    liftHeightThreshold: 0.15
+    maxSlopeAngle: 60
+    kneeForwardOffset: 0.05
+  adjustPelvis: 1
+  pelvisWeight: 1
+  pelvisSmoothTime: 0.1
+  maxPelvisLower: 0
+  maxPelvisRaise: 0.2
+  drawGizmos: 1
+  gizmoRayColor: {r: 1, g: 0.85, b: 0, a: 1}
+  gizmoHitColor: {r: 0, g: 1, b: 0, a: 1}
+  gizmoNoHitColor: {r: 1, g: 0, b: 0, a: 1}
+  gizmoTargetColor: {r: 0, g: 1, b: 1, a: 1}
 --- !u!1 &1511589812294282113
 GameObject:
   m_ObjectHideFlags: 0
