@@ -368,6 +368,7 @@ GameObject:
   - component: {fileID: 6078254966614235503}
   - component: {fileID: 6985791601978652670}
   - component: {fileID: 1792933313599940043}
+  - component: {fileID: 8883328294329235302}
   - component: {fileID: 4083183859976238345}
   - component: {fileID: 5575480477221871795}
   m_Layer: 16
@@ -541,6 +542,20 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &8883328294329235302
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7653949429850334120}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 335d7b8d50772f84cbb834e1c0fb7a01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractIKChecker
+  trigger: {fileID: 6985791601978652670}
+  iKGlobalWeight: 0
 --- !u!114 &4083183859976238345
 MonoBehaviour:
   m_ObjectHideFlags: 0

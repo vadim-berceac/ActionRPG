@@ -89,6 +89,11 @@ namespace LegIK
             set => enableIK = value;
         }
 
+        public void SetGlobalWeight(float weight)
+        {
+            globalWeight = Mathf.Clamp01(weight);
+        }
+
         private void Awake()
         {
             if (animator == null)
