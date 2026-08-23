@@ -1,0 +1,209 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2523373349923920442
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 239114417579691364}
+  - component: {fileID: 5543772822949372776}
+  - component: {fileID: 6829727129619052716}
+  - component: {fileID: 1371498733805353087}
+  - component: {fileID: 5037401692089955208}
+  - component: {fileID: 3540746904152710682}
+  - component: {fileID: 7898988105559645511}
+  - component: {fileID: 3211077676037743685}
+  m_Layer: 16
+  m_Name: CharacterLootInteractor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &239114417579691364
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2523373349923920442}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &5543772822949372776
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2523373349923920442}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 4294823223
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.7
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!65 &6829727129619052716
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2523373349923920442}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 4294823223
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.8, y: 0.2, z: 0.8}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1371498733805353087
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2523373349923920442}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6e38ccf902f148e69c411da9fcde5cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.InteractOnTrigger
+  OnEnter:
+    m_PersistentCalls:
+      m_Calls: []
+  OnExit:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &5037401692089955208
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2523373349923920442}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f303771768171c14697d6f3a1013be13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractAnimation
+  trigger: {fileID: 1371498733805353087}
+  enterClip:
+    <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 5d52ad18f8e57b647a8a153cf9088c9e,
+      type: 3}
+    <EnterBlendLength>k__BackingField: 0.1
+    <ExitBlendLength>k__BackingField: 0.1
+    <Mask>k__BackingField: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
+      type: 2}
+    <IsAdditive>k__BackingField: 0
+  clips:
+  - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: cdacc06aa480e104abf37460dfe9f8fb,
+      type: 3}
+    <EnterBlendLength>k__BackingField: 0.1
+    <ExitBlendLength>k__BackingField: 0.1
+    <Mask>k__BackingField: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
+      type: 2}
+    <IsAdditive>k__BackingField: 0
+  exitClip:
+    <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 63c14ce95b9ad8749a5317250263f2f3,
+      type: 3}
+    <EnterBlendLength>k__BackingField: 0.1
+    <ExitBlendLength>k__BackingField: 0.1
+    <Mask>k__BackingField: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
+      type: 2}
+    <IsAdditive>k__BackingField: 0
+  canBeInterrupted: 1
+  onInteractEnter:
+    m_PersistentCalls:
+      m_Calls: []
+  onInteractExit:
+    m_PersistentCalls:
+      m_Calls: []
+  onClipStarted:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &3540746904152710682
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2523373349923920442}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f6af43fc907519f48a99d745bcb9b670, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractMotion
+  trigger: {fileID: 5037401692089955208}
+  enterDelay: 0
+  enterTime: 0.2
+  exitTime: 0.1
+  footTarget: {fileID: 239114417579691364}
+  exitTarget: {fileID: 0}
+  interactableModel: {fileID: 0}
+  motionType: 0
+  exitType: 0
+  onEnterMotionEnd:
+    m_PersistentCalls:
+      m_Calls: []
+  onExitMotionStart:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &7898988105559645511
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2523373349923920442}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 335d7b8d50772f84cbb834e1c0fb7a01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractIKChecker
+  trigger: {fileID: 5037401692089955208}
+  iKGlobalWeight: 0
+--- !u!114 &3211077676037743685
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2523373349923920442}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 726563f8649f56b47957d4729b17c3a5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractObjectSpawner
+  interactAnimation: {fileID: 5037401692089955208}
+  settings:
+  - <Prefab>k__BackingField: {fileID: 6615328860942291271, guid: 4d5116e76bbd92e438613bb44560e237,
+      type: 3}
+    <BoneSettings>k__BackingField:
+      <PropType>k__BackingField: 1
+      <Position>k__BackingField: {x: 0, y: 0, z: 0}
+      <Rotation>k__BackingField: {x: 0, y: 270, z: 0}
+      <Scale>k__BackingField: 1

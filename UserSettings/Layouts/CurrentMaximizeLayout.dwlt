@@ -259,8 +259,6 @@ MonoBehaviour:
         m_Data: 55780
       m_ExpandedIDs:
       - m_Data: -1352
-      - m_Data: 55140
-      - m_Data: 55516
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -1465,9 +1463,9 @@ MonoBehaviour:
   m_AudioPlay: 0
   m_DebugDrawModesUseInteractiveLightBakingData: 0
   m_Position:
-    m_Target: {x: -18.959879, y: 3.5373492, z: 26.66273}
+    m_Target: {x: 0, y: 0, z: 0}
     speed: 2
-    m_Value: {x: -18.959879, y: 3.5373492, z: 26.66273}
+    m_Value: {x: 0, y: 0, z: 0}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -1513,13 +1511,13 @@ MonoBehaviour:
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
-    m_Target: {x: 0.06658557, y: -0.6266304, z: 0.053975392, w: 0.7747375}
+    m_Target: {x: 0.22374368, y: -0.22764559, z: 0.053965326, w: 0.9462958}
     speed: 2
-    m_Value: {x: 0.06657789, y: -0.6265581, z: 0.053969163, w: 0.7746481}
+    m_Value: {x: 0.22371328, y: -0.22761466, z: 0.053957995, w: 0.94616723}
   m_Size:
-    m_Target: 0.6062178
+    m_Target: 1.7095343
     speed: 2
-    m_Value: 0.6062178
+    m_Value: 1.7095343
   m_Ortho:
     m_Target: 0
     speed: 2
@@ -1623,7 +1621,7 @@ MonoBehaviour:
     m_OverlaysVisible: 1
     m_DynamicPanelBehavior: 0
   m_SearchFilter:
-    m_NameFilter: 
+    m_NameFilter: characterloo
     m_ClassNames: []
     m_AssetLabels: []
     m_AssetBundleNames: []
@@ -1633,28 +1631,28 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 0
     m_Folders:
-    - Assets/Game/Scripts/Game/Core
+    - Assets/Game/Art/Animations/AnimationClips/Characters/Dummy/Loot
     m_Globs: []
     m_ProductIds: 
     m_AnyWithAssetOrigin: 0
-    m_OriginalText: 
+    m_OriginalText: characterloo
     m_ImportLogFlags: 0
     m_FilterByTypeIntersection: 0
   m_ViewMode: 1
   m_StartGridSize: 16
   m_LastFolders:
-  - Assets/Game/Scripts/Game/Core
+  - Assets/Game/Art/Animations/AnimationClips/Characters/Dummy/Loot
   m_LastFoldersGridSize: 16
   m_LastProjectPath: D:\GitHub\ActionRPG
   m_LockTracker:
     m_IsLocked: 0
   m_LastLocalAssetsSearchArea: 0
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 885.2001}
+    scrollPos: {x: 0, y: 383}
     m_SelectedIDs:
-    - m_Data: 63026
+    - m_Data: 66150
     m_LastClickedID:
-      m_Data: 63026
+      m_Data: 66150
     m_ExpandedIDs:
     - m_Data: 0
     - m_Data: 62556
@@ -1679,6 +1677,11 @@ MonoBehaviour:
     - m_Data: 62594
     - m_Data: 62596
     - m_Data: 62598
+    - m_Data: 62948
+    - m_Data: 63006
+    - m_Data: 66152
+    - m_Data: 66154
+    - m_Data: 66156
     - m_Data: 1000000000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -1763,7 +1766,7 @@ MonoBehaviour:
     m_SelectedInstanceIDs:
     - m_Data: 55780
     m_LastClickedInstanceID: 55780
-    m_HadKeyboardFocusLastEvent: 0
+    m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs:
     - m_Data: 107562
     - m_Data: 176380
@@ -1934,10 +1937,13 @@ MonoBehaviour:
     - m_Data: 130300
     - m_Data: 130310
     - m_Data: 53244
+    - m_Data: 63214
+    - m_Data: 66198
+    - m_Data: 66192
     m_RenameOverlay:
       m_UserAcceptedRename: 0
-      m_Name: 
-      m_OriginalName: 
+      m_Name: CharacterLootInteractor
+      m_OriginalName: CharacterLootInteractor
       m_EditFieldRect:
         serializedVersion: 2
         x: 0
@@ -1945,10 +1951,10 @@ MonoBehaviour:
         width: 0
         height: 0
       m_UserData:
-        m_Data: 0
+        m_Data: 66084
       m_IsWaitingForDelay: 0
       m_IsRenaming: 0
-      m_OriginalEventType: 11
+      m_OriginalEventType: 0
       m_IsRenamingFilename: 1
       m_TrimLeadingAndTrailingWhitespace: 0
       m_ClientGUIView: {fileID: 13}
