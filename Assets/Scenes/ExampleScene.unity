@@ -162066,21 +162066,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
-    - target: {fileID: 7218132420122536269, guid: f9915f7d87239a24291440ebca401a1b,
-        type: 3}
-      propertyPath: bodyLeanWeight
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7218132420122536269, guid: f9915f7d87239a24291440ebca401a1b,
-        type: 3}
-      propertyPath: characterSpring.damping
-      value: 50
-      objectReference: {fileID: 0}
-    - target: {fileID: 7218132420122536269, guid: f9915f7d87239a24291440ebca401a1b,
-        type: 3}
-      propertyPath: characterSpring.stiffness
-      value: 2000
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
