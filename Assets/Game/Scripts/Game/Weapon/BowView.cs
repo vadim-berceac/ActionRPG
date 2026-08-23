@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class BowView : MonoBehaviour
 {
+    [SerializeField] private PlayerLoopTiming stringUpdateMode;
     [SerializeField] private LineRenderer bowstringLine;
 
     [SerializeField] private Transform limb01;
@@ -141,7 +142,7 @@ public class BowView : MonoBehaviour
     {
         while (!token.IsCancellationRequested)
         {
-            var cancelled = await UniTask.Yield(PlayerLoopTiming.PreLateUpdate, token)
+            var cancelled = await UniTask.Yield(stringUpdateMode, token)
                 .SuppressCancellationThrow();
             if (cancelled)
             {

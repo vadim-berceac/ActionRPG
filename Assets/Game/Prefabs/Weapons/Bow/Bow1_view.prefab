@@ -46,7 +46,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdf93605f2b0c0246bbbf722e6208efb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 1
   view: {fileID: 4628936375136608706}
   trail: {fileID: 0}
   attackPoints: []
@@ -64,6 +63,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 610eab805d6e7fa4f94712b8b1a84787, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BowView
+  stringUpdateMode: 12
   bowstringLine: {fileID: 1823136019702316395}
   limb01: {fileID: 3436903722744574794}
   limb02: {fileID: 3097121285676526752}

@@ -154,6 +154,7 @@ GameObject:
   - component: {fileID: 3129279076112330710}
   - component: {fileID: 3077285747228589714}
   - component: {fileID: 4971361307042770288}
+  - component: {fileID: 7218132420122536269}
   m_Layer: 9
   m_Name: Player
   m_TagString: Player
@@ -175,7 +176,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4944355051770072750}
-  - {fileID: 6421361941627358335}
+  - {fileID: 3352297033160191716}
   - {fileID: 4325004453704406779}
   - {fileID: 7834845135271981329}
   - {fileID: 203577376559529239}
@@ -303,7 +304,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <IsPlayer>k__BackingField: 1
-  <ModelTransform>k__BackingField: {fileID: 6421361941627358335}
+  <ModelTransform>k__BackingField: {fileID: 3352297033160191716}
   <TargetLayer>k__BackingField:
     serializedVersion: 2
     m_Bits: 8388608
@@ -376,6 +377,91 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98d3c431e10c98643820e68ad77790a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Equipment
+--- !u!114 &7218132420122536269
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1125372579252015583}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76835f56a72f2424894812c4e6290f58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LegIK.LegIKController
+  animator: {fileID: 3589592028908676066}
+  enableIK: 1
+  globalWeight: 1
+  feet:
+  - ikGoal: 0
+    useHint: 1
+    ikHint: 0
+    raycastUpOffset: 0.3
+    raycastDownDistance: 0.4
+    groundMask:
+      serializedVersion: 2
+      m_Bits: 2147549185
+    useSphereCast: 0
+    sphereCastRadius: 0.08
+    footOffset: {x: 0, y: 0.13, z: 0}
+    soleThickness: 0.02
+    maxPositionWeight: 1
+    maxRotationWeight: 1
+    hintWeight: 0.5
+    positionSmoothTime: 0.03
+    rotationSmoothTime: 0.03
+    weightSmoothTime: 0.03
+    maxRotationAngle: 60
+    groundedHeightThreshold: 0.02
+    liftHeightThreshold: 0.02
+    maxSlopeAngle: 60
+    kneeForwardOffset: 0.05
+  - ikGoal: 1
+    useHint: 1
+    ikHint: 1
+    raycastUpOffset: 0.3
+    raycastDownDistance: 0.4
+    groundMask:
+      serializedVersion: 2
+      m_Bits: 2147549185
+    useSphereCast: 0
+    sphereCastRadius: 0.08
+    footOffset: {x: 0, y: 0.13, z: 0}
+    soleThickness: 0.02
+    maxPositionWeight: 1
+    maxRotationWeight: 1
+    hintWeight: 0.5
+    positionSmoothTime: 0.03
+    rotationSmoothTime: 0.03
+    weightSmoothTime: 0.03
+    maxRotationAngle: 60
+    groundedHeightThreshold: 0.02
+    liftHeightThreshold: 0.02
+    maxSlopeAngle: 60
+    kneeForwardOffset: 0.05
+  adjustPelvis: 1
+  pelvisWeight: 1
+  pelvisSmoothTime: 0.165
+  maxPelvisLower: 0.2
+  maxPelvisRaise: 0.3
+  deformationBody: {fileID: 6421361941627358335}
+  characterSpring:
+    upScale: {x: 0.8, y: 1.2, z: 0.8}
+    downScale: {x: 1.2, y: 0.8, z: 1.2}
+    scaleFactor: 1
+    rotationFactor: 1
+    stiffness: 3000
+    damping: 50
+    mass: 5
+    bounciness: 0.05
+    positionSmoothingHz: 6
+    rotationSmoothingHz: 6
+  bodyLeanWeight: 1
+  drawGizmos: 1
+  gizmoRayColor: {r: 1, g: 0.85, b: 0, a: 1}
+  gizmoHitColor: {r: 0, g: 1, b: 0, a: 1}
+  gizmoNoHitColor: {r: 1, g: 0, b: 0, a: 1}
+  gizmoTargetColor: {r: 0, g: 1, b: 1, a: 1}
 --- !u!1 &1511589812294282113
 GameObject:
   m_ObjectHideFlags: 0
@@ -912,6 +998,38 @@ Transform:
   m_Children: []
   m_Father: {fileID: 919562152349746805}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6673290178607649647
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3352297033160191716}
+  m_Layer: 9
+  m_Name: Model
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3352297033160191716
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6673290178607649647}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 6421361941627358335}
+  m_Father: {fileID: 919562152349746805}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7866544125415447070
 GameObject:
   m_ObjectHideFlags: 0
@@ -1142,12 +1260,22 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 919562152349746805}
+    m_TransformParent: {fileID: 3352297033160191716}
     m_Modifications:
     - target: {fileID: 1110864380354248603, guid: 285a422d068b33244b36389587e8dd68,
         type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5037586823878734330, guid: 285a422d068b33244b36389587e8dd68,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.85999995
+      objectReference: {fileID: 0}
+    - target: {fileID: 5037586823878734330, guid: 285a422d068b33244b36389587e8dd68,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.85999995
       objectReference: {fileID: 0}
     - target: {fileID: 5037586823878734330, guid: 285a422d068b33244b36389587e8dd68,
         type: 3}
@@ -1172,7 +1300,7 @@ PrefabInstance:
     - target: {fileID: 5037586823878734330, guid: 285a422d068b33244b36389587e8dd68,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 5037586823878734330, guid: 285a422d068b33244b36389587e8dd68,
         type: 3}
