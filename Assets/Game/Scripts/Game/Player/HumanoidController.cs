@@ -1,5 +1,6 @@
 using UnityEngine;
 using Game.Message;
+using LegIK;
 using Unity.Cinemachine;
 using Zenject;
 
@@ -58,6 +59,7 @@ namespace Game
         public bool IsShootPressed => _shootPressed;
         public Stamina Stamina { get; private set; }
         public PlayableGraphHandle Graph { get; private set; }
+        public LegIKController LegIK  { get; private set; }
 
         private bool IsDead => _damageable.currentHitPoints < 1;
 
@@ -149,6 +151,7 @@ namespace Game
             _animator = GetComponent<Animator>();
             _animCache = new AnimatorStateCache(_animator, RangeWeaponRoot);
             _ik = new HumanoidIK(_animator);
+            LegIK = GetComponent<LegIKController>();
             _transform = transform;
             _coyoteTimer = Settings.CharacterParams.CoyoteTime;
 

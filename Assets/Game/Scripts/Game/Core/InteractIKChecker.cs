@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Game;
 using LegIK;
 using UnityEngine;
@@ -7,8 +8,7 @@ public class InteractIKChecker : MonoBehaviour
     [SerializeField] private InteractAnimation trigger;
     [SerializeField] [Range(0, 1)] private float iKGlobalWeight;
     
-    private LegIKController  _legIKController;
-    private float _weightStartValue;
+    private readonly Dictionary<LegIKController, float> _startWeights = new();
 
     private void OnEnable()
     {
@@ -20,32 +20,34 @@ public class InteractIKChecker : MonoBehaviour
     {
         trigger.onInteractEnter.RemoveListener(OnInteractEnter);
         trigger.onInteractExit.RemoveListener(OnInteractExit);
+
+        foreach (var kvp in _startWeights)
+        {
+            kvp.Key.SetGlobalWeight(kvp.Value);
+        }
+        
+        _startWeights.Clear();
     }
 
     private void OnInteractEnter(HumanoidController controller)
     {
-        _legIKController = null;
-        
-        controller.TryGetComponent(out _legIKController);
-
-        if (!_legIKController)
+        if (!controller.LegIK || _startWeights.ContainsKey(controller.LegIK))
         {
             return;
         }
-        
-        _weightStartValue = _legIKController.GlobalWeight;
-        _legIKController.SetGlobalWeight(iKGlobalWeight);
+       
+        _startWeights.TryAdd(controller.LegIK, controller.LegIK.GlobalWeight);
+        controller.LegIK.SetGlobalWeight(iKGlobalWeight);
     }
 
     private void OnInteractExit(HumanoidController controller)
     {
-        if (!_legIKController)
+        if (!controller.LegIK || !_startWeights.TryGetValue(controller.LegIK, out var weight))
         {
             return;
         }
         
-        _legIKController.SetGlobalWeight(_weightStartValue);
-        
-        _legIKController = null;
+        controller.LegIK.SetGlobalWeight(weight);
+        _startWeights.Remove(controller.LegIK);
     }
 }
