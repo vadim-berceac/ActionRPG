@@ -148,6 +148,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: CharacterDialogueInteractor
       objectReference: {fileID: 0}
+    - target: {fileID: 6020314460063226715, guid: f26463b1a01606043afc3fd804021c20,
+        type: 3}
+      propertyPath: fixedController
+      value: 
+      objectReference: {fileID: 8888965336496530963}
     - target: {fileID: 6860572789983122625, guid: f26463b1a01606043afc3fd804021c20,
         type: 3}
       propertyPath: controller

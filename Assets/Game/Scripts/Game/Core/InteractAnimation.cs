@@ -22,6 +22,8 @@ public class InteractAnimation : MonoBehaviour
    private HumanoidController _currentController;
    private bool _isPlaying;
    private bool _interruptRequested;
+   
+   public HumanoidController CurrentController => _currentController;
 
    [Inject]
    private void Construct(PlayerNewInput playerInput)

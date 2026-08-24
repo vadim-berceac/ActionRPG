@@ -135,7 +135,12 @@ MonoBehaviour:
   enterDelay: 0
   enterTime: 0.2
   exitTime: 0.1
+  controllerSource: 0
+  fixedController: {fileID: 0}
+  controllerInteractAnimation: {fileID: 0}
+  targetSource: 0
   footTarget: {fileID: 239114417579691364}
+  targetInteractAnimation: {fileID: 0}
   exitTarget: {fileID: 0}
   interactableModel: {fileID: 0}
   motionType: 0
@@ -239,7 +244,12 @@ MonoBehaviour:
   enterDelay: 0
   enterTime: 0.2
   exitTime: 0.1
+  controllerSource: 1
+  fixedController: {fileID: 0}
+  controllerInteractAnimation: {fileID: 0}
+  targetSource: 2
   footTarget: {fileID: 0}
+  targetInteractAnimation: {fileID: 0}
   exitTarget: {fileID: 0}
   interactableModel: {fileID: 0}
   motionType: 0
