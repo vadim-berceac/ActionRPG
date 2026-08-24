@@ -14,6 +14,13 @@ public class InteractAnimation : MonoBehaviour
    [SerializeField] private AnimationClipSettings[] clips;
    [SerializeField] private AnimationClipSettings exitClip;
    [SerializeField] private bool canBeInterrupted;
+
+   [Header("Clips Block Settings")]
+   [Tooltip("Проигрывать клипы из clips в случайном порядке")]
+   [SerializeField] private bool randomizeClipsOrder;
+   [Tooltip("Зациклить блок clips целиком (даже если сами клипы не looped) — крутится до Interrupt")]
+   [SerializeField] private bool loopClipsBlock;
+
    public UnityEvent<HumanoidController> onInteractEnter, onInteractExit;
    public UnityEvent<AnimationClip, float> onClipStarted;
 
@@ -166,35 +173,22 @@ public class InteractAnimation : MonoBehaviour
 
    private async UniTask PlaySequence()
    {
-      var mainSequence = BuildMainSequence();
+      var clipsBlock = BuildClipsBlock();
       var hasExitClip = exitClip.Clip;
-      AnimationClipSettings? lastPlayed = null;
 
-      for (var i = 0; i < mainSequence.Count; i++)
+      if (enterClip.Clip)
       {
-         var current = mainSequence[i];
-
-         var next = (i + 1 < mainSequence.Count)
-            ? mainSequence[i + 1]
+         var enterNext = clipsBlock.Count > 0
+            ? clipsBlock[0]
             : (hasExitClip ? exitClip : (AnimationClipSettings?)null);
 
-         var exitOverlap = GetBlendOverlap(current, next);
+         var enterOverlap = GetBlendOverlap(enterClip, enterNext);
+         await PlayBlendedClip(enterClip, enterOverlap);
+      }
 
-         if (current.Clip.isLooping)
-         {
-            await PlayLoopedClip(current, exitOverlap);
-         }
-         else
-         {
-            await PlayBlendedClip(current, exitOverlap);
-         }
-
-         lastPlayed = current;
-
-         if (_interruptRequested)
-         {
-            break;
-         }
+      if (clipsBlock.Count > 0 && !_interruptRequested)
+      {
+         await PlayClipsBlock(clipsBlock, hasExitClip);
       }
 
       if (hasExitClip)
@@ -207,14 +201,9 @@ public class InteractAnimation : MonoBehaviour
       OnInteractExit();
    }
 
-   private List<AnimationClipSettings> BuildMainSequence()
+   private List<AnimationClipSettings> BuildClipsBlock()
    {
-      var sequence = new List<AnimationClipSettings>();
-
-      if (enterClip.Clip)
-      {
-         sequence.Add(enterClip);
-      }
+      var block = new List<AnimationClipSettings>();
 
       if (clips != null)
       {
@@ -222,12 +211,69 @@ public class InteractAnimation : MonoBehaviour
          {
             if (clip.Clip)
             {
-               sequence.Add(clip);
+               block.Add(clip);
             }
          }
       }
 
-      return sequence;
+      return block;
+   }
+
+   private async UniTask PlayClipsBlock(List<AnimationClipSettings> clipsBlock, bool hasExitClip)
+   {
+      do
+      {
+         var order = randomizeClipsOrder ? ShuffleCopy(clipsBlock) : clipsBlock;
+
+         for (var i = 0; i < order.Count; i++)
+         {
+            var current = order[i];
+            AnimationClipSettings? next;
+
+            if (i + 1 < order.Count)
+            {
+               next = order[i + 1];
+            }
+            else if (loopClipsBlock)
+            {
+               next = order.Count > 0 ? order[0] : null;
+            }
+            else
+            {
+               next = hasExitClip ? exitClip : null;
+            }
+
+            var exitOverlap = GetBlendOverlap(current, next);
+
+            if (current.Clip.isLooping)
+            {
+               await PlayLoopedClip(current, exitOverlap);
+            }
+            else
+            {
+               await PlayBlendedClip(current, exitOverlap);
+            }
+
+            if (_interruptRequested)
+            {
+               return;
+            }
+         }
+      }
+      while (loopClipsBlock && !_interruptRequested);
+   }
+
+   private static List<AnimationClipSettings> ShuffleCopy(List<AnimationClipSettings> source)
+   {
+      var copy = new List<AnimationClipSettings>(source);
+
+      for (var i = copy.Count - 1; i > 0; i--)
+      {
+         var j = Random.Range(0, i + 1);
+         (copy[i], copy[j]) = (copy[j], copy[i]);
+      }
+
+      return copy;
    }
 
    private static float GetBlendOverlap(AnimationClipSettings current, AnimationClipSettings? next)

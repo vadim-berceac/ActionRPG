@@ -96,7 +96,56 @@ MonoBehaviour:
     <Mask>k__BackingField: {fileID: 0}
     <IsAdditive>k__BackingField: 0
   clips:
+  - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 6c28bcdcc69774144933cafe83af4891,
+      type: 3}
+    <EnterBlendLength>k__BackingField: 0.1
+    <ExitBlendLength>k__BackingField: 0.1
+    <Mask>k__BackingField: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
+      type: 2}
+    <IsAdditive>k__BackingField: 0
+  - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 7b2a514cc5a5dee4f961bacec5ebf34e,
+      type: 3}
+    <EnterBlendLength>k__BackingField: 0.1
+    <ExitBlendLength>k__BackingField: 0.1
+    <Mask>k__BackingField: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
+      type: 2}
+    <IsAdditive>k__BackingField: 0
+  - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 61ecca23655a5734a8c98e8767afcab9,
+      type: 3}
+    <EnterBlendLength>k__BackingField: 0.1
+    <ExitBlendLength>k__BackingField: 0.1
+    <Mask>k__BackingField: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
+      type: 2}
+    <IsAdditive>k__BackingField: 0
+  - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 38e93c2d24d924d4ea7ad9a98e31b2b3,
+      type: 3}
+    <EnterBlendLength>k__BackingField: 0.1
+    <ExitBlendLength>k__BackingField: 0.1
+    <Mask>k__BackingField: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
+      type: 2}
+    <IsAdditive>k__BackingField: 0
+  - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 4667ab3513829814fb1065ec3787977f,
+      type: 3}
+    <EnterBlendLength>k__BackingField: 0.1
+    <ExitBlendLength>k__BackingField: 0.1
+    <Mask>k__BackingField: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
+      type: 2}
+    <IsAdditive>k__BackingField: 0
+  - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: dfcc2813cb7f86442872a8ab173d115d,
+      type: 3}
+    <EnterBlendLength>k__BackingField: 0.1
+    <ExitBlendLength>k__BackingField: 0.1
+    <Mask>k__BackingField: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
+      type: 2}
+    <IsAdditive>k__BackingField: 0
   - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 636a4a226d8a7ac4592cb00bbc64d7c6,
+      type: 3}
+    <EnterBlendLength>k__BackingField: 0.1
+    <ExitBlendLength>k__BackingField: 0.1
+    <Mask>k__BackingField: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
+      type: 2}
+    <IsAdditive>k__BackingField: 0
+  - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 6c28bcdcc69774144933cafe83af4891,
       type: 3}
     <EnterBlendLength>k__BackingField: 0.1
     <ExitBlendLength>k__BackingField: 0.1
@@ -110,6 +159,8 @@ MonoBehaviour:
     <Mask>k__BackingField: {fileID: 0}
     <IsAdditive>k__BackingField: 0
   canBeInterrupted: 1
+  randomizeClipsOrder: 1
+  loopClipsBlock: 1
   onInteractEnter:
     m_PersistentCalls:
       m_Calls: []
@@ -205,7 +256,56 @@ MonoBehaviour:
     <Mask>k__BackingField: {fileID: 0}
     <IsAdditive>k__BackingField: 0
   clips:
+  - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 6c28bcdcc69774144933cafe83af4891,
+      type: 3}
+    <EnterBlendLength>k__BackingField: 0.1
+    <ExitBlendLength>k__BackingField: 0.1
+    <Mask>k__BackingField: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
+      type: 2}
+    <IsAdditive>k__BackingField: 0
+  - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 7b2a514cc5a5dee4f961bacec5ebf34e,
+      type: 3}
+    <EnterBlendLength>k__BackingField: 0.1
+    <ExitBlendLength>k__BackingField: 0.1
+    <Mask>k__BackingField: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
+      type: 2}
+    <IsAdditive>k__BackingField: 0
+  - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 61ecca23655a5734a8c98e8767afcab9,
+      type: 3}
+    <EnterBlendLength>k__BackingField: 0.1
+    <ExitBlendLength>k__BackingField: 0.1
+    <Mask>k__BackingField: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
+      type: 2}
+    <IsAdditive>k__BackingField: 0
+  - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 38e93c2d24d924d4ea7ad9a98e31b2b3,
+      type: 3}
+    <EnterBlendLength>k__BackingField: 0.1
+    <ExitBlendLength>k__BackingField: 0.1
+    <Mask>k__BackingField: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
+      type: 2}
+    <IsAdditive>k__BackingField: 0
+  - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 4667ab3513829814fb1065ec3787977f,
+      type: 3}
+    <EnterBlendLength>k__BackingField: 0.1
+    <ExitBlendLength>k__BackingField: 0.1
+    <Mask>k__BackingField: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
+      type: 2}
+    <IsAdditive>k__BackingField: 0
+  - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: dfcc2813cb7f86442872a8ab173d115d,
+      type: 3}
+    <EnterBlendLength>k__BackingField: 0.1
+    <ExitBlendLength>k__BackingField: 0.1
+    <Mask>k__BackingField: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
+      type: 2}
+    <IsAdditive>k__BackingField: 0
   - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 636a4a226d8a7ac4592cb00bbc64d7c6,
+      type: 3}
+    <EnterBlendLength>k__BackingField: 0.1
+    <ExitBlendLength>k__BackingField: 0.1
+    <Mask>k__BackingField: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
+      type: 2}
+    <IsAdditive>k__BackingField: 0
+  - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 6c28bcdcc69774144933cafe83af4891,
       type: 3}
     <EnterBlendLength>k__BackingField: 0.1
     <ExitBlendLength>k__BackingField: 0.1
@@ -219,6 +319,8 @@ MonoBehaviour:
     <Mask>k__BackingField: {fileID: 0}
     <IsAdditive>k__BackingField: 0
   canBeInterrupted: 1
+  randomizeClipsOrder: 1
+  loopClipsBlock: 1
   onInteractEnter:
     m_PersistentCalls:
       m_Calls: []
