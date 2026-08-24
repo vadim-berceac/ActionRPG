@@ -421,8 +421,8 @@ MonoBehaviour:
     invertX: 0
     invertY: 0
   controllerSmoothing:
-    smoothTimeX: 0.25
-    smoothTimeY: 0.3
+    smoothTimeX: 0.15
+    smoothTimeY: 0.2
   controllerRecentering:
     enabled: 0
     wait: 0
@@ -501,6 +501,7 @@ GameObject:
   - component: {fileID: 9033864432587659696}
   - component: {fileID: 6263831145898924339}
   - component: {fileID: 8673331329718008710}
+  - component: {fileID: 3822263427077526423}
   m_Layer: 0
   m_Name: BowCamera
   m_TagString: Untagged
@@ -738,6 +739,21 @@ MonoBehaviour:
     FrequencyGain: 1
     Duration: 1
     m_NoiseOffsets: {x: 0, y: 0, z: 0}
+--- !u!114 &3822263427077526423
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 153417379378169179}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4cb04aa4ea3ece47bc5eda4afe0e3c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraStartPositionReset
+  cam: {fileID: 4233623099025067033}
+  startDistance: 5
+  startHeight: 1.5
 --- !u!1 &6852124260157090460
 GameObject:
   m_ObjectHideFlags: 0
@@ -753,6 +769,7 @@ GameObject:
   - component: {fileID: 2516700209370816836}
   - component: {fileID: 470211055131404605}
   - component: {fileID: 997068186872561947}
+  - component: {fileID: 1567915567219688760}
   m_Layer: 0
   m_Name: ExplorationCamera
   m_TagString: Untagged
@@ -865,7 +882,7 @@ MonoBehaviour:
     Value: 17.5
     Center: 17.5
     Range: {x: -10, y: 45}
-    Wrap: 0
+    Wrap: 1
     Recentering:
       Enabled: 0
       Wait: 1
@@ -875,7 +892,7 @@ MonoBehaviour:
     Value: 1
     Center: 1
     Range: {x: 1, y: 1}
-    Wrap: 0
+    Wrap: 1
     Recentering:
       Enabled: 0
       Wait: 1
@@ -990,3 +1007,18 @@ MonoBehaviour:
     FrequencyGain: 1
     Duration: 1
     m_NoiseOffsets: {x: 0, y: 0, z: 0}
+--- !u!114 &1567915567219688760
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6852124260157090460}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4cb04aa4ea3ece47bc5eda4afe0e3c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraStartPositionReset
+  cam: {fileID: 4768659923017718871}
+  startDistance: 5
+  startHeight: 1.5
