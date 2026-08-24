@@ -7,9 +7,8 @@ using Zenject;
 
 public class InteractAnimation : MonoBehaviour
 {
-   [Tooltip("Выбор персонажа по триггеру")]
    [SerializeField] private InteractOnTrigger trigger;
-   [Tooltip("Выбор персонажа напрямую (если назначен - триггер игнорируется)")]
+   [Tooltip("Выбор персонажа напрямую")]
    [SerializeField] private HumanoidController controller;
    [SerializeField] private AnimationClipSettings enterClip;
    [SerializeField] private AnimationClipSettings[] clips;
@@ -32,7 +31,7 @@ public class InteractAnimation : MonoBehaviour
 
    private void OnEnable()
    {
-      if (trigger && !controller)
+      if (trigger)
       {
          trigger.OnEnter.AddListener(OnEnter);
          trigger.OnExit.AddListener(OnExit);
@@ -48,7 +47,7 @@ public class InteractAnimation : MonoBehaviour
 
    private void OnDisable()
    {
-      if (trigger && !controller)
+      if (trigger)
       {
          trigger.OnEnter.RemoveListener(OnEnter);
          trigger.OnExit.RemoveListener(OnExit);
@@ -67,7 +66,7 @@ public class InteractAnimation : MonoBehaviour
 
    private void OnEnter(Collider other)
    {
-      if (!trigger || controller)
+      if (!trigger)
       {
          return;
       }
@@ -76,7 +75,7 @@ public class InteractAnimation : MonoBehaviour
 
    private void OnExit(Collider other)
    {
-      if (!trigger || controller)
+      if (!trigger)
       {
          return;
       }
@@ -94,23 +93,29 @@ public class InteractAnimation : MonoBehaviour
          return;
       }
 
+      HumanoidController targetController = null;
+
       if (controller)
       {
-         _currentController = controller;
+         if (_currentCollider &&
+             _currentCollider.gameObject.TryGetComponent(out HumanoidController other) &&
+             other != controller)
+         {
+            targetController = controller;
+         }
       }
-     
       else if (_currentCollider)
       {
-         if (!_currentCollider.gameObject.TryGetComponent(out _currentController))
+         if (!_currentCollider.gameObject.TryGetComponent(out targetController))
             return;
       }
-      else
+
+      if (!targetController)
       {
          return;
       }
 
-      if (_currentController == null)
-         return;
+      _currentController = targetController;
 
       onInteractEnter?.Invoke(_currentController);
 

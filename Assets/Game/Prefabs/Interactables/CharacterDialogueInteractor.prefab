@@ -235,11 +235,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f6af43fc907519f48a99d745bcb9b670, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractMotion
-  trigger: {fileID: 6860572789983122625}
+  trigger: {fileID: 5037401692089955208}
   enterDelay: 0
   enterTime: 0.2
   exitTime: 0.1
-  footTarget: {fileID: 1738893330667661757}
+  footTarget: {fileID: 0}
   exitTarget: {fileID: 0}
   interactableModel: {fileID: 0}
   motionType: 0

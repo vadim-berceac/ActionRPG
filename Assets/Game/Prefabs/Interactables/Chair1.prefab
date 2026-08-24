@@ -445,6 +445,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractAnimation
   trigger: {fileID: 6078254966614235503}
+  controller: {fileID: 0}
   enterClip:
     <Clip>k__BackingField: {fileID: 3094330708855449807, guid: ccac7d275cb24364da8b2d8a9c7f46e5,
       type: 3}
@@ -492,6 +493,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractMotion
   trigger: {fileID: 6985791601978652670}
+  targetMode: 0
+  interactAnimation: {fileID: 0}
   enterDelay: 0
   enterTime: 1
   exitTime: 0.3
