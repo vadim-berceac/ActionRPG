@@ -7,7 +7,10 @@ using Zenject;
 
 public class InteractAnimation : MonoBehaviour
 {
+   [Tooltip("Выбор персонажа по триггеру")]
    [SerializeField] private InteractOnTrigger trigger;
+   [Tooltip("Выбор персонажа напрямую (если назначен - триггер игнорируется)")]
+   [SerializeField] private HumanoidController controller;
    [SerializeField] private AnimationClipSettings enterClip;
    [SerializeField] private AnimationClipSettings[] clips;
    [SerializeField] private AnimationClipSettings exitClip;
@@ -25,18 +28,35 @@ public class InteractAnimation : MonoBehaviour
    private void Construct(PlayerNewInput playerInput)
    {
       _input = playerInput;
+   }
 
-      trigger.OnEnter.AddListener(OnEnter);
-      trigger.OnExit.AddListener(OnExit);
+   private void OnEnable()
+   {
+      if (trigger && !controller)
+      {
+         trigger.OnEnter.AddListener(OnEnter);
+         trigger.OnExit.AddListener(OnExit);
+      }
+
+      if (controller)
+      {
+         _currentController = controller;
+      }
+      
       _input.Interact += OnInteractEnter;
    }
 
-   private void OnDestroy()
+   private void OnDisable()
    {
-      if (trigger)
+      if (trigger && !controller)
       {
          trigger.OnEnter.RemoveListener(OnEnter);
          trigger.OnExit.RemoveListener(OnExit);
+      }
+      
+      if (controller)
+      {
+         _currentController = null;
       }
 
       if (_input != null)
@@ -47,11 +67,20 @@ public class InteractAnimation : MonoBehaviour
 
    private void OnEnter(Collider other)
    {
+      if (!trigger || controller)
+      {
+         return;
+      }
       _currentCollider = other;
    }
 
    private void OnExit(Collider other)
    {
+      if (!trigger || controller)
+      {
+         return;
+      }
+      
       if (_currentCollider == other)
       {
          _currentCollider = null;
@@ -65,33 +94,35 @@ public class InteractAnimation : MonoBehaviour
          return;
       }
 
-      if (!_currentCollider)
+      if (controller)
+      {
+         _currentController = controller;
+      }
+     
+      else if (_currentCollider)
+      {
+         if (!_currentCollider.gameObject.TryGetComponent(out _currentController))
+            return;
+      }
+      else
       {
          return;
       }
 
-      _currentCollider.gameObject.TryGetComponent(out _currentController);
-
-      if (!_currentController)
-      {
+      if (_currentController == null)
          return;
-      }
 
       onInteractEnter?.Invoke(_currentController);
 
       if ((clips == null || clips.Length == 0) && !enterClip.Clip && !exitClip.Clip)
-      {
          return;
-      }
 
       _currentController.SetInteracting(true);
       _isPlaying = true;
       _interruptRequested = false;
 
       if (canBeInterrupted)
-      {
          _input.Interact += Interrupt;
-      }
 
       PlaySequence().Forget();
    }
