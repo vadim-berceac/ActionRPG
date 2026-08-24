@@ -41,6 +41,7 @@ namespace Game
         private readonly int _blockHitTrigger          = Animator.StringToHash("BlockHitTrigger");
         private readonly int _hashVerticalAimAngle     = Animator.StringToHash("VerticalAimAngle");
         private readonly int _hashInteract             = Animator.StringToHash("Interact");
+        private readonly int _hashBreakAttackTrigger   = Animator.StringToHash("BreakAttackTrigger");
         
         private const string BlockInput = "BlockInput";
 
@@ -99,6 +100,10 @@ namespace Game
             return (_current.tagHash == tag && !_isTransitioning)
                 || _next.tagHash == tag;
         }
+
+        public void BreakAttack() => _animator.SetTrigger(_hashBreakAttackTrigger);
+        
+        public void SetAnimationSpeed(float speed) => _animator.speed = speed;
 
         public void SetForwardSpeed(float value) => _animator.SetFloat(_hashForwardSpeed, value);
 

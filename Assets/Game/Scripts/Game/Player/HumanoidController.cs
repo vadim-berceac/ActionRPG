@@ -379,7 +379,7 @@ namespace Game
             prevData = fromData;
             var weaponObj = prevData.GetViewInstance(_transform, _diContainer);
             weaponInstance = weaponObj.GetComponent<WeaponInstance>();
-            weaponInstance.Initialize(gameObject, TargetLayer);
+            weaponInstance.Initialize(gameObject, TargetLayer, _animCache);
             weaponInstance.SetWeaponData(prevData);
             weaponInstance.SetKnockbackForce(prevData.knockbackForce);
             weaponInstance.SetStaticParts(prevData.GetStaticParts(PropBones, _diContainer));
