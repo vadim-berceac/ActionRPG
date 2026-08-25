@@ -69,6 +69,7 @@ namespace Game
 
         private CameraSettings _cameraSettings;
         private DiContainer _diContainer;
+        private CurveConstants _curveConstants;
         private bool _isMeleeWeaponEquipped;
         private bool _isRangeWeaponEquipped;
 
@@ -129,10 +130,11 @@ namespace Game
 
         [Inject]
         private void Construct(DiContainer container, CameraSettings cameraSettings, 
-            PlayerInputHandlerService playerInputHandlerService)
+            PlayerInputHandlerService playerInputHandlerService, CurveConstants curveConstants)
         {
             _diContainer = container;
             _cameraSettings = cameraSettings;
+            _curveConstants = curveConstants;
 
             if(IsPlayer)
             {
@@ -379,7 +381,7 @@ namespace Game
             prevData = fromData;
             var weaponObj = prevData.GetViewInstance(_transform, _diContainer);
             weaponInstance = weaponObj.GetComponent<WeaponInstance>();
-            weaponInstance.Initialize(gameObject, TargetLayer);
+            weaponInstance.Initialize(gameObject, TargetLayer, _animCache, _curveConstants);
             weaponInstance.SetWeaponData(prevData);
             weaponInstance.SetKnockbackForce(prevData.knockbackForce);
             weaponInstance.SetStaticParts(prevData.GetStaticParts(PropBones, _diContainer));

@@ -1,3 +1,5 @@
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Game
@@ -160,5 +162,28 @@ namespace Game
         public Vector3 DeltaPosition => _animator.deltaPosition;
 
         public Quaternion DeltaRotation => _animator.deltaRotation;
+        
+        public async UniTask SetAnimationSpeedCurve(float duration, AnimationCurve curve, CancellationToken ct = default)
+        {
+            if (duration <= 0f)
+            {
+                _animator.speed = (curve.Evaluate(1f));
+                return;
+            }
+
+            var time = 0f;
+            var progress = 0f;
+
+            while (progress < 1f)
+            {
+                progress = Mathf.Clamp01(time / duration);
+                var speed = curve.Evaluate(progress);
+                _animator.speed = speed;
+                time += Time.deltaTime;
+                await UniTask.Yield(ct);
+            }
+
+            _animator.speed = curve.Evaluate(1f);
+        }
     }
 }

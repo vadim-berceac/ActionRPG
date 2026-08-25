@@ -3,6 +3,7 @@ using UnityEngine;
 
 public static class Constants
 {
+    public const float WeaponStuckTime = 0.2f;
     public const float ArriveThreshold = 0.2f;
     public const float ArriveHeightThreshold = 0.35f;
     public const float NavMeshSampleRadius = 1.5f;

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Game
@@ -36,6 +38,8 @@ namespace Game
         protected GameObject m_Owner;
         protected LayerMask m_targetLayers;
         protected WeaponData m_WeaponData;
+        protected AnimatorStateCache m_AnimatorStateCache;
+        protected CurveConstants m_CurveConstants;
 
         protected Vector3[] m_PreviousPos = null;
         protected Vector3 m_Direction;
@@ -56,12 +60,15 @@ namespace Game
         // Без этого свип SphereCast за несколько FixedUpdate-кадров бьёт (и спавнит партикл)
         // по одной и той же цели многократно за один удар.
         private readonly HashSet<Collider> m_HitTargetsThisAttack = new HashSet<Collider>();
+        
 
         //whoever own the weapon is responsible for calling that. Allow to avoid "self harm"
-        public void Initialize(GameObject owner, LayerMask layers)
+        public void Initialize(GameObject owner, LayerMask layers, AnimatorStateCache animatorStateCache = null, CurveConstants curveConstants = null)
         {
             m_Owner = owner;
             m_targetLayers = layers;
+            m_AnimatorStateCache = animatorStateCache;
+            m_CurveConstants = curveConstants;
         }
 
         public void SetKnockbackForce(float force)
@@ -178,8 +185,8 @@ namespace Game
 
         private bool CheckDamage(Collider other, AttackPoint pts, Vector3 hitPoint)
         {
-            Damageable d = other.GetComponent<Damageable>();
-            if (d == null)
+            var d = other.GetComponent<Damageable>();
+            if (!d)
             {
                 return false;
             }
@@ -200,27 +207,17 @@ namespace Game
                 return true;
             }
 
-            if (hitAudio != null)
+            if (hitAudio)
             {
-                var renderer = other.GetComponent<Renderer>();
-                if (!renderer)
-                    renderer = other.GetComponentInChildren<Renderer> ();
-                if (renderer)
-                    hitAudio.PlayRandomClip (renderer.sharedMaterial);
-                else
-                    hitAudio.PlayRandomClip ();
+                hitAudio.PlayRandomClip ();
             }
 
-            // Trigger hit particle at collision point
-            if (m_WeaponData != null && m_WeaponData.hitParticlePrefab != null)
+            if (m_WeaponData && m_WeaponData.hitParticlePrefab)
             {
-                // Create a temporary particle system instance at the hit location
-                ParticleSystem hitEffect = Instantiate(m_WeaponData.hitParticlePrefab, hitPoint, Quaternion.identity);
+                var hitEffect = Instantiate(m_WeaponData.hitParticlePrefab, hitPoint, Quaternion.identity);
 
-                // Play the particle system
                 hitEffect.Play();
 
-                // Optional: Destroy the particle system after it finishes playing
                 Destroy(hitEffect.gameObject, hitEffect.main.duration);
             }
 
@@ -235,10 +232,12 @@ namespace Game
             data.knockbackForce = m_KnockbackForce;
 
             d.ApplyDamage(data);
+            
+            m_AnimatorStateCache?.SetAnimationSpeedCurve(Constants.WeaponStuckTime, m_CurveConstants.HitStopCurve).Forget();
 
             return true;
         }
-
+        
         public void DestroyInstance()
         {
             if (staticParts != null && staticParts.Length > 0)

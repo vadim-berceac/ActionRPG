@@ -18,6 +18,12 @@ public class SceneInstaller : MonoInstaller
             .NonLazy();
         
         Container
+            .Bind<CurveConstants>()
+            .FromScriptableObjectResource("Data/CurveConstants")
+            .AsSingle()
+            .NonLazy();
+        
+        Container
             .BindInterfacesAndSelfTo<PlayerInputHandlerService>()
             .AsSingle()
             .NonLazy();

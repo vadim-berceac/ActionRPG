@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36254d1f66e03464ab76f61e6edb4115, type: 3}
+  m_Name: CurveConstants
+  m_EditorClassIdentifier: Assembly-CSharp::CurveConstants
+  <HitStopCurve>k__BackingField:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: -6.198581
+      outSlope: -6.198581
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.15326087
+      value: 0.05
+      inSlope: -6.198581
+      outSlope: 0.13297221
+      tangentMode: 5
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.17534892
+    - serializedVersion: 3
+      time: 0.70110106
+      value: 0.112046875
+      inSlope: 0.36088726
+      outSlope: 9.195433
+      tangentMode: 65
+      weightedMode: 0
+      inWeight: 0.10124148
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.85204047
+      value: 1.5
+      inSlope: 2.970747
+      outSlope: 2.970747
+      tangentMode: 1
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: -3.3793025
+      outSlope: -3.3793025
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
