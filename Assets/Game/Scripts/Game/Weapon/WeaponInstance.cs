@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -38,6 +39,7 @@ namespace Game
         protected LayerMask m_targetLayers;
         protected WeaponData m_WeaponData;
         protected AnimatorStateCache m_AnimatorStateCache;
+        protected CurveConstants m_CurveConstants;
 
         protected Vector3[] m_PreviousPos = null;
         protected Vector3 m_Direction;
@@ -61,11 +63,12 @@ namespace Game
         
 
         //whoever own the weapon is responsible for calling that. Allow to avoid "self harm"
-        public void Initialize(GameObject owner, LayerMask layers, AnimatorStateCache animatorStateCache = null)
+        public void Initialize(GameObject owner, LayerMask layers, AnimatorStateCache animatorStateCache = null, CurveConstants curveConstants = null)
         {
             m_Owner = owner;
             m_targetLayers = layers;
             m_AnimatorStateCache = animatorStateCache;
+            m_CurveConstants = curveConstants;
         }
 
         public void SetKnockbackForce(float force)
@@ -230,23 +233,11 @@ namespace Game
 
             d.ApplyDamage(data);
             
-            if (m_AnimatorStateCache != null)
-            {
-                //прерывать атаку - если мы попали по цели не в фазе нанесения урона?
-                StopAttackAnimation(Constants.WeaponStuckTime).Forget();
-            }
+            m_AnimatorStateCache?.SetAnimationSpeedCurve(Constants.WeaponStuckTime, m_CurveConstants.HitStopCurve).Forget();
 
             return true;
         }
-
-        private async UniTask StopAttackAnimation(float time)
-        {
-            m_AnimatorStateCache.SetAnimationSpeed(0);
-            await UniTask.WaitForSeconds(time);
-            m_AnimatorStateCache.BreakAttack();
-            m_AnimatorStateCache.SetAnimationSpeed(1);
-        }
-
+        
         public void DestroyInstance()
         {
             if (staticParts != null && staticParts.Length > 0)
