@@ -265,6 +265,10 @@ namespace Game
 
         private void OnAnimatorMove()
         {
+            if (IsInteracting)
+            {
+                return;
+            }
             Vector3 movement;
 
             if (_isGrounded)

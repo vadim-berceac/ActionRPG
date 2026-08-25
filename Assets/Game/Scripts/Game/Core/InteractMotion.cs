@@ -119,9 +119,7 @@ public class InteractMotion : MonoBehaviour
         _movedController = controllerToMove;
         _controllerInitialPosition = controllerToMove.transform.position;
         _controllerInitialRotation = controllerToMove.transform.rotation;
-        
-        controllerToMove.SetInteracting(true);
-
+      
         SetCollisionIgnored(controllerToMove, true);
 
         var rotation = GetEnterRotation(controllerToMove.transform);
@@ -212,7 +210,6 @@ public class InteractMotion : MonoBehaviour
         }
         finally
         {
-            controller.SetInteracting(false);   
             SetCollisionIgnored(controller, false);
             _resolvedFootTarget = null;
             _movedController = null;

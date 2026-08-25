@@ -126,6 +126,11 @@ public class InteractAnimation : MonoBehaviour
 
       _currentController = targetController;
 
+      if (_currentController.IsInteracting)
+      {
+         return;
+      }
+
       onInteractEnter?.Invoke(_currentController);
 
       if ((clips == null || clips.Length == 0) && !enterClip.Clip && !exitClip.Clip)
@@ -144,6 +149,11 @@ public class InteractAnimation : MonoBehaviour
    private void OnInteractExit()
    {
       if (!_currentController)
+      {
+         return;
+      }
+      
+      if (!_currentController.IsInteracting)
       {
          return;
       }
