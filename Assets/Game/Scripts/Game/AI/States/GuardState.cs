@@ -28,34 +28,27 @@ public class GuardState : AsyncState
     {
         await base.OnUpdate(ct);
 
-        // Защита от гонки: агент мог быть уничтожен между кадрами,
-        // пока update-loop ещё не успел отмениться через ct
         if (!StateMachine.Ctx.Transform)
         {
             return;
         }
 
-        // Если появился враг — выходим, HandleTransition решит куда переключиться
-        if (StateMachine.Ctx.Target != null && StateMachine.Ctx.Target.currentHitPoints > 0)
+        if (ShouldInterrupt())
         {
             StopInput();
             await HandleTransition();
             return;
         }
 
-        // Получаем актуальную позицию точки охраны каждый кадр
         var guardPosition = StateMachine.Ctx.GuardPosition;
         var targetPosition = ResolveTargetPosition(guardPosition);
 
-        // Если не можем идти к цели или уже на месте — стоим
         if (targetPosition == null || IsWithinStopDistance(targetPosition.Value))
         {
             StopInput();
             return;
         }
 
-        // Прямое движение к цели — без блокирующих вызовов MoveTowardsAsync
-        // Каждый кадр пересчитываем направление
         var targetPos = targetPosition.Value;
         var currentPos = StateMachine.Ctx.Transform.position;
         var toTarget = targetPos - currentPos;
@@ -68,10 +61,8 @@ public class GuardState : AsyncState
             return;
         }
 
-        // Пытаемся построить путь NavMesh, чтобы не упереться в стены
         if (currentPos.TryGetPathTo(targetPos, StateMachine.Ctx.WalkableAreaMask, out var corners) && corners.Length > 1)
         {
-            // Идём к самому дальнему видимому углу
             var targetCorner = corners[corners.Length - 1];
             for (var i = corners.Length - 1; i >= 1; i--)
             {
@@ -94,11 +85,6 @@ public class GuardState : AsyncState
         StateMachine.Ctx.Input.MoveInput = new Vector2(0f, speedFactor);
     }
 
-    /// <summary>
-    /// Возвращает целевую позицию для движения.
-    /// Если оригинальная точка охраны недостижима — ищет ближайшую NavMesh позицию.
-    /// При изменении оригинальной guardPosition сбрасывает закешированный fallback.
-    /// </summary>
     private Vector3? ResolveTargetPosition(Vector3 guardPosition)
     {
         if (!StateMachine.Ctx.Transform)
@@ -106,7 +92,6 @@ public class GuardState : AsyncState
             return null;
         }
 
-        // Если guardPosition изменилась — сбрасываем fallback и пересчитываем
         if (guardPosition != _lastGuardPosition)
         {
             _hasFallbackPosition = false;
@@ -151,16 +136,11 @@ public class GuardState : AsyncState
         StateMachine.Ctx.Input.JumpInput = false;
     }
 
-    /// <summary>
-    /// Считаем точку охраны достигнутой, если находимся в радиусе
-    /// preferredAttackDistance + небольшой запас. Это не даёт AI заходить
-    /// внутрь объекта, привязанного к точке, и бегать вокруг него.
-    /// </summary>
     private bool IsWithinStopDistance(Vector3 point)
     {
         if (!StateMachine.Ctx.Transform)
         {
-            return true; // некому двигаться — считаем цель достигнутой
+            return true;
         }
 
         var stopDistance = StateMachine.Ctx.PreferredAttackDistance + GuardExtraStopDistance;
@@ -190,11 +170,11 @@ public class GuardState : AsyncState
     }
 
     protected override bool ShouldInterrupt() =>
-        StateMachine.Ctx.Target != null && StateMachine.Ctx.Target.currentHitPoints > 0;
+        StateMachine.Ctx.Target != null && StateMachine.Ctx.Target.currentHitPoints > 0 &&
+        StateMachine.Ctx.IsTargetVisible(StateMachine.Ctx.Target);
 
     protected override async UniTask HandleTransition()
     {
-        // Мёртвая цель не должна удерживать AI в боевом цикле
         StateMachine.Ctx.ClearDeadTarget();
 
         if (StateMachine.Ctx.IsDead)
@@ -203,35 +183,7 @@ public class GuardState : AsyncState
             return;
         }
 
-        if (StateMachine.Ctx.Target
-            && StateMachine.Ctx.TryGetLastKnownTargetPosition(out var destPos))
-        {
-            var distance = Vector3.Distance(StateMachine.Ctx.Transform.position, destPos);
-            var hasLineOfSight = StateMachine.Ctx.IsTargetVisible(StateMachine.Ctx.Target);
-
-            // Если цель скрыта препятствием — сближаемся в ChaseState,
-            // чтобы найти позицию с прямой видимостью для стрельбы/атаки.
-            if (!hasLineOfSight)
-            {
-                await StateMachine.TransitionTo(StateMachine.ChaseState);
-                return;
-            }
-
-            // Если есть дальнобойное оружие и цель дальше melee-дистанции — стреляем
-            if (StateMachine.Ctx.HasRangedWeapon && distance > StateMachine.Ctx.PreferredAttackDistance * 1.5f)
-            {
-                await StateMachine.TransitionTo(StateMachine.ShootState);
-                return;
-            }
-
-            if (distance <= StateMachine.Ctx.PreferredAttackDistance)
-            {
-                await StateMachine.TransitionTo(StateMachine.AttackState);
-                return;
-            }
-        }
-
-        if (StateMachine.Ctx.Target)
+        if (StateMachine.Ctx.Target != null && StateMachine.Ctx.Target.currentHitPoints > 0)
         {
             await StateMachine.TransitionTo(StateMachine.AlarmState);
             return;

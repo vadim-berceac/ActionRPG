@@ -54,21 +54,33 @@ public abstract class AsyncState : IAsyncState
     {
         return false;
     }
-    
+
     private static async UniTask WatchAndCancelAsync(Func<bool> shouldCancel, CancellationTokenSource linkedCts, CancellationToken ct)
     {
+        var interrupted = false;
+
         try
         {
-            await UniTask.WaitUntil(shouldCancel, cancellationToken: ct)
-                .Timeout(TimeSpan.FromSeconds(30))
-                .SuppressCancellationThrow();
-        }
-        catch (TimeoutException)
-        {
-            //Debug.LogWarning("WatchAndCancelAsync timed out - ShouldInterrupt never returned true");
+            while (!ct.IsCancellationRequested && !linkedCts.IsCancellationRequested)
+            {
+                try
+                {
+                    await UniTask.WaitUntil(shouldCancel, cancellationToken: ct)
+                        .Timeout(TimeSpan.FromSeconds(2));
+
+                    interrupted = true; 
+                    break;
+                }
+                catch (TimeoutException)
+                {
+                    // ShouldInterrupt ещё не сработал за это окно — продолжаем ждать
+                }
+            }
         }
         catch (OperationCanceledException) { }
         catch (ObjectDisposedException) { }
+
+        if (!interrupted) return; 
 
         try
         {

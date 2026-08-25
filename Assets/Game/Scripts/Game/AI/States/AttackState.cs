@@ -40,7 +40,7 @@ public class AttackState : AsyncState
 
             if (IsCancelled) break;
 
-            await UniTask.Delay(200, cancellationToken: CancellationTokenSource.Token)
+            await UniTask.Delay(75, cancellationToken: CancellationTokenSource.Token)
                 .SuppressCancellationThrow();
         }
 
@@ -50,8 +50,8 @@ public class AttackState : AsyncState
 
     public override async UniTask OnExit(CancellationToken ct)
     {
-        await base.OnExit(ct);
         StopInput();
+        await base.OnExit(ct);
         await UniTask.CompletedTask;
     }
 
@@ -71,56 +71,55 @@ public class AttackState : AsyncState
 
     private float _approachThrottle;
 
-    private void AdjustApproach()
-    {
-        if (!StateMachine.Ctx.Target) return;
+     private void AdjustApproach()
+     {
+         if (!StateMachine.Ctx.Target) return;
 
-        var targetPos = StateMachine.Ctx.Target.Transform.position;
-        var myPos = StateMachine.Ctx.Transform.position;
+         var targetPos = StateMachine.Ctx.Target.Transform.position;
+         var myPos = StateMachine.Ctx.Transform.position;
 
-        var toTarget = targetPos - myPos;
-        toTarget.y = 0f;
-        var distance = toTarget.magnitude;
-        if (distance >= 0.01f)
-        {
-            var yaw = Mathf.Atan2(toTarget.x, toTarget.z) * Mathf.Rad2Deg;
-            StateMachine.Ctx.Input.RotationYaw = yaw;
-        }
+         var toTarget = targetPos - myPos;
+         toTarget.y = 0f;
+         var distance = toTarget.magnitude;
 
-        if (distance < 0.01f) return;
+         if (distance >= 0.01f)
+         {
+             var yaw = Mathf.Atan2(toTarget.x, toTarget.z) * Mathf.Rad2Deg;
+             StateMachine.Ctx.Input.RotationYaw = yaw;
+         }
 
-        var preferredDistance = StateMachine.Ctx.PreferredAttackDistance;
-        var deadZoneMin = preferredDistance * 0.75f;
-        var deadZoneMax = preferredDistance * 1.25f;
+         if (distance < 0.01f) return;
 
-        if (distance >= deadZoneMin && distance <= deadZoneMax)
-        {
-            if (_approachThrottle != 0f)
-            {
-                _approachThrottle = 0f;
-                StateMachine.Ctx.Input.MoveInput = Vector2.zero;
-            }
-            return;
-        }
+         var preferredDistance = StateMachine.Ctx.PreferredAttackDistance;
+         var deadZoneMin = preferredDistance * 0.7f; 
+         var deadZoneMax = preferredDistance * 1.3f;
+         
+         if (distance >= deadZoneMin && distance <= deadZoneMax)
+         {
+             var targetThrottleInZone = Mathf.Lerp(0.3f, 0.7f, Mathf.Clamp01((distance - deadZoneMin) / (deadZoneMax - deadZoneMin)));
+             _approachThrottle = Mathf.MoveTowards(_approachThrottle, targetThrottleInZone, 5f * Time.deltaTime);
+             StateMachine.Ctx.Input.MoveInput = new Vector2(0f, _approachThrottle);
+             return;
+         }
 
-        var moveTarget = targetPos - toTarget.normalized * preferredDistance;
-        var toMove = myPos - moveTarget;
-        toMove.y = 0f;
+         var moveTarget = targetPos - toTarget.normalized * preferredDistance;
+         var toMove = moveTarget - myPos;
+         toMove.y = 0f;
 
-        if (toMove.sqrMagnitude <= Constants.ArriveThreshold * Constants.ArriveThreshold)
-        {
-            if (_approachThrottle != 0f)
-            {
-                _approachThrottle = 0f;
-                StateMachine.Ctx.Input.MoveInput = Vector2.zero;
-            }
-            return;
-        }
+         if (toMove.sqrMagnitude <= Constants.ArriveThreshold * Constants.ArriveThreshold)
+         {
+             if (_approachThrottle != 0f)
+             {
+                 _approachThrottle = 0f;
+                 StateMachine.Ctx.Input.MoveInput = Vector2.zero;
+             }
+             return;
+         }
 
-        var targetThrottle = Mathf.Lerp(0.3f, 0.7f,
-            Mathf.Clamp01(toMove.magnitude / preferredDistance));
-        _approachThrottle = Mathf.MoveTowards(_approachThrottle, targetThrottle, 3f * Time.deltaTime);
-        StateMachine.Ctx.Input.MoveInput = new Vector2(0f, _approachThrottle);
+         var targetThrottleApproach = Mathf.Lerp(0.7f, 1.2f, 
+             Mathf.Clamp01(toMove.magnitude / preferredDistance));
+         _approachThrottle = Mathf.MoveTowards(_approachThrottle, targetThrottleApproach, 7f * Time.deltaTime); 
+         StateMachine.Ctx.Input.MoveInput = new Vector2(0f, _approachThrottle);
     }
 
     private bool IsOutOfRange()
@@ -128,7 +127,7 @@ public class AttackState : AsyncState
         if (!StateMachine.Ctx.Target) return false;
 
         var distance = Vector3.Distance(StateMachine.Ctx.Transform.position, StateMachine.Ctx.Target.Transform.position);
-        return distance > StateMachine.Ctx.PreferredAttackDistance;
+        return distance > StateMachine.Ctx.PreferredAttackDistance * 1.2f;
     }
 
     private void StopInput()

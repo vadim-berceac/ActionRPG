@@ -95,9 +95,8 @@ public class AsyncStateMachine : IDisposable
         {
             while (!_isDisposed && !token.IsCancellationRequested && CurrentState == state)
             {
-                // Добавляем таймаут на каждый кадр обновления состояния
                 await state.OnUpdate(token)
-                    .Timeout(TimeSpan.FromSeconds(5));
+                    .Timeout(TimeSpan.FromSeconds(3));
                 await UniTask.Yield(PlayerLoopTiming.Update, token);
             }
         }

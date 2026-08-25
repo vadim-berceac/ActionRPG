@@ -14,40 +14,43 @@ public class AlarmState : AsyncState
     public override async UniTask OnEnter(CancellationToken ct)
     {
         await base.OnEnter(ct);
-        
+
         Debug.Log("Entering Alarm State...");
 
-        // Сбрасываем флаг получения урона — AlarmState обработал его
         StateMachine.Ctx.DamageTakenRecently = false;
-
-        // Мёртвая цель не должна передаваться другим врагам и не должна
-        // удерживать текущего врага в боевом цикле
         StateMachine.Ctx.ClearDeadTarget();
 
         var targetToShare = StateMachine.Ctx.GetLastSeenTarget();
 
-        var colliderCount = Physics.OverlapSphereNonAlloc(
-            StateMachine.Ctx.Transform.position,
-            20f,
-            _overlapBuffer
-        );
-
-        for (int i = 0; i < colliderCount; i++)
+        if (targetToShare != null)
         {
-            var collider = _overlapBuffer[i];
-            if (collider == null) continue;
+            var colliderCount = Physics.OverlapSphereNonAlloc(
+                StateMachine.Ctx.Transform.position,
+                20f,
+                _overlapBuffer
+            );
 
-            var otherEnemyBrain = collider.GetComponentInParent<EnemyBrain>();
-            if (otherEnemyBrain != null &&
-                otherEnemyBrain != StateMachine.Ctx.Input as EnemyBrain &&
-                otherEnemyBrain.Faction == StateMachine.Ctx.Faction)
+            for (int i = 0; i < colliderCount; i++)
             {
-                var otherFsm = otherEnemyBrain.Fsm;
-                if (otherFsm != null)
+                var collider = _overlapBuffer[i];
+                if (collider == null) continue;
+
+                var otherEnemyBrain = collider.GetComponentInParent<EnemyBrain>();
+                if (otherEnemyBrain != null &&
+                    otherEnemyBrain != StateMachine.Ctx.Input as EnemyBrain &&
+                    otherEnemyBrain.Faction == StateMachine.Ctx.Faction)
                 {
-                    var otherCtx = otherFsm.Ctx;
-                    if (otherCtx.Target == null && !otherCtx.TryGetLastKnownTargetPosition(out _))
+                    var otherFsm = otherEnemyBrain.Fsm;
+                    if (otherFsm != null)
                     {
+                        var otherCtx = otherFsm.Ctx;
+                       
+                        var targetCollider = targetToShare.GetComponent<Collider>();
+                        if (targetCollider != null && !otherCtx.VisionSystem.HasCandidate(targetCollider))
+                        {
+                            otherCtx.VisionSystem.AddCandidate(targetCollider, targetToShare);
+                        }
+
                         otherCtx.SetAlarmTarget(targetToShare);
 
                         if (otherFsm.CurrentState != otherFsm.AlarmState && !otherFsm.IsTransitioning())
@@ -82,7 +85,6 @@ public class AlarmState : AsyncState
 
     protected override async UniTask HandleTransition()
     {
-        // Мёртвая цель не должна удерживать AI в боевом цикле
         StateMachine.Ctx.ClearDeadTarget();
 
         if (StateMachine.Ctx.IsDead)
@@ -113,15 +115,18 @@ public class AlarmState : AsyncState
         }
     }
 
-     private async UniTask TransitionWithErrorHandling(AsyncStateMachine fsm, IAsyncState targetState)
-     {
-         try
-         {
-             await fsm.TransitionTo(targetState);
-         }
-         catch (Exception ex)
-         {
-             Debug.LogWarning($"Failed to transition enemy to alarm state: {ex.Message}");
-         }
-     }
+      private async UniTask TransitionWithErrorHandling(AsyncStateMachine fsm, IAsyncState targetState)
+      {
+          try
+          {
+              if (fsm != null && !fsm.IsTransitioning())
+              {
+                  await fsm.TransitionTo(targetState);
+              }
+          }
+          catch (Exception ex)
+          {
+              Debug.LogWarning($"Failed to transition enemy to alarm state: {ex.Message}");
+          }
+      }
 }

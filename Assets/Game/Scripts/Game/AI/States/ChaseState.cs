@@ -5,8 +5,8 @@ using UnityEngine;
 
 public class ChaseState : AsyncState
 {
-    private const float PathFailureTimeBudget = 4f;
-    private const float PathFailureRetryDelayMs = 250f;
+    private const float PathFailureTimeBudget = 2f; 
+    private const float PathFailureRetryDelayMs = 50f;
 
     private float _pathFailureTimer;
 
@@ -55,6 +55,13 @@ public class ChaseState : AsyncState
                && StateMachine.Ctx.TryGetLastKnownTargetPosition(out var destination)
                && (!IsWithinStopDistance(destination) || !targetVisible))
         {
+            if (targetVisible && StateMachine.Ctx.Target != null)
+            {
+                StateMachine.Ctx.VisionSystem.SetLastKnownPosition(
+                    StateMachine.Ctx.Target,
+                    StateMachine.Ctx.Target.Transform.position);
+            }
+
             if (StateMachine.Ctx.Target != null
                 && StateMachine.Ctx.IsTargetInRange(StateMachine.Ctx.Target)
                 && StateMachine.Ctx.IsTargetVisible(StateMachine.Ctx.Target))
@@ -104,7 +111,7 @@ public class ChaseState : AsyncState
 
                 if (IsWithinStopDistance(currentDestination) && targetVisible) break;
 
-                if (Vector3.Distance(currentDestination, destination) > Constants.PathTargetMoveThreshold)
+                if (Vector3.Distance(currentDestination, destination) > Constants.PathTargetMoveThreshold * 0.7f)
                 {
                     needsRepath = true;
                     break;
@@ -118,6 +125,15 @@ public class ChaseState : AsyncState
                     .SuppressCancellationThrow();
 
                 if (moveResult) break;
+
+                if (!needsRepath && StateMachine.Ctx.TryGetLastKnownTargetPosition(out var updatedDestination))
+                {
+                    if (Vector3.Distance(updatedDestination, destination) > Constants.PathTargetMoveThreshold * 0.5f)
+                    {
+                        needsRepath = true;
+                        break;
+                    }
+                }
             }
 
             StopInput();
@@ -137,46 +153,47 @@ public class ChaseState : AsyncState
         await HandleTransition();
     }
 
-    private async UniTask DirectChase(CancellationToken ct)
-    {
-        while (!IsCancelled)
-        {
-            var target = StateMachine.Ctx.Target;
-            if (target == null || target.currentHitPoints <= 0) break;
+     private async UniTask DirectChase(CancellationToken ct)
+     {
+         while (!IsCancelled)
+         {
+             var target = StateMachine.Ctx.Target;
+             if (target == null || target.currentHitPoints <= 0) break;
 
-            var targetPosition = target.Transform.position;
+             var targetPosition = target.Transform.position;
 
-            if (IsWithinStopDistance(targetPosition)) break;
-            StateMachine.Ctx.VisionSystem.SetLastKnownPosition(target, targetPosition);
+             if (IsWithinStopDistance(targetPosition)) break;
+             StateMachine.Ctx.VisionSystem.SetLastKnownPosition(target, targetPosition);
 
-            var toTarget = targetPosition - StateMachine.Ctx.Transform.position;
-            toTarget.y = 0f;
-            var distance = toTarget.magnitude;
-            if (distance <= 0.01f) break;
+             var toTarget = targetPosition - StateMachine.Ctx.Transform.position;
+             toTarget.y = 0f;
+             var distance = toTarget.magnitude;
+             if (distance <= 0.01f) break;
 
-            var stopDistance = GetStopDistance();
-            var moveTarget = targetPosition - toTarget.normalized * stopDistance;
-            var toMove = moveTarget - StateMachine.Ctx.Transform.position;
-            toMove.y = 0f;
+             var stopDistance = GetStopDistance();
+             var moveTarget = targetPosition - toTarget.normalized * stopDistance;
+             var toMove = moveTarget - StateMachine.Ctx.Transform.position;
+             toMove.y = 0f;
 
-            if (toMove.sqrMagnitude <= Constants.ArriveThreshold * Constants.ArriveThreshold)
-                break;
+             if (toMove.sqrMagnitude <= Constants.ArriveThreshold * Constants.ArriveThreshold)
+                 break;
 
-            var yaw = Mathf.Atan2(toMove.x, toMove.z) * Mathf.Rad2Deg;
-            StateMachine.Ctx.Input.RotationYaw = yaw;
-            StateMachine.Ctx.Input.MoveInput = new Vector2(0f, 1f);
+             var yaw = Mathf.Atan2(toMove.x, toMove.z) * Mathf.Rad2Deg;
+             StateMachine.Ctx.Input.RotationYaw = yaw;
 
-            await UniTask.Yield(PlayerLoopTiming.Update, ct);
-        }
+             StateMachine.Ctx.Input.MoveInput = new Vector2(0f, 1.2f); 
+
+             await UniTask.Yield(PlayerLoopTiming.Update, ct);
+         }
 
         StopInput();
     }
 
     public override async UniTask OnExit(CancellationToken ct)
     {
-        await base.OnExit(ct);
         StopInput();
         _pathFailureTimer = 0f;
+        await base.OnExit(ct);
         Debug.Log("Interrupted chase routine.");
         await UniTask.CompletedTask;
     }
@@ -286,20 +303,18 @@ public class ChaseState : AsyncState
             var distance = Vector3.Distance(StateMachine.Ctx.Transform.position, target.Transform.position);
             var hasLineOfSight = StateMachine.Ctx.IsTargetVisible(target);
 
-            if (StateMachine.Ctx.IsTargetInRange(target) && hasLineOfSight)
+            if (distance <= StateMachine.Ctx.PreferredAttackDistance * 1.1f && hasLineOfSight)
             {
-                if (distance <= StateMachine.Ctx.PreferredAttackDistance)
-                {
-                    await StateMachine.TransitionTo(StateMachine.AttackState);
-                    return;
-                }
+                await StateMachine.TransitionTo(StateMachine.AttackState);
+                return;
+            }
 
-                if (StateMachine.Ctx.HasRangedWeapon
-                    && distance <= StateMachine.Ctx.RangeWeaponPreferredDistance)
-                {
-                    await StateMachine.TransitionTo(StateMachine.ShootState);
-                    return;
-                }
+            if (StateMachine.Ctx.HasRangedWeapon
+                && distance <= StateMachine.Ctx.RangeWeaponPreferredDistance
+                && hasLineOfSight)
+            {
+                await StateMachine.TransitionTo(StateMachine.ShootState);
+                return;
             }
         }
 

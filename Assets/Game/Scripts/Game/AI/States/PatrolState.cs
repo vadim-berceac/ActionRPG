@@ -43,25 +43,32 @@ public class PatrolState : AsyncState
             {
                 if (IsCancelled) break;
 
+                if (ShouldInterrupt())
+                {
+                    StopInput();
+                    await HandleTransition();
+                    return;
+                }
+
                 var corner = corners[i];
 
                 moveResult = await AIActions.MoveTowardsAsync(corner, CancellationTokenSource.Token, StateMachine)
                     .SuppressCancellationThrow();
 
                 if (moveResult) break;
+
+                await UniTask.Delay(50, cancellationToken: CancellationTokenSource.Token)
+                    .SuppressCancellationThrow();
             }
 
             StopInput();
 
-            if (moveResult) break;
             if (IsCancelled) break;
+            if (!moveResult) continue;
 
             Debug.Log("Scanning surroundings...");
-            var delayResult = await UniTask.Delay(1000, cancellationToken: CancellationTokenSource.Token)
-                .Timeout(TimeSpan.FromSeconds(2))
+            await UniTask.Delay(300, cancellationToken: CancellationTokenSource.Token)
                 .SuppressCancellationThrow();
-
-            if (delayResult) break;
         }
 
         await HandleTransition();
@@ -69,8 +76,8 @@ public class PatrolState : AsyncState
 
     public override async UniTask OnExit(CancellationToken ct)
     {
-        await base.OnExit(ct);
         StopInput();
+        await base.OnExit(ct);
         Debug.Log("Interrupted patrol routine.");
         await UniTask.CompletedTask;
     }
@@ -82,11 +89,11 @@ public class PatrolState : AsyncState
     }
 
     protected override bool ShouldInterrupt() =>
-        StateMachine.Ctx.Target != null && StateMachine.Ctx.Target.currentHitPoints > 0;
+        StateMachine.Ctx.Target != null && StateMachine.Ctx.Target.currentHitPoints > 0 &&
+        StateMachine.Ctx.IsTargetVisible(StateMachine.Ctx.Target);
 
     protected override async UniTask HandleTransition()
     {
-        // Мёртвая цель не должна удерживать AI в боевом цикле
         StateMachine.Ctx.ClearDeadTarget();
 
         if (StateMachine.Ctx.IsDead)

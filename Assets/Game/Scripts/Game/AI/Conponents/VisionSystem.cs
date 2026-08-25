@@ -14,8 +14,8 @@ public class VisionSystem : MonoBehaviour
 
     [Header("Vision Settings")]
     [SerializeField] private LayerMask obstacleMask;
-    [SerializeField] private float visionCheckInterval = 0.15f;
-    [SerializeField] private int hysteresisChecks = 2;
+    [SerializeField] private float visionCheckInterval = 0.05f; 
+    [SerializeField] private int hysteresisChecks = 1; 
 
     [Header("Detection")]
     [SerializeField] private float triggerRadius = 10f;
@@ -52,10 +52,13 @@ public class VisionSystem : MonoBehaviour
 
         _candidates.Clear();
         _inTriggerZone.Clear();
+        _closeRangeThisTick.Clear();
         _visibleTargets.Clear();
         _visibleStreak.Clear();
         _hiddenStreak.Clear();
         _lastKnownPositions.Clear();
+        _pendingRemoval.Clear();
+        _candidatesSnapshot.Clear();
     }
 
     private void OnTriggerEnter(Collider other)
