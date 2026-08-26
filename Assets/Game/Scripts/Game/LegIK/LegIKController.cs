@@ -225,8 +225,8 @@ namespace LegIK
                     soleThickness = foot.soleThickness,
                     maxRotationAngleRad = foot.maxRotationAngle * Mathf.Deg2Rad,
                     maxSlopeAngleRad = foot.maxSlopeAngle * Mathf.Deg2Rad,
-                    groundedHeight = foot.groundedHeightThreshold,
-                    liftHeight = foot.liftHeightThreshold,
+                    groundedSpeedThreshold = foot.groundedSpeedThreshold,
+                    liftSpeedThreshold = foot.liftSpeedThreshold,
                     positionSmoothTime = foot.positionSmoothTime,
                     rotationSmoothTime = foot.rotationSmoothTime,
                     weightSmoothTime = foot.weightSmoothTime,
@@ -263,7 +263,7 @@ namespace LegIK
                     animator.SetIKHintPosition(foot.ikHint, hintPos);
                     animator.SetIKHintPositionWeight(foot.ikHint, foot.hintWeight * globalWeight * output.positionWeight);
                 }
-                
+
                 var weightedOffset = output.heightOffset * output.positionWeight;
                 lowestOffset = Mathf.Min(lowestOffset, weightedOffset);
                 highestOffset = Mathf.Max(highestOffset, weightedOffset);
@@ -273,7 +273,7 @@ namespace LegIK
             {
                return;
             }
-            
+
             var targetPelvisOffset = lowestOffset < 0f ? lowestOffset : highestOffset;
             targetPelvisOffset = Mathf.Clamp(targetPelvisOffset, -maxPelvisLower, maxPelvisRaise);
 

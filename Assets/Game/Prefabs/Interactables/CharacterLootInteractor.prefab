@@ -15,7 +15,8 @@ GameObject:
   - component: {fileID: 5037401692089955208}
   - component: {fileID: 3540746904152710682}
   - component: {fileID: 7898988105559645511}
-  - component: {fileID: 3211077676037743685}
+  - component: {fileID: 189377041483241223}
+  - component: {fileID: 250945045841228871}
   m_Layer: 16
   m_Name: CharacterLootInteractor
   m_TagString: Untagged
@@ -111,31 +112,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractAnimation
   trigger: {fileID: 1371498733805353087}
+  controller: {fileID: 0}
   enterClip:
-    <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 5d52ad18f8e57b647a8a153cf9088c9e,
+    <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 83ce80eba9972044a83118cd1ae51ee3,
       type: 3}
     <EnterBlendLength>k__BackingField: 0.1
-    <ExitBlendLength>k__BackingField: 0.1
+    <ExitBlendLength>k__BackingField: 0
     <Mask>k__BackingField: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
       type: 2}
     <IsAdditive>k__BackingField: 0
   clips:
-  - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: cdacc06aa480e104abf37460dfe9f8fb,
+  - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 558af0b0537253f44af7b1bc4f348433,
       type: 3}
-    <EnterBlendLength>k__BackingField: 0.1
-    <ExitBlendLength>k__BackingField: 0.1
+    <EnterBlendLength>k__BackingField: 0
+    <ExitBlendLength>k__BackingField: 0
     <Mask>k__BackingField: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
       type: 2}
     <IsAdditive>k__BackingField: 0
   exitClip:
-    <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 63c14ce95b9ad8749a5317250263f2f3,
+    <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 12c72a25f23fc174e969826340c5ea0c,
       type: 3}
-    <EnterBlendLength>k__BackingField: 0.1
+    <EnterBlendLength>k__BackingField: 0
     <ExitBlendLength>k__BackingField: 0.1
     <Mask>k__BackingField: {fileID: 31900000, guid: 89527f5525238ee44b3182458d85143a,
       type: 2}
     <IsAdditive>k__BackingField: 0
   canBeInterrupted: 1
+  randomizeClipsOrder: 0
+  loopClipsBlock: 0
   onInteractEnter:
     m_PersistentCalls:
       m_Calls: []
@@ -161,7 +165,12 @@ MonoBehaviour:
   enterDelay: 0
   enterTime: 0.2
   exitTime: 0.1
+  controllerSource: 0
+  fixedController: {fileID: 0}
+  controllerInteractAnimation: {fileID: 0}
+  targetSource: 0
   footTarget: {fileID: 239114417579691364}
+  targetInteractAnimation: {fileID: 0}
   exitTarget: {fileID: 0}
   interactableModel: {fileID: 0}
   motionType: 0
@@ -186,7 +195,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InteractIKChecker
   trigger: {fileID: 5037401692089955208}
   iKGlobalWeight: 0
---- !u!114 &3211077676037743685
+--- !u!114 &189377041483241223
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -195,15 +204,33 @@ MonoBehaviour:
   m_GameObject: {fileID: 2523373349923920442}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 726563f8649f56b47957d4729b17c3a5, type: 3}
+  m_Script: {fileID: 11500000, guid: 2bb9b1a9cfe26774c95169e401404280, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InteractObjectSpawner
-  interactAnimation: {fileID: 5037401692089955208}
-  settings:
-  - <Prefab>k__BackingField: {fileID: 6615328860942291271, guid: 4d5116e76bbd92e438613bb44560e237,
+  m_EditorClassIdentifier: Assembly-CSharp::CameraSoundPlayer
+  audioClip: {fileID: 8300000, guid: b2e11b5118f980e46b17a826657879c5, type: 3}
+  volume: 0.5
+  maxDistanceToCamera: 10
+--- !u!114 &250945045841228871
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2523373349923920442}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fcbc8038a3353848ab713cdf3149c77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractIK
+  trigger: {fileID: 5037401692089955208}
+  mappings:
+  - <Clip>k__BackingField: {fileID: 3094330708855449807, guid: 83ce80eba9972044a83118cd1ae51ee3,
       type: 3}
-    <BoneSettings>k__BackingField:
-      <PropType>k__BackingField: 1
-      <Position>k__BackingField: {x: 0, y: 0, z: 0}
-      <Rotation>k__BackingField: {x: 0, y: 270, z: 0}
-      <Scale>k__BackingField: 1
+    <Goals>k__BackingField:
+    - <Goal>k__BackingField: 3
+      <Target>k__BackingField: {fileID: 0}
+      <Hint>k__BackingField: {fileID: 0}
+      <Weight>k__BackingField: 1
+    <LookAtTarget>k__BackingField: {fileID: 0}
+    <LookAtWeight>k__BackingField: 1
+  fallbackBlendTime: 0.15

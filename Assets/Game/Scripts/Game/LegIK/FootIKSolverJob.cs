@@ -9,7 +9,7 @@ namespace LegIK
     {
         public float3 animatedPosition;
         public quaternion animatedRotation;
-        
+
         public float unleanedAnimatedPositionY;
 
         public float3 hitPoint;
@@ -22,8 +22,11 @@ namespace LegIK
         public float maxRotationAngleRad;
         public float maxSlopeAngleRad;
 
-        public float groundedHeight;
-        public float liftHeight;
+        // Пороги теперь в м/с — определяют, движется ли стопа по анимации
+        // (фаза переноса) или практически неподвижна (фаза опоры),
+        // независимо от высоты земли под ней.
+        public float groundedSpeedThreshold;
+        public float liftSpeedThreshold;
 
         public float positionSmoothTime;
         public float rotationSmoothTime;
@@ -41,6 +44,11 @@ namespace LegIK
         public float3 positionVelocity;
         public quaternion currentRotation;
         public float currentWeight;
+
+        // Позиция анимированной (unleaned) стопы в предыдущем кадре —
+        // нужна для расчёта скорости движения стопы по анимации.
+        public float3 previousAnimatedPosition;
+
         public byte initialized;
 
         public static FootIKJobState Default()
@@ -51,6 +59,7 @@ namespace LegIK
                 positionVelocity = float3.zero,
                 currentRotation = quaternion.identity,
                 currentWeight = 0f,
+                previousAnimatedPosition = float3.zero,
                 initialized = 0
             };
         }
@@ -65,7 +74,7 @@ namespace LegIK
         public float heightOffset;
     }
 
-   
+
     [BurstCompile]
     public struct FootIKSolverJob : IJobParallelFor
     {
@@ -78,6 +87,22 @@ namespace LegIK
             var input = inputs[index];
             var state = states[index];
 
+            // Y берём "unleaned", чтобы наклон тела (character spring) не искажал
+            // оценку скорости стопы; X/Z берём как есть.
+            var unleanedAnimatedPos = new float3(
+                input.animatedPosition.x,
+                input.unleanedAnimatedPositionY,
+                input.animatedPosition.z);
+
+            // Скорость анимированной стопы — главный сигнал "стойка / перенос",
+            // не зависящий от рельефа под ногой.
+            var footSpeed = 0f;
+            if (state.initialized == 1)
+            {
+                var dt = math.max(input.deltaTime, 0.0001f);
+                footSpeed = math.length(unleanedAnimatedPos - state.previousAnimatedPosition) / dt;
+            }
+
             var desiredPos = input.animatedPosition;
             var desiredRot = input.animatedRotation;
             var targetWeight = 0f;
@@ -89,16 +114,16 @@ namespace LegIK
 
                 if (withinSlope)
                 {
+                    // Цель по-прежнему берём напрямую из хита — это чинит
+                    // работу на склонах/ступенях независимо от высоты.
                     desiredPos = input.hitPoint + input.footOffset + math.up() * input.soleThickness;
 
                     var currentFootUp = math.mul(input.animatedRotation, math.up());
                     var normalRot = FromToRotationClamped(currentFootUp, input.hitNormal, input.maxRotationAngleRad);
                     desiredRot = math.mul(normalRot, input.animatedRotation);
 
-                    var restY = input.hitPoint.y + input.footOffset.y + input.soleThickness;
-                    var heightAboveGround = input.unleanedAnimatedPositionY - restY;
-                    var liftRange = math.max(input.liftHeight - input.groundedHeight, 0.0001f);
-                    var liftT = math.saturate((heightAboveGround - input.groundedHeight) / liftRange);
+                    var speedRange = math.max(input.liftSpeedThreshold - input.groundedSpeedThreshold, 0.0001f);
+                    var liftT = math.saturate((footSpeed - input.groundedSpeedThreshold) / speedRange);
                     targetWeight = 1f - liftT;
                 }
             }
@@ -130,6 +155,7 @@ namespace LegIK
             state.currentPosition = newPos;
             state.currentRotation = newRot;
             state.currentWeight = newWeight;
+            state.previousAnimatedPosition = unleanedAnimatedPos;
             states[index] = state;
 
             outputs[index] = new FootIKJobOutput
@@ -168,7 +194,7 @@ namespace LegIK
             return quaternion.AxisAngle(axis, clampedAngle);
         }
 
-      
+
         private static float3 SmoothDamp(float3 current, float3 target, ref float3 velocity, float smoothTime, float dt)
         {
             var omega = 2f / smoothTime;

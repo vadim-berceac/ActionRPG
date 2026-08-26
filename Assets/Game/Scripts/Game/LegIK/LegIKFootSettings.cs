@@ -76,11 +76,11 @@ namespace LegIK
         [Header("Отрыв стопы от земли (фаза переноса)")]
         [Tooltip("Если анимированная стопа ближе к земле, чем это значение — считаем ногу опорной, вес IK стремится к 1")]
         [Range(0f, 0.2f)]
-        public float groundedHeightThreshold = 0.02f;
+        public float groundedSpeedThreshold = 0.15f;
 
         [Tooltip("Если анимированная стопа выше земли, чем это значение — считаем ногу в переносе (swing), вес IK стремится к 0 и нога свободно поднимается по анимации")]
         [Range(0.02f, 0.5f)]
-        public float liftHeightThreshold = 0.15f;
+        public float liftSpeedThreshold  = 0.5f;
 
         [Header("Ограничения по рельефу")]
         [Tooltip("Если земля наклонена больше этого угла — IK для стопы отключается (считаем поверхность непроходимой)")]
