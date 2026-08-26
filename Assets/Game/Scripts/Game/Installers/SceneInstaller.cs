@@ -18,6 +18,18 @@ public class SceneInstaller : MonoInstaller
             .NonLazy();
         
         Container
+            .Bind<ScreenFader>()
+            .FromComponentInNewPrefabResource("UI/ScreenFader")
+            .AsSingle()
+            .NonLazy();
+        
+        Container
+            .Bind<SceneUI>()
+            .FromComponentInNewPrefabResource("UI/SceneUI")
+            .AsSingle()
+            .NonLazy();
+        
+        Container
             .Bind<CurveConstants>()
             .FromScriptableObjectResource("Data/CurveConstants")
             .AsSingle()
