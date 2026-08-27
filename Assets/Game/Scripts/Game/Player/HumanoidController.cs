@@ -658,13 +658,6 @@ namespace Game
         {
             if (IsSwim)
             {
-                // JumpInput - всплыть, Block - погрузиться. Block во время плавания
-                // всё равно отключён (см. ProcessBlocking), поэтому кнопка свободна под нырок.
-                var swimVerticalInput = 0f;
-                if (_input.JumpInput) swimVerticalInput = 1f;
-                else if (_input.Block) swimVerticalInput = -1f;
-
-                _verticalSpeed = swimVerticalInput * swimVerticalSpeed;
                 _isJumping = false;
                 _readyToJump = false;
                 return;
