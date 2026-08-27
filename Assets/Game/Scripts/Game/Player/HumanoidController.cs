@@ -38,6 +38,10 @@ namespace Game
 
         [field: SerializeField] public CharacterParamsSettings Settings { get; private set; }
 
+        [Header("Swim")]
+        [Tooltip("Скорость всплытия/погружения при плавании (м/с)")]
+        [SerializeField] private float swimVerticalSpeed = 2f;
+
         #endregion
 
         #region Public Properties
@@ -49,6 +53,7 @@ namespace Game
         public bool HasAdditionalWeapon => _additionalWeaponInstance;
         public bool IsBlocking { get; private set; }
         public bool IsInteracting { get; private set; }
+        public bool IsSwim { get; private set; }
         public int PrimaryWeaponIndex => _primaryWeaponData ? _primaryWeaponData.AnimationSetIndex : 0;
         public int RangeWeaponIndex => _rangedWeaponData ? _rangedWeaponData.AnimationSetIndex : 0;
         public float PrimaryWeaponPreferredAttackDistance => _primaryWeaponData ? _primaryWeaponData.preferredDistance : 35f;
@@ -306,7 +311,7 @@ namespace Game
                 _knockbackVelocity = Vector3.zero;
             }
 
-            _isGrounded = _charCtrl.isGrounded;
+            _isGrounded = IsSwim || _charCtrl.isGrounded;
 
             if (_isGrounded)
             {
@@ -457,6 +462,12 @@ namespace Game
             _animCache.TriggerDeath(false);
         }
 
+        public void SetSwim(bool value)
+        {
+            IsSwim = value;
+            _animCache?.SetSwim(value);
+        }
+
         public void SetInteracting(bool value)
         {
             IsInteracting = value;
@@ -507,7 +518,7 @@ namespace Game
             _animCache.ResetAttack1();
             _animCache.ResetAttack2();
 
-            if (IsBlocking)
+            if (IsBlocking || IsSwim)
             {
                 return;
             }
@@ -525,6 +536,13 @@ namespace Game
 
         private void ProcessBlocking()
         {
+            if (IsSwim)
+            {
+                IsBlocking = false;
+                _animCache.SetBlock(false);
+                return;
+            }
+
             if (!_primaryWeaponInstance && !_additionalWeaponInstance)
             {
                 IsBlocking = false;
@@ -557,7 +575,7 @@ namespace Game
         {
             var canShoot = _rangedWeaponInstance && _ammunitionWeaponInstance;
 
-            if (!canShoot || !Stamina.HasEnoughStamina(Settings.CharacterParams.ShootStaminaCost))
+            if (!canShoot || IsSwim || !Stamina.HasEnoughStamina(Settings.CharacterParams.ShootStaminaCost))
             {
                 _shootPressed = false;
                 _isShoot = false;
@@ -638,6 +656,20 @@ namespace Game
 
         private void CalcVerticalMovement()
         {
+            if (IsSwim)
+            {
+                // JumpInput - всплыть, Block - погрузиться. Block во время плавания
+                // всё равно отключён (см. ProcessBlocking), поэтому кнопка свободна под нырок.
+                var swimVerticalInput = 0f;
+                if (_input.JumpInput) swimVerticalInput = 1f;
+                else if (_input.Block) swimVerticalInput = -1f;
+
+                _verticalSpeed = swimVerticalInput * swimVerticalSpeed;
+                _isJumping = false;
+                _readyToJump = false;
+                return;
+            }
+
             if (!_input.JumpInput && _isGrounded)
             {
                 _readyToJump = true;

@@ -43,6 +43,7 @@ namespace Game
         private readonly int _blockHitTrigger          = Animator.StringToHash("BlockHitTrigger");
         private readonly int _hashVerticalAimAngle     = Animator.StringToHash("VerticalAimAngle");
         private readonly int _hashInteract             = Animator.StringToHash("Interact");
+        private readonly int _hashSwim            = Animator.StringToHash("Swim");
         
         private const string BlockInput = "BlockInput";
 
@@ -149,6 +150,7 @@ namespace Game
             }
         }
         public void SetInteract(bool value)   => _animator.SetBool(_hashInteract, value);
+        public void SetSwim(bool value)   => _animator.SetBool(_hashSwim, value);
         public void ResetAttack1()     => _animator.ResetTrigger(HashAttack1);
         public void ResetAttack2()     => _animator.ResetTrigger(HashAttack2);
         public void ResetTrigger(int hash) => _animator.ResetTrigger(hash);
