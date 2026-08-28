@@ -58,6 +58,7 @@ namespace Game
         public bool IsMeleeWeaponEquipped => _isMeleeWeaponEquipped;
         public bool IsRangedWeaponEquipped => _isRangeWeaponEquipped;
         public bool IsShootPressed => _shootPressed;
+        public float VerticalSpeed  {get; private set; }
         public Stamina Stamina { get; private set; }
         public PlayableGraphHandle Graph { get; private set; }
         public LegIKController LegIK  { get; private set; }
@@ -90,7 +91,6 @@ namespace Game
         private bool _readyToJump;
         private float _desiredForwardSpeed;
         private float _forwardSpeed;
-        private float _verticalSpeed;
         private float _coyoteTimer;
         private bool _isJumping;
         private bool _fallOriginCaptured;
@@ -293,7 +293,7 @@ namespace Game
                 movement = _forwardSpeed * _transform.forward * Time.deltaTime;
             }
 
-            movement += _verticalSpeed * Vector3.up * Time.deltaTime;
+            movement += VerticalSpeed * Vector3.up * Time.deltaTime;
             _charCtrl.Move(movement);
 
             if (_knockbackVelocity.sqrMagnitude > 0.01f)
@@ -319,7 +319,7 @@ namespace Game
             else
             {
                 _coyoteTimer -= Time.deltaTime;
-                _animCache.SetAirborneVerticalSpeed(_verticalSpeed);
+                _animCache.SetAirborneVerticalSpeed(VerticalSpeed);
 
                 if (_isJumping)
                 {
@@ -668,7 +668,7 @@ namespace Game
 
             if (_input.JumpInput && canJump && _readyToJump && !_inAttack && !IsBlocking)
             {
-                _verticalSpeed = Settings.CharacterParams.JumpSpeed;
+                VerticalSpeed = Settings.CharacterParams.JumpSpeed;
                 _isGrounded    = false;
                 _coyoteTimer   = 0f;
                 _readyToJump   = false;
@@ -678,18 +678,23 @@ namespace Game
 
             if (_isGrounded)
             {
-                _verticalSpeed = -Settings.CharacterParams.Gravity * Constants.StickingGravityProportion;
+                VerticalSpeed = -Settings.CharacterParams.Gravity * Constants.StickingGravityProportion;
             }
             else
             {
-                if (!_input.JumpInput && _verticalSpeed > 0.0f)
-                    _verticalSpeed -= Constants.JumpAbortSpeed * Time.deltaTime;
+                if (!_input.JumpInput && VerticalSpeed > 0.0f)
+                    VerticalSpeed -= Constants.JumpAbortSpeed * Time.deltaTime;
 
-                if (Mathf.Approximately(_verticalSpeed, 0f))
-                    _verticalSpeed = 0f;
+                if (Mathf.Approximately(VerticalSpeed, 0f))
+                    VerticalSpeed = 0f;
 
-                _verticalSpeed -= Settings.CharacterParams.Gravity * Time.deltaTime;
+                VerticalSpeed -= Settings.CharacterParams.Gravity * Time.deltaTime;
             }
+        }
+        
+        public void SetVerticalSpeed(float value)
+        {
+            VerticalSpeed = value;
         }
 
         private void CalcOrientation()
@@ -812,7 +817,7 @@ namespace Game
                 EmoteLandingPlayer.PlayRandomClipOneShot();
             }
 
-            if (!_isGrounded && _previouslyGrounded && _verticalSpeed > 0f)
+            if (!_isGrounded && _previouslyGrounded && VerticalSpeed > 0f)
                 EmoteJumpPlayer.PlayRandomClipOneShot();
 
             if (_animCache.JustEntered(_animCache.HashHurt))
@@ -1057,7 +1062,7 @@ namespace Game
         {
             _animCache.TriggerDeath(true);
             _forwardSpeed              = 0f;
-            _verticalSpeed             = 0f;
+            VerticalSpeed             = 0f;
             _knockbackVelocity         = Vector3.zero;
             _damageable.isInvulnerable = true;
 
