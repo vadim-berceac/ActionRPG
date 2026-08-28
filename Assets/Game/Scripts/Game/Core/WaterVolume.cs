@@ -30,13 +30,6 @@ public class WaterVolume : MonoBehaviour
         _waterCollider = GetComponent<Collider>();
         _waterCollider.isTrigger = true;
 
-        if (GetComponent<Rigidbody>() == null)
-        {
-            var rb = gameObject.AddComponent<Rigidbody>();
-            rb.isKinematic = true;
-            rb.useGravity = false;
-        }
-
         if (exitSwimDepth >= enterSwimDepth)
             Debug.LogWarning($"{nameof(WaterVolume)}: exitSwimDepth должен быть меньше enterSwimDepth, иначе гистерезис не работает.", this);
     }
@@ -68,7 +61,7 @@ public class WaterVolume : MonoBehaviour
 
         _swimmers.Add(controller, new SwimmerState
         {
-            DepthPoint = ResolveDepthPoint(controller, other),
+            DepthPoint = other.transform,
             IsSwimming = false
         });
     }
@@ -130,12 +123,4 @@ public class WaterVolume : MonoBehaviour
             }
         }
     }
-
-    private static Transform ResolveDepthPoint(HumanoidController controller, Collider enteredCollider)
-    {
-        var marker = controller.GetComponentInChildren<SwimDepthPoint>();
-        return marker != null ? marker.transform : enteredCollider.transform;
-    }
 }
-
-public class SwimDepthPoint : MonoBehaviour { }

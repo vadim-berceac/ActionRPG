@@ -38,10 +38,6 @@ namespace Game
 
         [field: SerializeField] public CharacterParamsSettings Settings { get; private set; }
 
-        [Header("Swim")]
-        [Tooltip("Скорость всплытия/погружения при плавании (м/с)")]
-        [SerializeField] private float swimVerticalSpeed = 2f;
-
         #endregion
 
         #region Public Properties
