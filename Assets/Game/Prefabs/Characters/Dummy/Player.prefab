@@ -258,7 +258,7 @@ CharacterController:
   m_StepOffset: 0.3
   m_SkinWidth: 0.001
   m_MinMoveDistance: 0.01
-  m_Center: {x: 0, y: 0.901, z: 0}
+  m_Center: {x: 0, y: 0.9, z: 0}
 --- !u!114 &8221082309353826462
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -401,7 +401,7 @@ MonoBehaviour:
     groundMask:
       serializedVersion: 2
       m_Bits: 2147549185
-    useSphereCast: 0
+    useSphereCast: 1
     sphereCastRadius: 0.08
     footOffset: {x: 0, y: 0.13, z: 0}
     soleThickness: 0.02
@@ -412,8 +412,8 @@ MonoBehaviour:
     rotationSmoothTime: 0.03
     weightSmoothTime: 0.03
     maxRotationAngle: 60
-    groundedHeightThreshold: 0.02
-    liftHeightThreshold: 0.02
+    groundedSpeedThreshold: 0.2
+    liftSpeedThreshold: 0.5
     maxSlopeAngle: 60
     kneeForwardOffset: 0.05
   - ikGoal: 1
@@ -424,7 +424,7 @@ MonoBehaviour:
     groundMask:
       serializedVersion: 2
       m_Bits: 2147549185
-    useSphereCast: 0
+    useSphereCast: 1
     sphereCastRadius: 0.08
     footOffset: {x: 0, y: 0.13, z: 0}
     soleThickness: 0.02
@@ -435,8 +435,8 @@ MonoBehaviour:
     rotationSmoothTime: 0.03
     weightSmoothTime: 0.03
     maxRotationAngle: 60
-    groundedHeightThreshold: 0.02
-    liftHeightThreshold: 0.02
+    groundedSpeedThreshold: 0.2
+    liftSpeedThreshold: 0.5
     maxSlopeAngle: 60
     kneeForwardOffset: 0.05
   adjustPelvis: 1
@@ -451,8 +451,8 @@ MonoBehaviour:
     scaleFactor: 1
     rotationFactor: 1
     stiffness: 3000
-    damping: 50
-    mass: 5
+    damping: 10
+    mass: 3
     bounciness: 0.05
     positionSmoothingHz: 6
     rotationSmoothingHz: 6

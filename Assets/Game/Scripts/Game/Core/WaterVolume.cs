@@ -261,6 +261,7 @@ public class WaterVolume : MonoBehaviour
         {
             state.IsSwimming = true;
             controller.SetSwim(true);
+            controller.SetVerticalSpeed(minSplashVerticalSpeed);
         }
         else if (state.IsSwimming && depth <= exitSwimDepth)
         {

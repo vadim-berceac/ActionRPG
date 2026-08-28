@@ -272,7 +272,7 @@ namespace Game
             }
             Vector3 movement;
 
-            if (_isGrounded)
+            if (_isGrounded || IsSwim)
             {
                 var ray = new Ray(_transform.position + Vector3.up
                     * Constants.GroundedRayDistance * 0.5f, -Vector3.up);
@@ -307,7 +307,7 @@ namespace Game
                 _knockbackVelocity = Vector3.zero;
             }
 
-            _isGrounded = IsSwim || _charCtrl.isGrounded;
+            _isGrounded = !IsSwim && _charCtrl.isGrounded;
 
             if (_isGrounded)
             {
@@ -316,7 +316,7 @@ namespace Game
                 _fallOriginCaptured = false;
                 _animGrounded       = true;
             }
-            else
+            else if(!IsSwim)
             {
                 _coyoteTimer -= Time.deltaTime;
                 _animCache.SetAirborneVerticalSpeed(VerticalSpeed);
@@ -680,7 +680,7 @@ namespace Game
             {
                 VerticalSpeed = -Settings.CharacterParams.Gravity * Constants.StickingGravityProportion;
             }
-            else
+            else 
             {
                 if (!_input.JumpInput && VerticalSpeed > 0.0f)
                     VerticalSpeed -= Constants.JumpAbortSpeed * Time.deltaTime;

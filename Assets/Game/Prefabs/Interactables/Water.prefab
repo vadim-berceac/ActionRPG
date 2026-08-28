@@ -220,10 +220,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WaterVolume
   enterSwimDepth: 1
-  exitSwimDepth: 0.9
+  exitSwimDepth: 0.7
   pushOutDelay: 0.25
   pushOutSpeed: 6
-  minSplashVerticalSpeed: 3
+  minSplashVerticalSpeed: -6
   settleDelayAfterEnter: 0.5
   pushEventRearmMargin: 0.7
   requiredConsecutiveBelowFrames: 3
